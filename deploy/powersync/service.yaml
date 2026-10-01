@@ -1,0 +1,29 @@
+replication:
+  connections:
+    - type: postgresql
+      uri: !env PS_SOURCE_URI
+      # Same docker network, not exposed.
+      sslmode: disable
+
+storage:
+  type: postgresql
+  uri: !env PS_STORAGE_URI
+  sslmode: disable
+
+port: 8080
+
+sync_config:
+  path: sync-config.yaml
+
+client_auth:
+  # Self-hosted Supabase signs access tokens with the legacy HS256 JWT secret.
+  supabase: true
+  supabase_jwt_secret: !env PS_JWT_SECRET
+
+telemetry:
+  disable_telemetry_sharing: true
+
+system:
+  logging:
+    level: info
+    format: text

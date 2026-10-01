@@ -1,0 +1,28 @@
+# Self-hosted PowerSync for 4Money, next to the self-hosted Supabase.
+# Deploy to ~/4money-powersync on the server along with .env (not in the repo):
+#   PS_SOURCE_URI   postgresql://powersync_role:<pw>@supabase-db:5432/postgres
+#   PS_STORAGE_URI  postgresql://powersync_storage_user:<pw>@supabase-db:5432/powersync_storage
+#   PS_JWT_SECRET   Supabase JWT_SECRET
+#   PS_BIND_IP      IP to publish the API on, e.g. the Tailscale one
+services:
+  powersync:
+    container_name: 4money-powersync
+    image: journeyapps/powersync-service:1.26.1
+    restart: unless-stopped
+    command: [ "start", "-r", "unified" ]
+    env_file: .env
+    environment:
+      POWERSYNC_CONFIG_PATH: /config/service.yaml
+      NODE_OPTIONS: --max-old-space-size=512
+    volumes:
+      - ./service.yaml:/config/service.yaml:ro
+      - ./sync-config.yaml:/config/sync-config.yaml:ro
+    ports:
+      - ${PS_BIND_IP:-127.0.0.1}:8080:8080
+    mem_limit: 768m
+    networks:
+      - supabase_default
+
+networks:
+  supabase_default:
+    external: true

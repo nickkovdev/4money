@@ -40,6 +40,7 @@ android {
 
         buildConfigField 'String', 'SUPABASE_URL', "\"${localProperties.getProperty('supabaseUrl')}\""
         buildConfigField 'String', 'SUPABASE_ANON_KEY', "\"${localProperties.getProperty('supabaseAnonKey')}\""
+        buildConfigField 'String', 'SUPABASE_SCHEMA', "\"${localProperties.getProperty('supabaseSchema', 'public')}\""
         buildConfigField 'String', 'POWERSYNC_URL', "\"${localProperties.getProperty('powerSyncUrl')}\""
         buildConfigField 'String', 'AUTH_TEMP_CREDENTIAL', "\"${localProperties.getProperty('authTempCredential')}\""
 
