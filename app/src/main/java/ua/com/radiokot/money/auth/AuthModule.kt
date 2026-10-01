@@ -56,7 +56,10 @@ val authModule = module {
                 }
             )
 
-            install(Postgrest)
+            install(Postgrest) {
+                // Self-hosted backend may keep the tables in a dedicated schema.
+                defaultSchema = BuildConfig.SUPABASE_SCHEMA
+            }
             install(Functions)
             install(Auth) {
                 flowType = FlowType.PKCE

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Self-hosted backend reachable only within the Tailscale network,
+    which already encrypts the traffic. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">100.87.103.65</domain>
+    </domain-config>
+</network-security-config>

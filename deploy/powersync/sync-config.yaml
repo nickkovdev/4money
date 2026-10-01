@@ -1,0 +1,25 @@
+# Output table and column names must match the client schema (powersync/DbSchema.kt).
+bucket_definitions:
+  global:
+    data:
+      - SELECT id, code, symbol, "precision" FROM money.currencies AS currencies
+
+  user_data:
+    parameters: SELECT request.user_id() AS user_id
+    data:
+      - >-
+        SELECT id, title, balance, currency_id, "position", color_scheme, "type", is_archived, icon
+        FROM money.accounts AS accounts
+        WHERE user_id = bucket.user_id
+      - >-
+        SELECT id, title, currency_id, parent_category_id, is_income, color_scheme, is_archived, "position", icon
+        FROM money.categories AS categories
+        WHERE user_id = bucket.user_id
+      - >-
+        SELECT id, "time", source_id, source_amount, destination_id, destination_amount, memo
+        FROM money.transfers AS transfers
+        WHERE user_id = bucket.user_id
+      - >-
+        SELECT id
+        FROM money.sync_errors AS sync_errors
+        WHERE user_id = bucket.user_id
