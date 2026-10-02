@@ -37,7 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import ua.com.radiokot.money.uikit.MoneyIconButton
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +48,9 @@ import ua.com.radiokot.money.R
 import ua.com.radiokot.money.transfers.view.ViewDate
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
+/**
+ * Previous / next round buttons around the period title.
+ */
 @Composable
 fun PeriodBar(
     modifier: Modifier = Modifier,
@@ -61,12 +65,8 @@ fun PeriodBar(
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier = modifier,
 ) {
-    val buttonPadding = remember {
-        PaddingValues(6.dp)
-    }
-
-    PeriodArrowButton(
-        iconRes = R.drawable.ic_tabler_chevron_left,
+    MoneyIconButton(
+        icon = R.drawable.ic_tabler_chevron_left,
         contentDescription = "Previous period",
         isEnabled = isPreviousButtonEnabled.value,
         onClick = onPreviousPeriodClicked,
@@ -74,51 +74,21 @@ fun PeriodBar(
 
     Text(
         text = period.value.getText(),
-        style = TextStyle(
-            fontSize = 16.sp,
-        ),
+        style = MoneyTheme.typography.titleSmall,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
         modifier = Modifier
-            .clickable(
-                onClick = onPeriodClicked,
+            .weight(1f)
+            .padding(
+                horizontal = 8.dp,
             )
-            .padding(buttonPadding)
     )
 
-    PeriodArrowButton(
-        iconRes = R.drawable.ic_tabler_chevron_right,
+    MoneyIconButton(
+        icon = R.drawable.ic_tabler_chevron_right,
         contentDescription = "Next period",
         isEnabled = isNextButtonEnabled.value,
         onClick = onNextPeriodClicked,
-    )
-}
-
-@Composable
-private fun PeriodArrowButton(
-    @DrawableRes
-    iconRes: Int,
-    contentDescription: String,
-    isEnabled: Boolean,
-    onClick: () -> Unit,
-) = Box(
-    contentAlignment = Alignment.Center,
-    modifier = Modifier
-        .clip(CircleShape)
-        .clickable(
-            enabled = isEnabled,
-            onClick = onClick,
-        )
-        .padding(8.dp)
-) {
-    Icon(
-        painter = painterResource(iconRes),
-        contentDescription = contentDescription,
-        tint =
-            if (isEnabled)
-                MoneyTheme.colors.onBackground
-            else
-                MoneyTheme.colors.outlineDisabled,
-        modifier = Modifier
-            .size(24.dp)
     )
 }
 

@@ -48,9 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
-import ua.com.radiokot.money.uikit.RedToggle
+import ua.com.radiokot.money.uikit.SelectionMark
 import ua.com.radiokot.money.uikit.TextButton
-import ua.com.radiokot.money.uikit.rememberRedToggleTransitionSpec
 
 @Composable
 private fun CurrencySelectionScreen(
@@ -112,7 +111,6 @@ private fun CurrencySelectionScreen(
         )
     }
 
-    val selectionToggleTransitionSpec = rememberRedToggleTransitionSpec()
 
     LazyColumn(
 
@@ -139,9 +137,8 @@ private fun CurrencySelectionScreen(
                     )
             ) {
 
-                RedToggle(
-                    isToggled = item.isSelected,
-                    transitionSpec = selectionToggleTransitionSpec,
+                SelectionMark(
+                    isSelected = item.isSelected,
                     modifier = Modifier
                         .padding(4.dp)
                 )

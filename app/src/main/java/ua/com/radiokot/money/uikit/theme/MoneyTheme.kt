@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.uikit.theme
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -26,6 +27,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.composeunstyled.LocalContentColor
 import com.composeunstyled.LocalTextStyle
+import ua.com.radiokot.money.uikit.PressOverlayIndication
 
 /**
  * Paper by default so previews without [MoneyTheme] look light.
@@ -57,6 +59,7 @@ fun MoneyTheme(
         LocalMoneyTypography provides typography,
         LocalContentColor provides colors.ink,
         LocalTextStyle provides typography.body,
+        LocalIndication provides PressOverlayIndication,
         content = content,
     )
 }
