@@ -1,6 +1,6 @@
 # Self-hosted 4Money + auto-categorization from bank notifications
 
-Status: A and B implemented 2026-10-01; C and D designed, not started.
+Status: A and B implemented 2026-10-01; C, D and E designed 2026-10-02, not started.
 
 ## Goal
 
@@ -19,6 +19,7 @@ Single user. Phone: Samsung S25+ (Android, no root). Battery efficiency is a har
 | B | 1Money history import | done |
 | C | Bank notification listener inside the app | designed |
 | D | Payee → category rules, inbox UI | designed |
+| E | UI in the style of 1Money (theme, icons, ring, Overview) | designed |
 
 ## A. Backend
 
@@ -100,7 +101,59 @@ prefilled with amount/payee; on save, a "remember for <payee>" toggle (on by def
 a rule. A Rules screen lists/edits/deletes rules. Auto-created expenses carry the payee as memo
 and can be undone from the inbox.
 
-Open inputs for C/D: bank app package name(s) and 3–5 sample notification texts.
+### C/D decisions (2026-10-02)
+
+- **Only SEB Latvia (`se.seb.latvia`) is a source.** Google Wallet (`com.google.android.apps.walletnfcrel`)
+  posts a duplicate for the same payment and is ignored, as are all other packages.
+- Sample card payment (title / text), card digits masked:
+  ```
+  Jauna rezervācija
+  Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .
+  ```
+  - Amount uses a decimal comma; currency is an ISO code; payee is the merchant name truncated by the bank.
+  - The date/time in the text is not local time (merchant/UTC); the notification post time is used instead.
+  - `karte...NNNN` gives the card's last 4 digits, mapped to an account in settings (default: the account used most).
+- **Foreign currency** (currency ≠ mapped account's currency): never auto-created, always goes to the inbox
+  as pending with the original amount shown; the user enters the account-currency amount.
+- Templates not yet sampled (EUR payment, outgoing/incoming transfer, refund) must not crash the parser:
+  an SEB notification that matches no template becomes a pending inbox item with the raw text.
+
+## E. UI in the style of 1Money
+
+Inspired by 1Money's layout and features; **no 1Money assets are copied** (proprietary).
+Icons come from Tabler Icons (MIT), attributed in the repo.
+
+- **E1 Theme and icons.** There is no theme system today (≈56 hardcoded colors in 11 files, white window).
+  Introduce `MoneyTheme` color tokens via CompositionLocal, dark by default, following the system,
+  with a light/dark/system preference. Avatars in dark mode: circle, dark tint of the category color as
+  background, saturated icon/letter in the category color. Add ≈150 Tabler line icons as
+  `*_itemicon` vector drawables so the existing picker shows them. Bottom bar emoji replaced by line icons.
+  A one-off SQL script assigns icons to the imported categories by title.
+- **E2 Categories with a ring.** 4 columns: one regular row, then two rows with two categories on each side
+  of a 2×2 donut ring (segments are category shares in their colors; center shows the expense and income
+  totals, tap toggles), then regular rows.
+- **E3 Overview tab.** Tabs become Accounts / Categories / Transactions / Overview; More moves to a profile
+  icon in the top-left. Overview: period balance (income − expense), Expenses/Income cards (select mode),
+  per-day bar chart stacked by the top categories (rest grey), day avg / week avg / month total,
+  top 3 categories with % plus "More…". Built on `getCategoryDailyAmountsFlow`, no chart library.
+- **E4 Motion and gestures** (the 1Money flow must be preserved):
+  - Horizontal swipe on screen content switches the period (previous/next month) on
+    Categories, Transactions and Overview, with a slide animation in the swipe direction;
+    tabs switch only by tapping the bottom bar. Vertical scrolling must not be hijacked.
+  - Numbers animate on change (totals, balances); ring segments and bars animate when the
+    period or mode changes.
+  - Smooth screen transitions: slide/fade for navigation, animated bottom sheets.
+  - Swipe a transaction row to reveal edit / delete (delete with undo).
+- **E5 Transfer sheet** (expense/income entry, reference: 1Money):
+  - Header split in two halves: "From account" in the account color and "To category" in the category
+    color, each with its icon badge; tapping a half changes the counterparty.
+  - Subcategories as a single-line, horizontally scrollable row of outlined chips (icon + title) in the
+    category color; tap selects/deselects. No wrapping to multiple lines.
+  - Amount label ("Expense"/"Income") and the amount in the category color, animated on input.
+  - Notes field, then a calculator keypad: ÷ × − + operators, digits, decimal point, currency key,
+    backspace, date (calendar) key, and a tall confirm button in the category color; the selected date
+    shown under the keypad.
+- Out of scope now: drag account → category quick expense, recurring/scheduled transfers, projected balance, search, header with total balance and period picker.
 
 ## Testing
 
