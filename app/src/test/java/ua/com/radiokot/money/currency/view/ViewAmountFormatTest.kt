@@ -323,4 +323,24 @@ class ViewAmountFormatTest {
                 .spanStyles.first().item.color,
         )
     }
+
+    @Test
+    fun privateTextHasNoCurrencyAndKeepsColorRule() {
+        val red = androidx.compose.ui.graphics.Color.Red
+        val blue = androidx.compose.ui.graphics.Color.Blue
+        val format = ViewAmountFormat(
+            locale = Locale.US,
+            positiveColor = androidx.compose.ui.graphics.Color.Green,
+            negativeColor = red,
+            zeroColor = androidx.compose.ui.graphics.Color.Gray,
+        )
+
+        val text = format.privateText("•••", BigInteger.valueOf(-5))
+        Assert.assertEquals("•••", text.text)
+        Assert.assertEquals(red, text.spanStyles.single().item.color)
+
+        val custom = format.privateText("12%", BigInteger.ONE, customColor = blue)
+        Assert.assertEquals("12%", custom.text)
+        Assert.assertEquals(blue, custom.spanStyles.single().item.color)
+    }
 }

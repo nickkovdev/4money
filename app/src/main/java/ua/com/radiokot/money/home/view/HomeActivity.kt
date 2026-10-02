@@ -96,6 +96,7 @@ import org.koin.compose.koinInject
 import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.MoneyAppModalBottomSheetHost
 import ua.com.radiokot.money.R
+import ua.com.radiokot.money.privacy.view.PrivacyModeButton
 import ua.com.radiokot.money.accounts.view.AccountActionSheetRoute
 import ua.com.radiokot.money.accounts.view.AccountsScreenRoute
 import ua.com.radiokot.money.accounts.view.ArchivedAccountsActivity
@@ -193,10 +194,13 @@ private fun HomeScreen(
 
         CompositionLocalProvider(
             LocalHomeProfileButton provides {
-                ProfileButton(
-                    hasNotice = hasNotice,
-                    onClick = onProfileClicked,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ProfileButton(
+                        hasNotice = hasNotice,
+                        onClick = onProfileClicked,
+                    )
+                    PrivacyModeButton()
+                }
             },
         ) {
         NavHost(
