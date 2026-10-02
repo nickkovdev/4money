@@ -28,13 +28,15 @@ import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.currentValueOf
 import androidx.compose.ui.node.invalidateDraw
 import kotlinx.coroutines.launch
+import ua.com.radiokot.money.uikit.theme.LocalMoneyColors
 
 /**
  * Animates scale decrease of a pressed element.
@@ -54,7 +56,8 @@ class ScaleIndication(
     inner class ScaleIndicationNode(
         private val interactionSource: InteractionSource,
     ) : Modifier.Node(),
-        DrawModifierNode {
+        DrawModifierNode,
+        CompositionLocalConsumerModifierNode {
 
         private val animatableScale = Animatable(1f)
         private var isPressed = false
@@ -131,7 +134,7 @@ class ScaleIndication(
             ) {
                 this@draw.drawContent()
                 if (isHovered || isFocused) {
-                    drawRect(color = Color.Black.copy(alpha = 0.1f))
+                    drawRect(color = currentValueOf(LocalMoneyColors).onBackground.copy(alpha = 0.1f))
                 }
             }
         }

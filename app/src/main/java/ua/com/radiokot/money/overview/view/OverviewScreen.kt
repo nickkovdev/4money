@@ -126,7 +126,7 @@ private fun OverviewScreen(
 
             OverviewScreenState.NoPrimaryCurrency ->
                 Text(
-                    text = "Set an existing primary currency in More to see the overview",
+                    text = "Set an existing primary currency in the profile menu to see the overview",
                     color = MoneyTheme.colors.onBackgroundSecondary,
                 )
 

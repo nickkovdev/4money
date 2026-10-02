@@ -47,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 private fun SetUpPasscodeScreen(
@@ -116,6 +118,7 @@ private fun SetUpPasscodeScreen(
                 painter = painterResource(R.drawable.pear_by_francesco_cesqo_stefanini_from_noun_project_cc_by_3_0),
                 contentScale = ContentScale.FillHeight,
                 contentDescription = null,
+                colorFilter = ColorFilter.tint(MoneyTheme.colors.onBackground),
                 modifier = Modifier
                     .size(108.dp)
             )
