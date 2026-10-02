@@ -21,6 +21,7 @@ package ua.com.radiokot.money.inbox
 
 import android.content.Context
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import ua.com.radiokot.money.auth.logic.sessionScope
@@ -37,6 +38,7 @@ import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
 import ua.com.radiokot.money.inbox.logic.DefaultCardAccountResolver
 import ua.com.radiokot.money.inbox.logic.ProcessBankNotificationUseCase
 import ua.com.radiokot.money.inbox.logic.SebLatviaNotificationParser
+import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
 import ua.com.radiokot.money.transfers.transfersModule
 
 val inboxModule = module {
@@ -101,5 +103,12 @@ val inboxModule = module {
                 payeeRuleRepository = get(),
             )
         } bind CompleteInboxItemUseCase::class
+
+        viewModel {
+            RulesScreenViewModel(
+                payeeRuleRepository = get(),
+                categoryRepository = get(),
+            )
+        } bind RulesScreenViewModel::class
     }
 }
