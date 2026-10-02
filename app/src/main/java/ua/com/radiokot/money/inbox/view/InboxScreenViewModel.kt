@@ -117,6 +117,10 @@ class InboxScreenViewModel(
                 ?: cardAccountResolver.resolve(
                     cardLast4 = inboxItem.cardLast4,
                     ruleAccountId = null,
+                    usableAccountIds = accountRepository
+                        .getAccounts()
+                        .filterNot(Account::isArchived)
+                        .mapTo(mutableSetOf(), Account::id),
                 )
 
             if (accountId == null) {
@@ -159,7 +163,13 @@ class InboxScreenViewModel(
                                 "\nitem=$inboxItem"
                     }
 
-                    _events.emit(Event.ShowUndoError(error.message))
+                    _events.emit(
+                        Event.ShowUndoError(
+                            technicalReason = error.message
+                                ?: error::class.simpleName
+                                ?: error.toString(),
+                        )
+                    )
                 }
         }
     }
@@ -243,7 +253,7 @@ class InboxScreenViewModel(
         object ProceedToRules : Event
 
         class ShowUndoError(
-            val technicalReason: String?,
+            val technicalReason: String,
         ) : Event
 
         object Close : Event

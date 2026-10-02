@@ -51,7 +51,8 @@ class ProcessBankNotificationUseCase(
     private val categoryRepository: CategoryRepository,
     private val cardAccountResolver: CardAccountResolver,
     private val transferFundsUseCase: TransferFundsUseCase,
-    private val timeZone: TimeZone = TimeZone.currentSystemDefault(),
+    // Resolved per call: the listener process may outlive a time zone change.
+    private val timeZone: () -> TimeZone = { TimeZone.currentSystemDefault() },
     private val newId: () -> String = { UUID.randomUUID().toString() },
 ) {
     private val mutex = Mutex()
@@ -94,7 +95,7 @@ class ProcessBankNotificationUseCase(
 
             val receivedAt = Instant
                 .fromEpochMilliseconds(notification.postTimeMillis)
-                .toLocalDateTime(timeZone)
+                .toLocalDateTime(timeZone())
 
             val accountsById = accountRepository
                 .getAccounts()
@@ -112,6 +113,7 @@ class ProcessBankNotificationUseCase(
                 .resolve(
                     cardLast4 = payment?.cardLast4,
                     ruleAccountId = rule?.accountId,
+                    usableAccountIds = accountsById.keys,
                 )
                 ?.let(accountsById::get)
 

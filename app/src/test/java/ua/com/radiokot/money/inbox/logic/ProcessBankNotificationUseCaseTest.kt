@@ -62,11 +62,15 @@ class ProcessBankNotificationUseCaseTest {
         accountRepository = FakeAccountRepository(listOf(testAccount("acc-main"))),
         categoryRepository = FakeCategoryRepository(categories),
         cardAccountResolver = object : CardAccountResolver {
-            override suspend fun resolve(cardLast4: String?, ruleAccountId: String?) =
+            override suspend fun resolve(
+                cardLast4: String?,
+                ruleAccountId: String?,
+                usableAccountIds: Set<String>,
+            ) =
                 ruleAccountId ?: "acc-main"
         },
         transferFundsUseCase = transfers,
-        timeZone = TimeZone.UTC,
+        timeZone = { TimeZone.UTC },
         newId = { "id-${nextId++}" },
     )
 
