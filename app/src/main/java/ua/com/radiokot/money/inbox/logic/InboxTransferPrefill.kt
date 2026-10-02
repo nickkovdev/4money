@@ -80,6 +80,7 @@ object InboxTransferPrefill {
             rememberPayee = item.payee
                 ?.let(PayeeNormalizer::normalize)
                 ?.takeIf(String::isNotEmpty),
+            rememberPayeeDisplayName = payee,
         )
     }
 }
