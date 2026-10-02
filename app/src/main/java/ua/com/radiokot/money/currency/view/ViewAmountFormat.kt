@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.em
 import java.math.BigInteger
 import java.text.DecimalFormatSymbols
@@ -100,6 +101,28 @@ class ViewAmountFormat(
 
         append(' ')
         append(currency.symbol)
+    }
+
+    /**
+     * A replacement text of the amount (mask, share) colored as the amount itself,
+     * without the currency symbol.
+     */
+    fun privateText(
+        text: String,
+        value: BigInteger,
+        customColor: Color? = null,
+    ): AnnotatedString = buildAnnotatedString {
+        withStyle(
+            SpanStyle(
+                color = customColor ?: when (value.signum()) {
+                    1 -> positiveColor
+                    -1 -> negativeColor
+                    else -> zeroColor
+                }
+            )
+        ) {
+            append(text)
+        }
     }
 
     fun formatInput(
