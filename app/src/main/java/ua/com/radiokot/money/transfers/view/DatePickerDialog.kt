@@ -233,13 +233,13 @@ fun DatePickerDialog(
                 .padding(top = 14.dp)
         ) {
             MoneyButton(
-                text = "Cancel",
+                text = stringResource(R.string.common_cancel),
                 onClick = onDismissRequest,
                 modifier = Modifier
                     .weight(1f)
             )
             MoneyButton(
-                text = "Done",
+                text = stringResource(R.string.common_done),
                 style = MoneyButtonStyle.Filled,
                 onClick = { onDatePicked(selected.toKotlinLocalDate()) },
                 modifier = Modifier

@@ -21,6 +21,7 @@ package ua.com.radiokot.money.transfers.view
 
 import org.junit.Assert
 import org.junit.Test
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.currency.view.ViewCurrency
 
@@ -47,16 +48,16 @@ class TransferSheetLabelsTest {
         Assert.assertEquals(TransferKind.Expense, transferKindOf(source = account, destination = category))
         Assert.assertEquals(TransferKind.Income, transferKindOf(source = category, destination = account))
         Assert.assertEquals(TransferKind.Transfer, transferKindOf(source = account, destination = account))
-        Assert.assertEquals("Expense", TransferKind.Expense.label)
-        Assert.assertEquals("Income", TransferKind.Income.label)
-        Assert.assertEquals("Transfer", TransferKind.Transfer.label)
+        Assert.assertEquals(R.string.transfers_kind_expense, TransferKind.Expense.labelRes)
+        Assert.assertEquals(R.string.transfers_kind_income, TransferKind.Income.labelRes)
+        Assert.assertEquals(R.string.transfers_kind_transfer, TransferKind.Transfer.labelRes)
     }
 
     @Test
     fun halfLabels() {
-        Assert.assertEquals("From account", counterpartyHalfLabel(isSource = true, counterparty = account))
-        Assert.assertEquals("To category", counterpartyHalfLabel(isSource = false, counterparty = category))
-        Assert.assertEquals("From category", counterpartyHalfLabel(isSource = true, counterparty = category))
-        Assert.assertEquals("To account", counterpartyHalfLabel(isSource = false, counterparty = account))
+        Assert.assertEquals(R.string.transfers_from_account, counterpartyHalfLabelRes(isSource = true, counterparty = account))
+        Assert.assertEquals(R.string.transfers_to_category, counterpartyHalfLabelRes(isSource = false, counterparty = category))
+        Assert.assertEquals(R.string.transfers_from_category, counterpartyHalfLabelRes(isSource = true, counterparty = category))
+        Assert.assertEquals(R.string.transfers_to_account, counterpartyHalfLabelRes(isSource = false, counterparty = account))
     }
 }

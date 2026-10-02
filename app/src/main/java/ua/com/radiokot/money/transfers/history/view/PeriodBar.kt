@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.transfers.history.view
 
+import androidx.compose.ui.res.stringResource
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,7 +68,7 @@ fun PeriodBar(
 ) {
     MoneyIconButton(
         icon = R.drawable.ic_tabler_chevron_left,
-        contentDescription = "Previous period",
+        contentDescription = stringResource(R.string.history_previous_period),
         isEnabled = isPreviousButtonEnabled.value,
         onClick = onPreviousPeriodClicked,
     )
@@ -86,7 +87,7 @@ fun PeriodBar(
 
     MoneyIconButton(
         icon = R.drawable.ic_tabler_chevron_right,
-        contentDescription = "Next period",
+        contentDescription = stringResource(R.string.history_next_period),
         isEnabled = isNextButtonEnabled.value,
         onClick = onNextPeriodClicked,
     )

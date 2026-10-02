@@ -119,8 +119,8 @@ fun TransferList(
                 ) {
                     EmptyState(
                         icon = R.drawable.ic_tabler_receipt,
-                        title = "No transactions",
-                        text = "Nothing recorded in this period yet",
+                        title = stringResource(R.string.transfers_empty_title),
+                        text = stringResource(R.string.transfers_empty_text),
                     )
                 }
             }
@@ -174,7 +174,7 @@ fun TransferList(
                         actions = { close ->
                             RevealAction(
                                 icon = R.drawable.ic_tabler_pencil,
-                                contentDescription = "Edit",
+                                contentDescription = stringResource(R.string.common_edit),
                                 tint = MoneyTheme.colors.onBackground,
                                 background = MoneyTheme.colors.surfaceVariant,
                                 onClick = {
@@ -184,7 +184,7 @@ fun TransferList(
                             )
                             RevealAction(
                                 icon = R.drawable.ic_tabler_trash,
-                                contentDescription = "Delete",
+                                contentDescription = stringResource(R.string.common_delete),
                                 tint = MoneyTheme.colors.onWarning,
                                 background = MoneyTheme.colors.expense,
                                 onClick = {
