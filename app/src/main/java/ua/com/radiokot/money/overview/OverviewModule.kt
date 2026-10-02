@@ -19,11 +19,13 @@
 
 package ua.com.radiokot.money.overview
 
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import ua.com.radiokot.money.auth.logic.sessionScope
 import ua.com.radiokot.money.categories.categoriesModule
 import ua.com.radiokot.money.overview.logic.GetOverviewStatsUseCase
+import ua.com.radiokot.money.overview.view.OverviewScreenViewModel
 
 val overviewModule = module {
     includes(
@@ -40,5 +42,15 @@ val overviewModule = module {
                 historyStatsRepository = get(),
             )
         } bind GetOverviewStatsUseCase::class
+
+        viewModel { parameters ->
+            OverviewScreenViewModel(
+                historyStatsPeriodViewModel = checkNotNull(parameters.getOrNull()) {
+                    "HistoryStatsPeriodViewModel must be provided through the parameters " +
+                            "to share the same instance"
+                },
+                getOverviewStatsUseCase = get(),
+            )
+        } bind OverviewScreenViewModel::class
     }
 }
