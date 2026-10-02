@@ -19,10 +19,13 @@
 
 package ua.com.radiokot.money.preferences.view
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import ua.com.radiokot.money.uikit.MoneyDialog
 import android.app.Activity
 import android.content.ActivityNotFoundException
-import androidx.activity.compose.LocalActivity
-import androidx.appcompat.app.AlertDialog
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -45,6 +48,7 @@ const val PreferencesScreenRoute = "preferences"
 private val log = KotlinLogging.logger("PreferencesScreen")
 
 fun NavGraphBuilder.preferencesScreen(
+    onBack: () -> Unit,
     onProceedToPasscodeSetup: () -> Unit,
     onSignedOut: () -> Unit,
     onProceedToInbox: () -> Unit,
@@ -58,7 +62,7 @@ fun NavGraphBuilder.preferencesScreen(
     },
 ) {
 
-    val activity: Activity? = LocalActivity.current
+    var isSignOutConfirmationShown by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val viewModel = koinViewModel<PreferencesScreenViewModel>()
 
@@ -94,18 +98,7 @@ fun NavGraphBuilder.preferencesScreen(
                     onProceedToInbox()
 
                 PreferencesScreenViewModel.Event.ProceedToSignOutConfirmation -> {
-                    checkNotNull(activity) {
-                        "The screen must have an activity to proceed"
-                    }
-
-                    AlertDialog.Builder(activity)
-                        .setTitle("Sign out")
-                        .setMessage("Are you sure you want to sign out?")
-                        .setPositiveButton("Yes") { _, _ ->
-                            viewModel.onSignOutConfirmed()
-                        }
-                        .setNegativeButton("No", null)
-                        .show()
+                    isSignOutConfirmationShown = true
                 }
             }
         }
@@ -113,8 +106,24 @@ fun NavGraphBuilder.preferencesScreen(
 
     PreferencesScreen(
         viewModel = viewModel,
+        onBack = onBack,
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     )
+
+    if (isSignOutConfirmationShown) {
+        MoneyDialog(
+            title = "Sign out?",
+            text = "You will need to authenticate again to see your data on this device.",
+            confirmText = "Sign out",
+            isDestructive = true,
+            onConfirm = {
+                isSignOutConfirmationShown = false
+                viewModel.onSignOutConfirmed()
+            },
+            onDismissRequest = {
+                isSignOutConfirmationShown = false
+            },
+        )
+    }
 }

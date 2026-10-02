@@ -306,6 +306,7 @@ private fun HomeScreen(
             )
 
             preferencesScreen(
+                onBack = navController::navigateUp,
                 onProceedToPasscodeSetup = {
                     context.startActivity(
                         Intent(context, SetUpPasscodeActivity::class.java)
