@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+﻿/* Copyright 2025 Oleg Koretsky
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -40,8 +40,8 @@ class SebLatviaNotificationParser : BankNotificationParser {
 
     override fun parse(title: String?, text: String): ParsedBankNotification {
         val normalizedText = Normalizer.normalize(text, Normalizer.Form.NFC)
-            .replace(' ', ' ')
-            .replace(' ', ' ')
+            .replace('\u00A0', ' ')
+            .replace('\u202F', ' ')
             .trim()
 
         val match = CARD_PAYMENT_REGEX.matchEntire(normalizedText)
@@ -74,7 +74,7 @@ class SebLatviaNotificationParser : BankNotificationParser {
         // 2: ISO currency, 3: card last 4, 4: payee (lazy, without the trailing " .").
         private val CARD_PAYMENT_REGEX = Regex(
             "^Jūs samaksājāt\\s+(\\d{1,3}(?: \\d{3})+(?:,\\d+)?|\\d+(?:,\\d+)?)\\s+([A-Za-z]{3})" +
-                    "\\s+par\\s+\\S+\\s+\\S+\\s+karte\\s*(?:\\.{2,}|…)\\s*(\\d{4})\\s+(.+?)\\s*\\.?$",
+                    "\\s+par\\s+\\S+\\s+\\S+\\s+karte\\s*(?:\\.{2,}|\u2026)\\s*(\\d{4})\\s+(.+?)\\s*\\.?$",
             RegexOption.IGNORE_CASE,
         )
     }
