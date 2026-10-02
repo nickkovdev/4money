@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.transfers.history.view
 
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -210,6 +212,7 @@ Column(
         && (totalIncomeAndExpense.income.signum() > 0 || totalIncomeAndExpense.expense.signum() > 0)
     ) {
         val amountFormat = rememberViewAmountFormat()
+        val isPrivate = LocalPrivacyMode.current
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -243,11 +246,19 @@ Column(
                         color = MoneyTheme.colors.ink3,
                     )
                     Text(
-                        text = amountFormat(
-                            value = value,
-                            currency = totalIncomeAndExpense.currency,
-                            customColor = color,
-                        ),
+                        text =
+                            if (isPrivate)
+                                amountFormat.privateText(
+                                    text = PrivacyAmounts.MASK,
+                                    value = value,
+                                    customColor = color,
+                                )
+                            else
+                                amountFormat(
+                                    value = value,
+                                    currency = totalIncomeAndExpense.currency,
+                                    customColor = color,
+                                ),
                         style = MoneyTheme.typography.bodyStrong,
                         maxLines = 1,
                     )

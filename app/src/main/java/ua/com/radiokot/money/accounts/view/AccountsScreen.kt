@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import ua.com.radiokot.money.currency.view.formatOrPrivate
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -301,12 +302,12 @@ private fun TotalPage(
                     title = amount.currency.symbol,
                     subtitle =
                         if (amountInPrimaryCurrency != null)
-                            "≈ " + amountFormat(amountInPrimaryCurrency).text
+                            "≈ " + amountFormat.formatOrPrivate(amountInPrimaryCurrency).text
                         else
                             null,
                     trailing = {
                         Text(
-                            text = amountFormat(
+                            text = amountFormat.formatOrPrivate(
                                 amount = amount,
                                 customColor = balanceColor(amount.value),
                             ),
