@@ -275,4 +275,60 @@
     <string name="ask_channel_description">Bank payments the app asks you to categorize</string>
     <string name="ask_text_ask_range">This amount here can be one of several. Which one?</string>
     <string name="ask_text_new_payee">A new payee. Which category?</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_sync_error">There is a data upload error. Some of the changes you made have been reverted. The app will be fixed soon, then the reverted changes will be applied.</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme_paper" translatable="false">Paper</string>
+    <string name="settings_theme_midnight" translatable="false">Midnight</string>
+    <string name="settings_theme_ember" translatable="false">Ember</string>
+    <string name="settings_theme_aurora" translatable="false">Aurora</string>
+    <string name="settings_theme_system_subtitle">Paper by day, Midnight at night</string>
+    <string name="settings_theme_paper_subtitle">Light, warm paper</string>
+    <string name="settings_theme_midnight_subtitle">Dark, cool blue</string>
+    <string name="settings_theme_ember_subtitle">Dark, warm amber</string>
+    <string name="settings_theme_aurora_subtitle">Dark, deep teal</string>
+    <string name="settings_bank_notifications">Bank notifications</string>
+    <string name="settings_notification_access">Notification access</string>
+    <string name="settings_notification_access_granted">SEB payments are recorded from notifications</string>
+    <string name="settings_notification_access_hint">Allow it so SEB payments become expenses automatically</string>
+    <string name="settings_granted">Granted</string>
+    <string name="settings_allow">Allow</string>
+    <plurals name="settings_inbox_to_categorize">
+        <item quantity="one">%d to categorize</item>
+        <item quantity="other">%d to categorize</item>
+    </plurals>
+    <string name="settings_inbox_subtitle">Bank payments and rules</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_currency_placeholder">Primary currency code</string>
+    <string name="settings_currency_primary">Primary</string>
+    <string name="settings_currency_save">Save currency</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_passcode_lock">Passcode lock</string>
+    <string name="settings_passcode_lock_subtitle">Ask for a passcode when opening the app</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_user_id">User ID</string>
+    <string name="settings_copy">Copy</string>
+    <string name="settings_sign_out">Sign out</string>
+    <string name="settings_sign_out_title">Sign out?</string>
+    <string name="settings_sign_out_text">You will need to authenticate again to see your data on this device.</string>
+
+    <!-- Auth -->
+    <string name="auth_just_authenticate">Just authenticate</string>
+    <string name="auth_use_phrase">Use recovery phrase</string>
+    <string name="auth_recovery_phrase">Recovery phrase</string>
+    <string name="auth_sign_in">Sign in</string>
+    <string name="auth_sign_in_failed">Sign in failed: %1$s</string>
+
+    <!-- Lock -->
+    <string name="lock_biometrics">Biometrics</string>
+    <string name="lock_erase">Erase</string>
+    <string name="lock_repeat_passcode">Repeat the passcode</string>
+    <string name="lock_enter_new_passcode">Enter a passcode</string>
+    <string name="lock_mismatch">Passcodes don\'t match, try again</string>
+    <string name="lock_unlock_title">Unlock 4Money</string>
+    <string name="lock_use_passcode">Use passcode</string>
+    <string name="lock_enter_passcode">Enter the passcode</string>
+    <string name="lock_incorrect">Incorrect passcode</string>
 </resources>
