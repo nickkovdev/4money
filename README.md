@@ -88,3 +88,7 @@ Although PowerSync works fine with this amount of data, it quickly drains sync o
 Instead, these prices are kept in a separate database and updated via RPC:
 - `LocalCurrencyPriceRepository`
 - `DailyPrices.sq`
+
+## Third-party assets
+
+Line icons are [Tabler Icons](https://github.com/tabler/tabler-icons) (MIT), see `tools/icons/README.md`.
