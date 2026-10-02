@@ -19,6 +19,16 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.uikit.EmptyState
+import ua.com.radiokot.money.uikit.GroupPosition
+import ua.com.radiokot.money.uikit.IconTile
+import ua.com.radiokot.money.uikit.ListRow
+import ua.com.radiokot.money.uikit.MoneyIconButton
+import ua.com.radiokot.money.uikit.RowChevron
+import ua.com.radiokot.money.uikit.listGroupItem
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,7 +55,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
-import ua.com.radiokot.money.uikit.TextButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -59,77 +68,81 @@ private fun RulesScreen(
             WindowInsets.navigationBars
                 .add(WindowInsets.statusBars)
         )
-        .padding(
-            horizontal = 16.dp,
-        )
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(
-                min = 56.dp,
+            .padding(
+                horizontal = MoneySpacing.screen,
+                vertical = 12.dp,
             )
     ) {
-        TextButton(
-            text = "❌",
-            padding = remember { PaddingValues(6.dp) },
-            modifier = Modifier
-                .clickable(
-                    onClick = onCloseClicked,
-                )
+        MoneyIconButton(
+            icon = R.drawable.ic_tabler_arrow_left,
+            contentDescription = "Back",
+            onClick = onCloseClicked,
         )
 
         Text(
             text = "Payee rules",
-            fontSize = 16.sp,
+            style = MoneyTheme.typography.headline,
             modifier = Modifier
                 .weight(1f)
-                .padding(
-                    horizontal = 16.dp,
-                )
         )
     }
 
     if (ruleItemList.value.isEmpty()) {
-        Text(
-            text = "No rules yet. Categorize a payment in the inbox " +
-                    "with \"Remember\" on to create one.",
-            color = MoneyTheme.colors.onBackgroundSecondary,
-            modifier = Modifier
-                .padding(vertical = 16.dp)
+        EmptyState(
+            icon = R.drawable.ic_tabler_adjustments_horizontal,
+            title = "No rules yet",
+            text = "Categorize a payment from the inbox with Remember on to create one.",
         )
     }
 
+    val items = ruleItemList.value
+
     LazyColumn(
+        contentPadding = PaddingValues(
+            start = MoneySpacing.screen,
+            end = MoneySpacing.screen,
+            bottom = 24.dp,
+        ),
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        items(
-            items = ruleItemList.value,
-            key = ViewPayeeRuleItem::key,
-        ) { item ->
-            Column(
+        itemsIndexed(
+            items = items,
+            key = { _, item -> item.key },
+        ) { index, item ->
+            ListRow(
+                title = item.displayPattern,
+                subtitle = buildString {
+                    append(
+                        if (item.matchTypeText == "contains")
+                            "Contains · "
+                        else
+                            "Exact · "
+                    )
+                    append(item.categoryTitle)
+                    if (item.hits > 0) {
+                        append(" · used ")
+                        append(item.hits)
+                        append("×")
+                    }
+                },
+                leading = {
+                    IconTile(icon = R.drawable.ic_tabler_receipt)
+                },
+                trailing = { RowChevron() },
+                onClick = { onRuleClicked(item) },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(
-                        onClick = { onRuleClicked(item) },
-                    )
-                    .padding(
-                        vertical = 10.dp,
-                    )
-            ) {
-                Text(
-                    text = "Payee ${item.matchTypeText} “${item.pattern}”",
-                    fontSize = 16.sp,
-                )
-                Text(
-                    text = "→ ${item.categoryTitle} · used ${item.hits}×",
-                    fontSize = 12.sp,
-                    color = MoneyTheme.colors.onBackgroundSecondary,
-                )
-            }
+                    .listGroupItem(
+                        position = GroupPosition.of(index, items.size) { true },
+                        dividerStartInset = 16.dp + 36.dp + 14.dp,
+                    ),
+            )
         }
     }
 }

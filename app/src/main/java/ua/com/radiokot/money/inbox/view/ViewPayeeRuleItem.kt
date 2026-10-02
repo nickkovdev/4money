@@ -31,6 +31,14 @@ class ViewPayeeRuleItem(
     val key: String,
     val source: PayeeRule? = null,
 ) {
+    /**
+     * Patterns are stored normalized (lower case), shown with capitalized words.
+     */
+    val displayPattern: String =
+        pattern
+            .split(' ')
+            .joinToString(" ") { word -> word.replaceFirstChar(Char::titlecase) }
+
     constructor(
         rule: PayeeRule,
         categoryTitle: String,
