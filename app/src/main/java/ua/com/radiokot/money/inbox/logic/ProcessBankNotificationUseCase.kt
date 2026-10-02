@@ -107,8 +107,9 @@ class ProcessBankNotificationUseCase(
                 ?.let(PayeeNormalizer::normalize)
                 ?.let { normalizedPayee ->
                     PayeeRuleMatcher.match(
-                        normalizedPayee,
-                        getRulesOfDirection(isIncome = payment.isIncoming),
+                        normalizedPayee = normalizedPayee,
+                        rules = getRulesOfDirection(isIncome = payment.isIncoming),
+                        amount = payment.amount,
                     )
                 }
 
@@ -224,13 +225,14 @@ class ProcessBankNotificationUseCase(
         payeeRuleRepository
             .getRules()
             .filter { rule ->
-                val category = categoryRepository.getCategory(rule.categoryId)
+                // Ask rules have no category, they apply to both directions.
+                val category = rule.categoryId?.let { categoryRepository.getCategory(it) }
                 category == null || category.isIncome == isIncome
             }
 
     private suspend fun getCategoryRef(rule: PayeeRule): AutoExpenseResolver.CategoryRef? {
         val category = categoryRepository
-            .getCategory(rule.categoryId)
+            .getCategory(rule.categoryId ?: return null)
             ?.takeUnless { it.isArchived }
             ?: return null
 

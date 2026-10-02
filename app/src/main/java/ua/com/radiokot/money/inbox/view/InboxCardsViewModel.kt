@@ -193,7 +193,7 @@ class InboxCardsViewModel(
             ?.let(PayeeNormalizer::normalize)
             .orEmpty()
         val rulesOfDirection = lookup.rules.filter { rule ->
-            val category = lookup.categoriesById[rule.categoryId]
+            val category = rule.categoryId?.let(lookup.categoriesById::get)
             category == null || category.isIncome == isIncoming
         }
         val historyOfDirection = lookup.history.mapNotNull { transfer ->
@@ -220,6 +220,7 @@ class InboxCardsViewModel(
             normalizedPayee = normalizedPayee,
             rules = rulesOfDirection,
             history = historyOfDirection,
+            amount = item.amount,
             isUsable = { key ->
                 val category = lookup.categoriesById[key.categoryId]
                 category != null
@@ -267,7 +268,9 @@ class InboxCardsViewModel(
             reasonText = suggestion?.let { category ->
                 when (val reason = result.suggestion.reason) {
                     is InboxCardSuggester.Reason.Rule ->
-                        if (reason.rule.matchType == PayeeRule.MatchType.Exact)
+                        if (reason.rule.amountRange != null)
+                            "${describeRange(reason.rule.amountRange, item.currencyCode)} at $payeeDisplayName → ${category.fullTitle}"
+                        else if (reason.rule.matchType == PayeeRule.MatchType.Exact)
                             "Remembered payee → ${category.fullTitle}"
                         else
                             "Payee contains “${reason.rule.payeePattern}” → ${category.fullTitle}"
@@ -465,8 +468,9 @@ class InboxCardsViewModel(
             ?.let(PayeeNormalizer::normalize)
             ?: return
         val rule = ua.com.radiokot.money.inbox.logic.PayeeRuleMatcher.match(
-            normalizedPayee,
-            payeeRuleRepository.getRules(),
+            normalizedPayee = normalizedPayee,
+            rules = payeeRuleRepository.getRules(),
+            amount = item.amount,
         ) ?: return
         if (rule.categoryId == categoryKey.categoryId) {
             payeeRuleRepository.recordHit(rule.id, item.receivedAt)

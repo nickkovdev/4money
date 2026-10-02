@@ -53,6 +53,11 @@ object AutoExpenseResolver {
         CategoryDirectionMismatch,
         CategoryCurrencyMismatch,
         UnsupportedPrecision,
+
+        /**
+         * The matched rule asks the user (e.g. an amount range that can be either).
+         */
+        AskRequested,
     }
 
     sealed interface Resolution {
@@ -94,6 +99,9 @@ object AutoExpenseResolver {
         }
         if (rule == null) {
             return Resolution.Pending(PendingReason.NoRule)
+        }
+        if (rule.action == PayeeRule.Action.Ask) {
+            return Resolution.Pending(PendingReason.AskRequested)
         }
         if (account == null) {
             return Resolution.Pending(PendingReason.NoAccount)

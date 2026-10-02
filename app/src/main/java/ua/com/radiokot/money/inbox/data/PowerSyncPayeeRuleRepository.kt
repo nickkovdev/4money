@@ -81,6 +81,8 @@ class PowerSyncPayeeRuleRepository(
             val existingRuleId: String? = transaction.getOptional(
                 sql = "SELECT ${DbSchema.ID} FROM ${DbSchema.PAYEE_RULES_TABLE} " +
                         "WHERE ${DbSchema.PAYEE_RULE_PATTERN} = ? AND ${DbSchema.PAYEE_RULE_MATCH_TYPE} = ? " +
+                        "AND ${DbSchema.PAYEE_RULE_MIN_AMOUNT} IS NULL " +
+                        "AND ${DbSchema.PAYEE_RULE_MAX_AMOUNT} IS NULL " +
                         "LIMIT 1",
                 parameters = listOf(payeePattern, matchType.slug),
                 mapper = { cursor -> cursor.getString(0)!! },
@@ -133,6 +135,83 @@ class PowerSyncPayeeRuleRepository(
         )
     }
 
+    override suspend fun saveRangeRule(
+        ruleId: String?,
+        payeePattern: String,
+        matchType: PayeeRule.MatchType,
+        amountRange: AmountRange,
+        action: PayeeRule.Action,
+        categoryId: String?,
+        subcategoryId: String?,
+    ) {
+        require(action == PayeeRule.Action.Ask || categoryId != null) {
+            "A recording rule needs a category"
+        }
+        val targetCategoryId = categoryId.takeIf { action == PayeeRule.Action.Record }
+        val targetSubcategoryId = subcategoryId.takeIf { targetCategoryId != null }
+
+        log.debug {
+            "saveRangeRule(): saving:" +
+                    "\nruleId=$ruleId," +
+                    "\npayeePattern=$payeePattern," +
+                    "\namountRange=$amountRange," +
+                    "\naction=$action," +
+                    "\ncategoryId=$targetCategoryId"
+        }
+
+        if (ruleId != null) {
+            database.execute(
+                sql = "UPDATE ${DbSchema.PAYEE_RULES_TABLE} SET " +
+                        "${DbSchema.PAYEE_RULE_PATTERN} = ?, " +
+                        "${DbSchema.PAYEE_RULE_MATCH_TYPE} = ?, " +
+                        "${DbSchema.PAYEE_RULE_MIN_AMOUNT} = ?, " +
+                        "${DbSchema.PAYEE_RULE_MAX_AMOUNT} = ?, " +
+                        "${DbSchema.PAYEE_RULE_RANGE_BOUNDS} = ?, " +
+                        "${DbSchema.PAYEE_RULE_ACTION} = ?, " +
+                        "${DbSchema.PAYEE_RULE_CATEGORY_ID} = ?, " +
+                        "${DbSchema.PAYEE_RULE_SUBCATEGORY_ID} = ? " +
+                        "WHERE ${DbSchema.ID} = ?",
+                parameters = listOf(
+                    payeePattern,
+                    matchType.slug,
+                    amountRange.min?.toPlainString(),
+                    amountRange.max?.toPlainString(),
+                    amountRange.boundsSlug,
+                    action.slug,
+                    targetCategoryId,
+                    targetSubcategoryId,
+                    ruleId,
+                ),
+            )
+        } else {
+            database.execute(
+                sql = "INSERT INTO ${DbSchema.PAYEE_RULES_TABLE} (" +
+                        "${DbSchema.ID}, " +
+                        "${DbSchema.PAYEE_RULE_PATTERN}, " +
+                        "${DbSchema.PAYEE_RULE_MATCH_TYPE}, " +
+                        "${DbSchema.PAYEE_RULE_MIN_AMOUNT}, " +
+                        "${DbSchema.PAYEE_RULE_MAX_AMOUNT}, " +
+                        "${DbSchema.PAYEE_RULE_RANGE_BOUNDS}, " +
+                        "${DbSchema.PAYEE_RULE_ACTION}, " +
+                        "${DbSchema.PAYEE_RULE_CATEGORY_ID}, " +
+                        "${DbSchema.PAYEE_RULE_SUBCATEGORY_ID}, " +
+                        "${DbSchema.PAYEE_RULE_HITS}" +
+                        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)",
+                parameters = listOf(
+                    UUID.randomUUID().toString(),
+                    payeePattern,
+                    matchType.slug,
+                    amountRange.min?.toPlainString(),
+                    amountRange.max?.toPlainString(),
+                    amountRange.boundsSlug,
+                    action.slug,
+                    targetCategoryId,
+                    targetSubcategoryId,
+                ),
+            )
+        }
+    }
+
     override suspend fun deleteRule(ruleId: String) {
         database.execute(
             sql = "DELETE FROM ${DbSchema.PAYEE_RULES_TABLE} WHERE ${DbSchema.ID} = ?",
@@ -158,11 +237,17 @@ class PowerSyncPayeeRuleRepository(
             id = getString(DbSchema.ID),
             payeePattern = getString(DbSchema.PAYEE_RULE_PATTERN),
             matchType = PayeeRule.MatchType.fromSlug(getString(DbSchema.PAYEE_RULE_MATCH_TYPE).trim()),
-            categoryId = getString(DbSchema.PAYEE_RULE_CATEGORY_ID).trim(),
+            categoryId = getStringOptional(DbSchema.PAYEE_RULE_CATEGORY_ID)?.trim()?.takeIf(String::isNotEmpty),
             subcategoryId = getStringOptional(DbSchema.PAYEE_RULE_SUBCATEGORY_ID)?.trim(),
             accountId = getStringOptional(DbSchema.PAYEE_RULE_ACCOUNT_ID)?.trim(),
             hits = getLongOptional(DbSchema.PAYEE_RULE_HITS) ?: 0L,
             lastUsedAt = getStringOptional(LAST_USED_AT_SELECTED)?.let { LocalDateTime.fromDbString(it) },
+            amountRange = AmountRange.fromColumns(
+                min = getStringOptional(DbSchema.PAYEE_RULE_MIN_AMOUNT)?.trim()?.toBigDecimalOrNull(),
+                max = getStringOptional(DbSchema.PAYEE_RULE_MAX_AMOUNT)?.trim()?.toBigDecimalOrNull(),
+                boundsSlug = getStringOptional(DbSchema.PAYEE_RULE_RANGE_BOUNDS)?.trim(),
+            ),
+            action = PayeeRule.Action.fromSlug(getStringOptional(DbSchema.PAYEE_RULE_ACTION)?.trim()),
         )
     }
 }
@@ -177,5 +262,9 @@ private const val SELECT_RULES =
             "${DbSchema.PAYEE_RULE_SUBCATEGORY_ID}, " +
             "${DbSchema.PAYEE_RULE_ACCOUNT_ID}, " +
             "${DbSchema.PAYEE_RULE_HITS}, " +
+            "${DbSchema.PAYEE_RULE_MIN_AMOUNT}, " +
+            "${DbSchema.PAYEE_RULE_MAX_AMOUNT}, " +
+            "${DbSchema.PAYEE_RULE_RANGE_BOUNDS}, " +
+            "${DbSchema.PAYEE_RULE_ACTION}, " +
             "datetime(${DbSchema.PAYEE_RULE_LAST_USED_AT}) AS $LAST_USED_AT_SELECTED " +
             "FROM ${DbSchema.PAYEE_RULES_TABLE}"

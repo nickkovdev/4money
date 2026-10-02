@@ -384,6 +384,16 @@ object DbSchema {
     const val PAYEE_RULE_HITS = "hits"
     const val PAYEE_RULE_LAST_USED_AT = "last_used_at"
 
+    /** Decimal text, major units, null for unbounded. Needs the 2026100400000 migration. */
+    const val PAYEE_RULE_MIN_AMOUNT = "min_amount"
+    const val PAYEE_RULE_MAX_AMOUNT = "max_amount"
+
+    /** "[)", "[]", "(]" or "()". */
+    const val PAYEE_RULE_RANGE_BOUNDS = "range_bounds"
+
+    /** "record" or "ask". */
+    const val PAYEE_RULE_ACTION = "action"
+
     private fun getPowerSyncPayeeRulesTable() = Table(
         name = PAYEE_RULES_TABLE,
         columns = listOf(
@@ -394,6 +404,10 @@ object DbSchema {
             Column.text(PAYEE_RULE_ACCOUNT_ID),
             Column.integer(PAYEE_RULE_HITS),
             Column.text(PAYEE_RULE_LAST_USED_AT),
+            Column.text(PAYEE_RULE_MIN_AMOUNT),
+            Column.text(PAYEE_RULE_MAX_AMOUNT),
+            Column.text(PAYEE_RULE_RANGE_BOUNDS),
+            Column.text(PAYEE_RULE_ACTION),
         ),
         ignoreEmptyUpdates = true,
     )
