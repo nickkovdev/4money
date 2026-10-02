@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import ua.com.radiokot.money.currency.view.formatOrPrivate
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -667,7 +668,7 @@ private fun CardContent(
     if (amount != null) {
         val amountFormat = rememberViewAmountFormat()
         Text(
-            text = amountFormat(
+            text = amountFormat.formatOrPrivate(
                 amount = amount,
                 customColor =
                     if (card.isIncoming)

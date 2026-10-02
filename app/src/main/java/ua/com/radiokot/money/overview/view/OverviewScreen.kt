@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.overview.view
 
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Box
@@ -240,10 +241,11 @@ private fun OverviewContent(
                 }
             }
         }
-        val labels = remember(overview) {
+        val isPrivate = LocalPrivacyMode.current
+        val labels = remember(overview, isPrivate) {
             overview.bars.map { bar ->
                 bar.dayOfMonth
-                    .takeIf { it == 1 || it % 5 == 0 || overview.bars.size <= 7 }
+                    .takeIf { !isPrivate && (it == 1 || it % 5 == 0 || overview.bars.size <= 7) }
                     ?.toString()
             }
         }
@@ -294,6 +296,8 @@ private fun OverviewContent(
     }
 
     if (overview.topCategories.isNotEmpty()) {
+        val isPrivate = LocalPrivacyMode.current
+
         SectionHeader(
             title = "Top categories",
             modifier = Modifier
@@ -317,13 +321,17 @@ private fun OverviewContent(
                             modifier = Modifier.size(36.dp),
                         )
                     },
-                    trailing = {
-                        AnimatedAmountText(
-                            amount = category.amount,
-                            customColor = colors.ink,
-                            style = MoneyTheme.typography.bodyStrong,
-                        )
-                    },
+                    trailing =
+                        if (isPrivate)
+                            null
+                        else
+                            ({
+                                AnimatedAmountText(
+                                    amount = category.amount,
+                                    customColor = colors.ink,
+                                    style = MoneyTheme.typography.bodyStrong,
+                                )
+                            }),
                 )
             }
 

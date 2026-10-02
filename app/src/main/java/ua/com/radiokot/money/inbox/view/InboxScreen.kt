@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import ua.com.radiokot.money.currency.view.formatOrPrivate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.draw.clip
@@ -317,7 +318,7 @@ private fun InboxItemRow(
     if (amount != null) {
         val amountFormat = rememberViewAmountFormat()
         Text(
-            text = amountFormat(
+            text = amountFormat.formatOrPrivate(
                 amount = amount,
                 customColor =
                     if (item.isIncoming)
