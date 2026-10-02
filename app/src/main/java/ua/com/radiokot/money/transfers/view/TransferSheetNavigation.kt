@@ -46,6 +46,8 @@ data class TransferSheetRoute(
     private val destinationAmountString: String?,
     val memo: String?,
     private val dateTimeString: String?,
+    val inboxItemId: String? = null,
+    val rememberPayee: String? = null,
 ) {
     val sourceId: TransferCounterpartyId
         get() = Json.decodeFromString(sourceIdJson)
@@ -86,6 +88,32 @@ data class TransferSheetRoute(
         memo = transferToEdit.memo,
         dateTimeString = transferToEdit.dateTime.toString(),
     )
+
+    /**
+     * A new transfer prefilled from an inbox item.
+     *
+     * @param rememberPayee normalized payee to offer a rule for, if any
+     */
+    constructor(
+        sourceId: TransferCounterpartyId,
+        destinationId: TransferCounterpartyId,
+        sourceAmount: BigInteger?,
+        destinationAmount: BigInteger?,
+        memo: String?,
+        dateTime: LocalDateTime,
+        inboxItemId: String,
+        rememberPayee: String?,
+    ) : this(
+        sourceIdJson = Json.encodeToString(sourceId),
+        destinationIdJson = Json.encodeToString(destinationId),
+        transferToEditId = null,
+        sourceAmountString = sourceAmount?.toString(),
+        destinationAmountString = destinationAmount?.toString(),
+        memo = memo,
+        dateTimeString = dateTime.toString(),
+        inboxItemId = inboxItemId,
+        rememberPayee = rememberPayee,
+    )
 }
 
 fun NavGraphBuilder.transferSheet(
@@ -109,6 +137,8 @@ fun NavGraphBuilder.transferSheet(
                 destinationAmount = route.destinationAmount,
                 memo = route.memo,
                 dateTime = route.dateTime,
+                inboxItemId = route.inboxItemId,
+                rememberPayee = route.rememberPayee,
             )
         )
     }

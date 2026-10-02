@@ -48,6 +48,7 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.coroutineScopeThatCancelsWith
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.eventSharedFlow
+import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.map
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
@@ -55,6 +56,7 @@ import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.logic.EditTransferUseCase
 import ua.com.radiokot.money.transfers.logic.TransferFundsUseCase
 import java.math.BigInteger
+import java.util.UUID
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -69,6 +71,7 @@ class TransferSheetViewModel(
     private val categoryRepository: CategoryRepository,
     private val transferFundsUseCase: TransferFundsUseCase,
     private val editTransferUseCase: EditTransferUseCase,
+    private val completeInboxItemUseCase: CompleteInboxItemUseCase,
 ) : ViewModel() {
 
     private val log by lazyLogger("TransferSheetVM")
@@ -89,6 +92,14 @@ class TransferSheetViewModel(
     private val _memo: MutableStateFlow<String> =
         MutableStateFlow(parameters.memo ?: "")
     val memo = _memo.asStateFlow()
+
+    /**
+     * Normalized payee to offer a rule for, when opened from the inbox.
+     */
+    val rememberPayee: String? = parameters.rememberPayee
+    private val _isRememberPayeeEnabled: MutableStateFlow<Boolean> =
+        MutableStateFlow(parameters.rememberPayee != null)
+    val isRememberPayeeEnabled = _isRememberPayeeEnabled.asStateFlow()
     private val dateTime: MutableStateFlow<LocalDateTime> =
         MutableStateFlow(
             parameters.dateTime
@@ -245,6 +256,10 @@ class TransferSheetViewModel(
 
     fun onMemoUpdated(memo: String) {
         _memo.tryEmit(memo)
+    }
+
+    fun onRememberPayeeToggled(isEnabled: Boolean) {
+        _isRememberPayeeEnabled.value = isEnabled
     }
 
     fun onSourceClicked() {
@@ -470,6 +485,10 @@ class TransferSheetViewModel(
             .trim()
             .takeIf(String::isNotEmpty)
         val dateTime = dateTime.value
+        val transferId = UUID.randomUUID().toString()
+        val inboxItemId = parameters.inboxItemId
+        val rememberPayeePattern = rememberPayee
+            ?.takeIf { _isRememberPayeeEnabled.value }
 
         transferJob?.cancel()
         transferJob = viewModelScope.launch {
@@ -480,7 +499,8 @@ class TransferSheetViewModel(
                         "\ndestination=$destinationCounterparty," +
                         "\ndestinationAmount=$destinationAmount," +
                         "\nmemo=$memo," +
-                        "\ndateTime=$dateTime"
+                        "\ndateTime=$dateTime," +
+                        "\ninboxItemId=$inboxItemId"
             }
 
             transferFundsUseCase(
@@ -490,6 +510,7 @@ class TransferSheetViewModel(
                 destinationAmount = destinationAmount,
                 dateTime = dateTime,
                 memo = memo,
+                transferId = transferId,
             )
                 .onFailure { error ->
                     log.error(error) {
@@ -504,6 +525,20 @@ class TransferSheetViewModel(
 
                     log.debug {
                         "transferFunds(): funds transferred"
+                    }
+
+                    if (inboxItemId != null) {
+                        completeInboxItemUseCase(
+                            itemId = inboxItemId,
+                            transferId = transferId,
+                            rememberPayeePattern = rememberPayeePattern,
+                            sourceId = sourceCounterparty.id,
+                            destinationId = destinationCounterparty.id,
+                        ).onFailure { error ->
+                            log.error(error) {
+                                "transferFunds(): failed to complete the inbox item"
+                            }
+                        }
                     }
 
                     _events.emit(Event.TransferDone)
@@ -564,5 +599,7 @@ class TransferSheetViewModel(
         val destinationAmount: BigInteger?,
         val memo: String?,
         val dateTime: LocalDateTime?,
+        val inboxItemId: String? = null,
+        val rememberPayee: String? = null,
     )
 }
