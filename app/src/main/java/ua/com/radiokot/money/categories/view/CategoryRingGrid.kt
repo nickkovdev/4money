@@ -118,6 +118,7 @@ fun CategoryRingGrid(
         is RingGridCell.Category ->
             CategoryListItem(
                 item = cell.item,
+                isShareAvailable = true,
                 currentModeTotal = currentModeTotal,
                 modifier = cellModifier
                     .combinedClickable(
