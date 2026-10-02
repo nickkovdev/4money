@@ -57,17 +57,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -109,6 +110,7 @@ import ua.com.radiokot.money.categories.view.EditCategoryScreenRoute
 import ua.com.radiokot.money.categories.view.categoriesScreen
 import ua.com.radiokot.money.categories.view.categoryActionSheet
 import ua.com.radiokot.money.lock.view.SetUpPasscodeActivity
+import ua.com.radiokot.money.overview.view.OverviewScreenRoute
 import ua.com.radiokot.money.overview.view.overviewScreen
 import ua.com.radiokot.money.preferences.view.PreferencesScreenRoute
 import ua.com.radiokot.money.preferences.view.preferencesScreen
@@ -175,6 +177,19 @@ private fun HomeScreen(
                     .add(WindowInsets.statusBars)
             )
     ) {
+        TopBar(
+            hasNotice = viewModel.hasMoreNotice.collectAsState(),
+            onProfileClicked = {
+                if (navController.currentDestination?.route == PreferencesScreenRoute) {
+                    navController.navigateUp()
+                } else {
+                    navController.navigate(PreferencesScreenRoute) {
+                        launchSingleTop = true
+                    }
+                }
+            },
+        )
+
         NavHost(
             navController = navController,
             startDestination = AccountsScreenRoute,
@@ -275,10 +290,7 @@ private fun HomeScreen(
 
             overviewScreen(
                 homeViewModel = viewModel,
-                onProceedToCategories = {
-                    navController.popBackStack()
-                    navController.navigate(CategoriesScreenRoute)
-                },
+                onProceedToCategories = { navController.navigateToTab(CategoriesScreenRoute) },
             )
 
             preferencesScreen(
@@ -380,10 +392,7 @@ private fun HomeScreen(
         CompositionLocalProvider(
             LocalIndication provides remember(::ScaleIndication),
         ) {
-            BottomNavigation(
-                navController = navController,
-                hasMoreNotice = viewModel.hasMoreNotice.collectAsState(),
-            )
+            BottomNavigation(navController = navController)
         }
     }
 
@@ -396,7 +405,6 @@ private fun HomeScreen(
 @Composable
 private fun BottomNavigation(
     navController: NavController,
-    hasMoreNotice: State<Boolean>,
 ) = Row(
     horizontalArrangement = Arrangement.SpaceAround,
     modifier = Modifier
@@ -425,63 +433,77 @@ private fun BottomNavigation(
             .collect(this::value::set)
     }
 
-    BottomNavigationEntry(
-        text = "Accounts",
-        icon = R.drawable.ic_tabler_wallet,
-        isCurrent = lastVisitedBottomRoute == AccountsScreenRoute,
-        modifier = Modifier
-            .weight(1f)
-            .clickable(
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(AccountsScreenRoute)
-                },
-            )
-    )
+    listOf(
+        Triple("Accounts", R.drawable.ic_tabler_wallet, AccountsScreenRoute),
+        Triple("Categories", R.drawable.ic_tabler_chart_donut, CategoriesScreenRoute),
+        Triple("Transactions", R.drawable.ic_tabler_list_details, ActivityScreenRoute),
+        Triple("Overview", R.drawable.ic_tabler_chart_bar, OverviewScreenRoute),
+    ).forEach { (text, icon, route) ->
+        BottomNavigationEntry(
+            text = text,
+            icon = icon,
+            isCurrent = lastVisitedBottomRoute == route
+                    || (LocalInspectionMode.current && route == AccountsScreenRoute),
+            modifier = Modifier
+                .weight(1f)
+                .clickable(
+                    onClick = { navController.navigateToTab(route) },
+                )
+        )
+    }
+}
 
-    BottomNavigationEntry(
-        text = "Categories",
-        icon = R.drawable.ic_tabler_chart_donut,
-        isCurrent = lastVisitedBottomRoute == CategoriesScreenRoute,
-        modifier = Modifier
-            .weight(1f)
-            .clickable(
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(CategoriesScreenRoute)
-                }
-            )
-    )
+/**
+ * Bottom tabs replace each other; the preferences screen, opened from the profile icon,
+ * sits above a tab and is closed when switching tabs.
+ */
+private fun NavController.navigateToTab(route: String) {
+    if (currentDestination?.route == PreferencesScreenRoute) {
+        popBackStack()
+    }
+    popBackStack()
+    navigate(route)
+}
 
-    BottomNavigationEntry(
-        text = "Activity",
-        icon = R.drawable.ic_tabler_list_details,
-        isCurrent = lastVisitedBottomRoute == ActivityScreenRoute,
+@Composable
+private fun TopBar(
+    hasNotice: State<Boolean>,
+    onProfileClicked: () -> Unit,
+) = Row(
+    verticalAlignment = Alignment.CenterVertically,
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(
+            horizontal = 10.dp,
+            vertical = 2.dp,
+        )
+) {
+    Box(
         modifier = Modifier
-            .weight(1f)
-            .clickable(
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(ActivityScreenRoute)
-                },
-            )
-    )
+            .clip(CircleShape)
+            .clickable(onClick = onProfileClicked)
+            .padding(6.dp)
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_tabler_user_circle),
+            contentDescription = "Profile and settings",
+            tint = MoneyTheme.colors.onBackground,
+            modifier = Modifier
+                .size(28.dp)
+        )
 
-    BottomNavigationEntry(
-        text = "More",
-        icon = R.drawable.ic_tabler_user_circle,
-        isCurrent = lastVisitedBottomRoute == PreferencesScreenRoute
-                || LocalInspectionMode.current,
-        hasNotice = hasMoreNotice.value,
-        modifier = Modifier
-            .weight(1f)
-            .clickable(
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(PreferencesScreenRoute)
-                },
+        if (hasNotice.value) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(8.dp)
+                    .background(
+                        color = MoneyTheme.colors.notice,
+                        shape = CircleShape,
+                    )
             )
-    )
+        }
+    }
 }
 
 @Composable
@@ -596,7 +618,7 @@ private val bottomNavigationRoutes: Set<String> = setOf(
     AccountsScreenRoute,
     CategoriesScreenRoute,
     ActivityScreenRoute,
-    PreferencesScreenRoute,
+    OverviewScreenRoute,
 )
 
 @Preview(
@@ -607,5 +629,4 @@ private fun BottomNavigation2Preview(
 
 ) = BottomNavigation(
     navController = rememberNavController(),
-    hasMoreNotice = true.let(::mutableStateOf),
 )
