@@ -42,6 +42,13 @@ import com.composeunstyled.Text
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.animateAmountValueAsState
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import androidx.compose.foundation.background
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import com.composeunstyled.Icon
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -160,7 +167,9 @@ internal fun ArchiveHeader(
     isArchiveExpanded: MutableState<Boolean>,
 ) {
     Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
+            .clip(MoneyShapes.medium)
             .clickable(
                 onClick = {
                     isArchiveExpanded.value = !isArchiveExpanded.value
@@ -173,75 +182,97 @@ internal fun ArchiveHeader(
             .fillMaxWidth()
     ) {
         Text(
-            text = "Archive",
-            fontSize = 16.sp,
-            fontWeight = FontWeight(500),
+            text = "ARCHIVED",
+            style = MoneyTheme.typography.overline,
+            color = MoneyTheme.colors.ink3,
             modifier = Modifier
                 .weight(1f),
         )
 
-        Text(
-            text =
+        Icon(
+            painter = painterResource(
                 if (isArchiveExpanded.value)
-                    "🔼"
+                    R.drawable.ic_tabler_chevron_up
                 else
-                    "🔽",
-            fontSize = 16.sp,
+                    R.drawable.ic_tabler_chevron_down
+            ),
+            contentDescription =
+                if (isArchiveExpanded.value)
+                    "Collapse"
+                else
+                    "Expand",
+            tint = MoneyTheme.colors.ink3,
+            modifier = Modifier
+                .size(18.dp)
         )
     }
 }
 
+/**
+ * A grid cell: tinted logo tile, the title under it (shrinks to fit one line),
+ * then the neutral amount, muted when zero.
+ */
 @Composable
 internal fun CategoryListItem(
     modifier: Modifier = Modifier,
     item: ViewCategoryListItem,
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
-    modifier = modifier,
+    verticalArrangement = Arrangement.spacedBy(6.dp),
+    modifier = modifier
+        .clip(MoneyShapes.medium)
+        .padding(
+            vertical = 4.dp,
+        ),
 ) {
     val title = item.title
     val amount = item.amount
-
-    Text(
-        text = title,
-        style = TextStyle(
-            textAlign = TextAlign.Center,
-        ),
-        overflow = TextOverflow.Ellipsis,
-        maxLines = 1,
-        modifier = Modifier
-            .fillMaxWidth()
-    )
-
-    Spacer(modifier = Modifier.height(4.dp))
 
     ItemLogo(
         title = title,
         colorScheme = item.colorScheme,
         icon = item.icon,
-        shape = CircleShape,
         modifier = Modifier
             .size(LOGO_SIZE_DP.dp)
     )
 
-    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        text = title,
+        style = MoneyTheme.typography.caption,
+        fontWeight = FontWeight.Medium,
+        textAlign = TextAlign.Center,
+        overflow = TextOverflow.Ellipsis,
+        maxLines = 1,
+        autoSize = TextAutoSize.StepBased(
+            minFontSize = 10.sp,
+            maxFontSize = 13.sp,
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = 2.dp,
+            )
+    )
 
     if (!item.isIncognito) {
         val amountFormat = rememberViewAmountFormat()
-
-
         val animatedAmountValue = animateAmountValueAsState(
             targetAmount = amount,
         )
+        val isZero = animatedAmountValue.value.signum() == 0
 
         Text(
             text = amountFormat(
                 value = animatedAmountValue.value,
                 currency = amount.currency,
+                customColor =
+                    if (isZero)
+                        MoneyTheme.colors.ink3
+                    else
+                        MoneyTheme.colors.ink2,
             ),
-            style = TextStyle(
-                textAlign = TextAlign.Center,
-            ),
+            style = MoneyTheme.typography.small,
+            textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             modifier = Modifier
@@ -250,10 +281,9 @@ internal fun CategoryListItem(
     } else {
         Text(
             text = amount.currency.symbol,
-            style = TextStyle(
-                textAlign = TextAlign.Center,
-            ),
-            overflow = TextOverflow.Ellipsis,
+            style = MoneyTheme.typography.small,
+            color = MoneyTheme.colors.ink3,
+            textAlign = TextAlign.Center,
             maxLines = 1,
             modifier = Modifier
                 .fillMaxWidth()
@@ -266,38 +296,40 @@ internal fun AddItem(
     modifier: Modifier = Modifier,
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
-    modifier = modifier,
+    verticalArrangement = Arrangement.spacedBy(6.dp),
+    modifier = modifier
+        .clip(MoneyShapes.medium)
+        .padding(
+            vertical = 4.dp,
+        ),
 ) {
-
-    Text(
-        text = "",
-        modifier = Modifier
-            .drawWithContent { }
-    )
-
-    Spacer(modifier = Modifier.height(4.dp))
-
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(LOGO_SIZE_DP.dp)
-            .border(
-                width = 1.dp,
-                color = MoneyTheme.colors.outline,
-                shape = CircleShape,
+            .background(
+                color = MoneyTheme.colors.surface,
+                shape = MoneyShapes.itemTile,
             )
     ) {
-        Text(
-            text = "➕",
+        Icon(
+            painter = painterResource(R.drawable.ic_tabler_plus),
+            contentDescription = null,
+            tint = MoneyTheme.colors.accent,
+            modifier = Modifier
+                .size(24.dp)
         )
     }
 
-    Spacer(modifier = Modifier.height(4.dp))
-
     Text(
-        text = "",
+        text = "Add",
+        style = MoneyTheme.typography.caption,
+        fontWeight = FontWeight.Medium,
+        color = MoneyTheme.colors.ink2,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
         modifier = Modifier
-            .drawWithContent { }
+            .fillMaxWidth()
     )
 }
 
