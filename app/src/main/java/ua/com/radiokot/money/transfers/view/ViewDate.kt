@@ -21,12 +21,15 @@ package ua.com.radiokot.money.transfers.view
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.isSameDayAs
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -73,13 +76,23 @@ class ViewDate(
     fun getText(): String =
         when (specificType) {
             SpecificType.Today ->
-                "Today"
+                stringResource(R.string.date_today)
 
             SpecificType.Yesterday ->
-                "Yesterday"
+                stringResource(R.string.date_yesterday)
 
-            null ->
-                localDate.toString()
+            null -> {
+                val locale = rememberAppLocale()
+                remember(localDate, locale) {
+                    ViewDateFormats.dayMonth(
+                        date = localDate,
+                        locale = locale,
+                        today = Clock.System.now()
+                            .toLocalDateTime(TimeZone.currentSystemDefault())
+                            .date,
+                    )
+                }
+            }
         }
 
     override fun equals(other: Any?): Boolean {

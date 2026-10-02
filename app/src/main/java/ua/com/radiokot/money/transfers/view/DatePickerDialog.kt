@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -87,8 +88,9 @@ fun DatePickerDialog(
                 .fillMaxWidth()
         ) {
             Text(
-                text = month.month.getDisplayName(TextStyle.FULL_STANDALONE, locale)
-                    .replaceFirstChar(Char::titlecase) + " " + month.year,
+                text = remember(month, locale) {
+                    ViewDateFormats.monthYear(month.atDay(1).toKotlinLocalDate(), locale)
+                },
                 style = MoneyTheme.typography.title,
                 modifier = Modifier
                     .weight(1f)
@@ -97,7 +99,7 @@ fun DatePickerDialog(
 
             MoneyIconButton(
                 icon = R.drawable.ic_tabler_chevron_left,
-                contentDescription = "Previous month",
+                contentDescription = stringResource(R.string.date_picker_previous_month),
                 onClick = { month = month.minusMonths(1) },
                 size = 40.dp,
                 iconSize = 20.dp,
@@ -105,7 +107,7 @@ fun DatePickerDialog(
 
             MoneyIconButton(
                 icon = R.drawable.ic_tabler_chevron_right,
-                contentDescription = "Next month",
+                contentDescription = stringResource(R.string.date_picker_next_month),
                 isEnabled = month < YearMonth.from(today),
                 onClick = { month = month.plusMonths(1) },
                 size = 40.dp,
@@ -124,8 +126,8 @@ fun DatePickerDialog(
                 )
         ) {
             listOf(
-                "Today" to today,
-                "Yesterday" to today.minusDays(1),
+                stringResource(R.string.date_today) to today,
+                stringResource(R.string.date_yesterday) to today.minusDays(1),
             ).forEach { (label, date) ->
                 MoneyChip(
                     text = label,

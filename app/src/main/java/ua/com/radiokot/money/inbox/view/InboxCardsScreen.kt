@@ -70,6 +70,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -81,6 +82,9 @@ import com.composeunstyled.Text
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
@@ -89,6 +93,8 @@ import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
+import ua.com.radiokot.money.transfers.view.ViewDateFormats
+import ua.com.radiokot.money.transfers.view.rememberAppLocale
 import ua.com.radiokot.money.uikit.EmptyState
 import ua.com.radiokot.money.uikit.IconTile
 import ua.com.radiokot.money.uikit.MoneyButton
@@ -103,6 +109,8 @@ import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import java.math.BigInteger
 import kotlin.math.abs
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 private enum class SwipeAction {
     Accept,
@@ -618,6 +626,7 @@ private fun Stamp(
 }
 
 @Composable
+@OptIn(ExperimentalTime::class)
 private fun CardContent(
     card: ViewInboxCard,
     onAlternativeClicked: (ViewInboxCardCategory) -> Unit,
@@ -661,8 +670,24 @@ private fun CardContent(
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
+        val locale = rememberAppLocale()
+        val time = remember(card.receivedAt, locale) {
+            ViewDateFormats.time(card.receivedAt, locale)
+        }
+        val dateTimeText =
+            if (card.isReceivedToday)
+                stringResource(R.string.date_today_at, time)
+            else
+                remember(card.receivedAt, locale) {
+                    val today = Clock.System.now()
+                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                        .date
+                    ViewDateFormats.dayMonth(card.receivedAt.date, locale, today) + " " + time
+                }
         Text(
-            text = card.metaText,
+            text = listOf(dateTimeText, card.sourceText)
+                .filter(String::isNotEmpty)
+                .joinToString(" · "),
             style = MoneyTheme.typography.labelRegular,
             color = colors.ink2,
         )
@@ -882,7 +907,9 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
                     ),
                     isIncoming = false,
                     isForeignCurrency = false,
-                    metaText = "Today 11:55 · Card",
+                    receivedAt = LocalDateTime(2026, 10, 3, 11, 55),
+                    isReceivedToday = true,
+                    sourceText = "Card",
                     suggestion = food,
                     reasonText = "Remembered payee → Food",
                     alternatives = listOf(car),
@@ -893,7 +920,9 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
                     amount = null,
                     isIncoming = false,
                     isForeignCurrency = false,
-                    metaText = "Today",
+                    receivedAt = LocalDateTime(2026, 10, 3, 9, 30),
+                    isReceivedToday = true,
+                    sourceText = "",
                     suggestion = null,
                     reasonText = null,
                     alternatives = emptyList(),
