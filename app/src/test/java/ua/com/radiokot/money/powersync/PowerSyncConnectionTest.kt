@@ -1,5 +1,6 @@
 package ua.com.radiokot.money.powersync
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -57,8 +58,16 @@ class PowerSyncConnectionTest {
             isOpen = false
         }
 
+        @Volatile
+        var cancelledUploadsIdleWaits = 0
+
         override suspend fun awaitUploadsIdle() {
-            uploadsIdle.await()
+            try {
+                uploadsIdle.await()
+            } catch (e: CancellationException) {
+                cancelledUploadsIdleWaits++
+                throw e
+            }
         }
 
         override suspend fun awaitSyncedAndUploaded(since: Instant) {
@@ -207,6 +216,9 @@ class PowerSyncConnectionTest {
         connection.disconnectWhenIdle(Holder.VISIBLE_APP)
         settle()
         connection.connect(Holder.VISIBLE_APP)
+        // Completing uploads before the reconnect is observed
+        // would race the converge coroutine into a disconnect.
+        eventually { control.cancelledUploadsIdleWaits == 1 }
         control.uploadsIdle.complete(Unit)
         settle()
 
