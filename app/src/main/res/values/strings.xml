@@ -4,4 +4,5 @@
     <string name="add_operation_shortcut_title">Add operation</string>
     <string name="add_income_shortcut_title">Add income</string>
     <string name="add_expense_shortcut_title">Add expense</string>
+    <string name="bank_notification_listener_label">Bank payments to expenses</string>
 </resources>

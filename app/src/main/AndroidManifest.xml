@@ -81,5 +81,16 @@
         <activity
             android:name=".lock.view.SetUpPasscodeActivity"
             android:exported="false" />
+
+        <service
+            android:name=".inbox.listener.BankNotificationListenerService"
+            android:exported="false"
+            android:label="@string/bank_notification_listener_label"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>
