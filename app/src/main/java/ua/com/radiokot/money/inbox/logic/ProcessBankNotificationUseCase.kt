@@ -147,6 +147,13 @@ class ProcessBankNotificationUseCase(
                 is AutoExpenseResolver.Resolution.Create -> {
                     val transferId = newId()
 
+                    // The pending item is written first: it is the dedup marker.
+                    // If the transfer or the process fails afterwards, a re-post is
+                    // a duplicate instead of a second expense, and the item stays
+                    // pending in the inbox for the user to resolve. The failure is
+                    // returned to the caller as is.
+                    inboxRepository.addItem(item)
+
                     // A separate PowerSync transaction on purpose: the connector uploads
                     // a transaction containing a transfer through the `transfer` RPC
                     // and drops its other rows, so the inbox item must not share it.
@@ -163,12 +170,7 @@ class ProcessBankNotificationUseCase(
                         transferId = transferId,
                     ).getOrThrow()
 
-                    inboxRepository.addItem(
-                        item.copy(
-                            status = InboxItem.Status.Done,
-                            transferId = transferId,
-                        )
-                    )
+                    inboxRepository.markDone(item.id, transferId)
                     payeeRuleRepository.recordHit(resolution.rule.id, receivedAt)
 
                     Outcome.AutoRecorded(
