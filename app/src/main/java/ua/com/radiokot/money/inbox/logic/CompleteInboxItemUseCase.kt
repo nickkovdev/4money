@@ -34,7 +34,8 @@ class CompleteInboxItemUseCase(
 
     /**
      * @param rememberPayeePattern normalized payee to learn an exact rule for, null to not learn.
-     * A rule is learned only for an account to category expense.
+     * A rule is learned only for an account to category expense
+     * or a category to account income.
      */
     suspend operator fun invoke(
         itemId: String,
@@ -49,17 +50,29 @@ class CompleteInboxItemUseCase(
             transferId = transferId,
         )
 
-        if (!rememberPayeePattern.isNullOrEmpty()
-            && sourceId is TransferCounterpartyId.Account
-            && destinationId is TransferCounterpartyId.Category
-        ) {
-            payeeRuleRepository.saveRuleForPayee(
-                payeePattern = rememberPayeePattern,
-                matchType = PayeeRule.MatchType.Exact,
-                categoryId = destinationId.categoryId,
-                subcategoryId = destinationId.subcategoryId,
-                accountId = sourceId.accountId,
-            )
+        if (rememberPayeePattern.isNullOrEmpty()) {
+            return@runCatching
         }
+
+        val (accountId, categoryId) = when {
+            sourceId is TransferCounterpartyId.Account
+                    && destinationId is TransferCounterpartyId.Category ->
+                sourceId to destinationId
+
+            sourceId is TransferCounterpartyId.Category
+                    && destinationId is TransferCounterpartyId.Account ->
+                destinationId to sourceId
+
+            else ->
+                return@runCatching
+        }
+
+        payeeRuleRepository.saveRuleForPayee(
+            payeePattern = rememberPayeePattern,
+            matchType = PayeeRule.MatchType.Exact,
+            categoryId = categoryId.categoryId,
+            subcategoryId = categoryId.subcategoryId,
+            accountId = accountId.accountId,
+        )
     }
 }

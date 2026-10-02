@@ -75,4 +75,17 @@ class CompleteInboxItemUseCaseTest {
 
         assertTrue(rules.rules.value.isEmpty())
     }
+
+    @Test
+    fun learnsRuleForIncome() = runBlocking {
+        addPendingItem()
+
+        useCase("item", "tr", "example employer", category, account).getOrThrow()
+
+        val rule = rules.rules.value.single()
+        assertEquals("example employer", rule.payeePattern)
+        assertEquals("cat", rule.categoryId)
+        assertEquals("sub", rule.subcategoryId)
+        assertEquals("acc", rule.accountId)
+    }
 }

@@ -93,10 +93,11 @@ private fun Content(
 
         inboxScreen(
             viewModel = inboxViewModel,
-            onProceedToCategorySelection = { accountId ->
+            onProceedToCategorySelection = { accountId, isIncome ->
                 navController.navigate(
                     route = TransferCounterpartySelectionSheetRoute(
-                        isForSource = false,
+                        // An income category is the source of an income.
+                        isForSource = isIncome,
                         alreadySelectedCounterpartyId = accountId,
                         showAccounts = false,
                         showCategories = true,

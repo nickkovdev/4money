@@ -72,4 +72,31 @@ class InboxTransferPrefillTest {
         assertEquals("EUR", item.copy(amount = null).originalAmountText())
         assertEquals("", item.copy(amount = null, currencyCode = null).originalAmountText())
     }
+
+    @Test
+    fun incomingItemGoesFromCategoryToAccount() {
+        val route = InboxTransferPrefill.buildRoute(
+            item.copy(direction = InboxItem.Direction.Incoming),
+            testAccount("acc", EUR),
+            testCategory("cat", EUR, isIncome = true),
+        )
+
+        assertEquals(TransferCounterpartyId.Category("cat", null), route.sourceId)
+        assertEquals(TransferCounterpartyId.Account("acc"), route.destinationId)
+        assertEquals(BigInteger("212"), route.sourceAmount)
+        assertEquals(BigInteger("212"), route.destinationAmount)
+        assertEquals("deepseerwea", route.rememberPayee)
+    }
+
+    @Test
+    fun incomingItemWithCategoryInOtherCurrencyPrefillsAccountSideOnly() {
+        val route = InboxTransferPrefill.buildRoute(
+            item.copy(direction = InboxItem.Direction.Incoming),
+            testAccount("acc", EUR),
+            testCategory("cat", USD, isIncome = true),
+        )
+
+        assertNull(route.sourceAmount)
+        assertEquals(BigInteger("212"), route.destinationAmount)
+    }
 }

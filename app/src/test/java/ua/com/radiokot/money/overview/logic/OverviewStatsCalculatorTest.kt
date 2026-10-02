@@ -85,6 +85,13 @@ class OverviewStatsCalculatorTest {
     }
 
     @Test
+    fun averages_FirstDaysOfPeriod_WeekAverageIsCappedByTotal() {
+        val stats = calculateSeptember(today = d(2))
+        Assert.assertEquals(stats.total, stats.weekAverage)
+        Assert.assertTrue(stats.dayAverage * BigInteger.valueOf(7) > stats.total)
+    }
+
+    @Test
     fun averages_PastPeriod_UseAllDays() {
         val stats = calculateSeptember(today = d(5, month = 10))
         Assert.assertEquals(bi(161), stats.dayAverage)

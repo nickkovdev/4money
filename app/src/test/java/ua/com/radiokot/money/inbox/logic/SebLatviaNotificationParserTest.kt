@@ -14,12 +14,12 @@ class SebLatviaNotificationParserTest {
     private val sample = "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA ."
 
     private fun parsePayment(text: String) =
-        parser.parse(title, text) as ParsedBankNotification.CardPayment
+        parser.parse(title, text) as ParsedBankNotification.Payment
 
     @Test
     fun sampledTemplate() {
         assertEquals(
-            ParsedBankNotification.CardPayment(
+            ParsedBankNotification.Payment(
                 amount = BigDecimal("2.12"),
                 currencyCode = "USD",
                 cardLast4 = "0000",
@@ -87,5 +87,66 @@ class SebLatviaNotificationParserTest {
     @Test
     fun sourcePackagesAreSebOnly() {
         assertEquals(setOf("se.seb.latvia"), BankNotificationSources.packageNames)
+    }
+
+    @Test
+    fun outgoingAccountPayment() {
+        assertEquals(
+            ParsedBankNotification.Payment(
+                amount = BigDecimal("30.00"),
+                currencyCode = "EUR",
+                cardLast4 = null,
+                payee = "EXAMPLE SIA",
+                isIncoming = false,
+                hasTimestamp = false,
+            ),
+            parser.parse(
+                "Jauns darījums",
+                "Jūs samaksājāt 30,00 EUR EXAMPLE SIA par parking. Konta bilance:",
+            ),
+        )
+    }
+
+    @Test
+    fun incomingAccountPayment() {
+        assertEquals(
+            ParsedBankNotification.Payment(
+                amount = BigDecimal("1234.56"),
+                currencyCode = "EUR",
+                cardLast4 = null,
+                payee = "EXAMPLE EMPLOYER (PUBL) FILIALE",
+                isIncoming = true,
+                hasTimestamp = false,
+            ),
+            parser.parse(
+                "Jauns darījums",
+                "EXAMPLE EMPLOYER (PUBL) FILIALE samaksāja 1234,56 EUR " +
+                        "par Darba alga par 2026.g.septembri. Konta bilance:",
+            ),
+        )
+    }
+
+    @Test
+    fun accountPaymentWithBalanceShown() {
+        val payment = parsePayment("Jūs samaksājāt 5 EUR SHOP SIA par goods. Konta bilance: 100,00 EUR")
+        assertEquals(BigDecimal("5"), payment.amount)
+        assertEquals("SHOP SIA", payment.payee)
+    }
+
+    @Test
+    fun cardPaymentIsNotAnAccountPayment() {
+        val payment = parsePayment("Jūs samaksājāt 7,02 EUR par 02/10/2026 11:55 karte...0000 BISTRO EXAMPLE .")
+        assertEquals("BISTRO EXAMPLE", payment.payee)
+        assertEquals("0000", payment.cardLast4)
+        assertEquals(false, payment.isIncoming)
+        assertEquals(true, payment.hasTimestamp)
+    }
+
+    @Test
+    fun accountPaymentWithoutBalanceLabelIsUnrecognized() {
+        assertSame(
+            ParsedBankNotification.Unrecognized,
+            parser.parse("Jauns darījums", "Jūs samaksājāt 30,00 EUR EXAMPLE SIA par parking."),
+        )
     }
 }

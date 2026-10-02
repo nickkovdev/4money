@@ -29,6 +29,6 @@ bucket_definitions:
         WHERE user_id = bucket.user_id
       - >-
         SELECT id, received_at, source_package, raw_text, amount, currency_code, payee, card_last4,
-               account_id, status, transfer_id, dedup_hash
+               account_id, status, transfer_id, dedup_hash, direction
         FROM money.inbox_items AS inbox_items
         WHERE user_id = bucket.user_id

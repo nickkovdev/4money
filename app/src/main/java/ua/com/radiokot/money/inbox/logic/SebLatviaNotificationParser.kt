@@ -33,6 +33,17 @@ import java.util.Locale
  * Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .
  * ```
  * The date/time in the text is not local time and is ignored.
+ *
+ * Sampled account payments, outgoing and incoming (title / text):
+ * ```
+ * Jauns darījums
+ * Jūs samaksājāt 30,00 EUR EXAMPLE SIA par parking. Konta bilance:
+ *
+ * Jauns darījums
+ * EXAMPLE SIA samaksāja 1000,00 EUR par Darba alga. Konta bilance:
+ * ```
+ * These have no time in the text. A card payment is notified only as the reservation,
+ * its settlement does not produce an account payment notification.
  */
 class SebLatviaNotificationParser : BankNotificationParser {
 
@@ -44,20 +55,79 @@ class SebLatviaNotificationParser : BankNotificationParser {
             .replace('\u202F', ' ')
             .trim()
 
-        val match = CARD_PAYMENT_REGEX.matchEntire(normalizedText)
-            ?: return ParsedBankNotification.Unrecognized
+        return parseCardPayment(normalizedText)
+            ?: parseOutgoingAccountPayment(normalizedText)
+            ?: parseIncomingAccountPayment(normalizedText)
+            ?: ParsedBankNotification.Unrecognized
+    }
 
-        val (amountString, currencyCode, cardLast4, payee) = match.destructured
+    private fun parseCardPayment(text: String): ParsedBankNotification.Payment? {
+        val (amountString, currencyCode, cardLast4, payee) = CARD_PAYMENT_REGEX
+            .matchEntire(text)
+            ?.destructured
+            ?: return null
 
+        return createPayment(
+            amountString = amountString,
+            currencyCode = currencyCode,
+            cardLast4 = cardLast4,
+            payee = payee,
+            isIncoming = false,
+            hasTimestamp = true,
+        )
+    }
+
+    private fun parseOutgoingAccountPayment(text: String): ParsedBankNotification.Payment? {
+        val (amountString, currencyCode, payee) = OUTGOING_ACCOUNT_PAYMENT_REGEX
+            .matchEntire(text)
+            ?.destructured
+            ?: return null
+
+        return createPayment(
+            amountString = amountString,
+            currencyCode = currencyCode,
+            cardLast4 = null,
+            payee = payee,
+            isIncoming = false,
+            hasTimestamp = false,
+        )
+    }
+
+    private fun parseIncomingAccountPayment(text: String): ParsedBankNotification.Payment? {
+        val (payer, amountString, currencyCode) = INCOMING_ACCOUNT_PAYMENT_REGEX
+            .matchEntire(text)
+            ?.destructured
+            ?: return null
+
+        return createPayment(
+            amountString = amountString,
+            currencyCode = currencyCode,
+            cardLast4 = null,
+            payee = payer,
+            isIncoming = true,
+            hasTimestamp = false,
+        )
+    }
+
+    private fun createPayment(
+        amountString: String,
+        currencyCode: String,
+        cardLast4: String?,
+        payee: String,
+        isIncoming: Boolean,
+        hasTimestamp: Boolean,
+    ): ParsedBankNotification.Payment? {
         val amount = parseAmount(amountString)
             ?.takeIf { it.signum() > 0 }
-            ?: return ParsedBankNotification.Unrecognized
+            ?: return null
 
-        return ParsedBankNotification.CardPayment(
+        return ParsedBankNotification.Payment(
             amount = amount,
             currencyCode = currencyCode.uppercase(Locale.ROOT),
             cardLast4 = cardLast4,
             payee = payee.trim(),
+            isIncoming = isIncoming,
+            hasTimestamp = hasTimestamp,
         )
     }
 
@@ -70,12 +140,30 @@ class SebLatviaNotificationParser : BankNotificationParser {
     companion object {
         const val PACKAGE_NAME = "se.seb.latvia"
 
-        // 1: amount with decimal comma and optional space thousands separators,
-        // 2: ISO currency, 3: card last 4, 4: payee (lazy, without the trailing " .").
+        // Amount with decimal comma and optional space thousands separators.
+        private const val AMOUNT = "(\\d{1,3}(?: \\d{3})+(?:,\\d+)?|\\d+(?:,\\d+)?)"
+        private const val CURRENCY = "([A-Za-z]{3})"
+
+        // The balance itself is not always shown after the label.
+        private const val BALANCE_SUFFIX = "\\s*Konta bilance:.*"
+
+        // 1: amount, 2: ISO currency, 3: card last 4, 4: payee (lazy, without the trailing " .").
         private val CARD_PAYMENT_REGEX = Regex(
-            "^Jūs samaksājāt\\s+(\\d{1,3}(?: \\d{3})+(?:,\\d+)?|\\d+(?:,\\d+)?)\\s+([A-Za-z]{3})" +
+            "^Jūs samaksājāt\\s+$AMOUNT\\s+$CURRENCY" +
                     "\\s+par\\s+\\S+\\s+\\S+\\s+karte\\s*(?:\\.{2,}|\u2026)\\s*(\\d{4})\\s+(.+?)\\s*\\.?$",
             RegexOption.IGNORE_CASE,
+        )
+
+        // 1: amount, 2: ISO currency, 3: recipient (lazy, up to the purpose).
+        private val OUTGOING_ACCOUNT_PAYMENT_REGEX = Regex(
+            "^Jūs samaksājāt\\s+$AMOUNT\\s+$CURRENCY\\s+(.+?)\\s+par\\s+.*?$BALANCE_SUFFIX$",
+            setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
+        )
+
+        // 1: payer (lazy), 2: amount, 3: ISO currency.
+        private val INCOMING_ACCOUNT_PAYMENT_REGEX = Regex(
+            "^(.+?)\\s+samaksāja\\s+$AMOUNT\\s+$CURRENCY\\s+par\\s+.*?$BALANCE_SUFFIX$",
+            setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
         )
     }
 }

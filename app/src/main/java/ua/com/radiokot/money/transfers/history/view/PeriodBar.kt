@@ -19,25 +19,33 @@
 
 package ua.com.radiokot.money.transfers.history.view
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.composeunstyled.Icon
 import com.composeunstyled.Text
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.transfers.view.ViewDate
-import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun PeriodBar(
@@ -57,14 +65,11 @@ fun PeriodBar(
         PaddingValues(6.dp)
     }
 
-    TextButton(
-        text = "⬅️",
+    PeriodArrowButton(
+        iconRes = R.drawable.ic_tabler_chevron_left,
+        contentDescription = "Previous period",
         isEnabled = isPreviousButtonEnabled.value,
-        padding = buttonPadding,
-        modifier = Modifier
-            .clickable(
-                onClick = onPreviousPeriodClicked,
-            )
+        onClick = onPreviousPeriodClicked,
     )
 
     Text(
@@ -79,14 +84,41 @@ fun PeriodBar(
             .padding(buttonPadding)
     )
 
-    TextButton(
-        text = "➡️",
+    PeriodArrowButton(
+        iconRes = R.drawable.ic_tabler_chevron_right,
+        contentDescription = "Next period",
         isEnabled = isNextButtonEnabled.value,
-        padding = buttonPadding,
+        onClick = onNextPeriodClicked,
+    )
+}
+
+@Composable
+private fun PeriodArrowButton(
+    @DrawableRes
+    iconRes: Int,
+    contentDescription: String,
+    isEnabled: Boolean,
+    onClick: () -> Unit,
+) = Box(
+    contentAlignment = Alignment.Center,
+    modifier = Modifier
+        .clip(CircleShape)
+        .clickable(
+            enabled = isEnabled,
+            onClick = onClick,
+        )
+        .padding(8.dp)
+) {
+    Icon(
+        painter = painterResource(iconRes),
+        contentDescription = contentDescription,
+        tint =
+            if (isEnabled)
+                MoneyTheme.colors.onBackground
+            else
+                MoneyTheme.colors.outlineDisabled,
         modifier = Modifier
-            .clickable(
-                onClick = onNextPeriodClicked,
-            )
+            .size(24.dp)
     )
 }
 

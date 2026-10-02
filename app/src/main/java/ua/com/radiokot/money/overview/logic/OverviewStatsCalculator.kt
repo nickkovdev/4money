@@ -114,7 +114,8 @@ object OverviewStatsCalculator {
             days = days,
             stackCategoryIds = stackIds,
             dayAverage = dayAverage,
-            weekAverage = dayAverage * SEVEN,
+            // Before a week has passed, a week can't average more than the total so far.
+            weekAverage = (dayAverage * SEVEN).min(total),
             topCategories = rankedIds
                 .take(topCategoryCount)
                 .map { categoryId ->

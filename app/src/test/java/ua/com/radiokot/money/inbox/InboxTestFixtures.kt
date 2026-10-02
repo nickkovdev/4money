@@ -43,10 +43,11 @@ fun testCategory(
     id: String,
     currency: Currency = EUR,
     isArchived: Boolean = false,
+    isIncome: Boolean = false,
 ) = Category(
     title = "Category $id",
     currency = currency,
-    isIncome = false,
+    isIncome = isIncome,
     colorScheme = colorScheme,
     icon = null,
     isArchived = isArchived,
