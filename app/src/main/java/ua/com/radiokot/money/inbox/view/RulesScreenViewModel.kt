@@ -180,6 +180,38 @@ class RulesScreenViewModel(
         )
     }
 
+    /**
+     * Opens a new range for a payee, also one without rules yet (from an inbox card).
+     */
+    fun onAddRangeForPayeeRequested(
+        payeePattern: String,
+        displayPattern: String,
+        currencyCode: String?,
+        isIncome: Boolean,
+        categoryOptions: List<ViewRangeTarget.Category>,
+    ) {
+        val existingGroup = groupList.value.firstOrNull { group ->
+            group.matchType == PayeeRule.MatchType.Exact && group.anyRule.payeePattern == payeePattern
+        }
+        _rangeDraft.value = (existingGroup?.let(::newDraft)
+            ?: ViewRangeDraft(
+                ruleId = null,
+                payeePattern = payeePattern,
+                matchType = PayeeRule.MatchType.Exact,
+                displayPattern = displayPattern,
+                currencyCode = currencyCode,
+                fromText = "",
+                underText = "",
+                target = null,
+                categoryOptions = emptyList(),
+                isIncome = isIncome,
+            )).let { draft ->
+            draft.copy(
+                categoryOptions = (draft.categoryOptions + categoryOptions).distinct(),
+            )
+        }
+    }
+
     fun onAddRangeClicked(group: ViewPayeeRuleGroup) {
         _rangeDraft.value = newDraft(group)
     }

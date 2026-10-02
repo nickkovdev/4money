@@ -67,6 +67,15 @@ data class ViewInboxCard(
      */
     val reasonText: String?,
     val alternatives: List<ViewInboxCardCategory>,
+    /**
+     * The "Remember" toggle, null when there is nothing to learn
+     * (the suggestion comes from a rule or the payee is unknown).
+     */
+    val isRememberOn: Boolean? = null,
+    /**
+     * The payee went to several categories: offer amount rules instead of remembering.
+     */
+    val isAmountRulesHinted: Boolean = false,
 )
 
 @Immutable

@@ -30,6 +30,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -94,6 +95,7 @@ import ua.com.radiokot.money.uikit.MoneyButtonStyle
 import ua.com.radiokot.money.uikit.MoneyChip
 import ua.com.radiokot.money.uikit.MoneyIconButton
 import ua.com.radiokot.money.uikit.MoneyIconButtonStyle
+import ua.com.radiokot.money.uikit.MoneySwitch
 import ua.com.radiokot.money.uikit.theme.MidnightMoneyColors
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
@@ -117,6 +119,8 @@ private fun InboxCardsScreen(
     onSkipClicked: (ViewInboxCard) -> Unit,
     onPickClicked: (ViewInboxCard) -> Unit,
     onAlternativeClicked: (ViewInboxCard, ViewInboxCardCategory) -> Unit,
+    onRememberToggled: (ViewInboxCard, Boolean) -> Unit = { _, _ -> },
+    onAmountRulesClicked: (ViewInboxCard) -> Unit = {},
     onUndoClicked: () -> Unit,
     onUndoTimedOut: (ViewInboxCardUndo) -> Unit,
     onRulesClicked: () -> Unit,
@@ -254,6 +258,8 @@ private fun InboxCardsScreen(
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                     onAlternativeClicked(topCard, category)
                 },
+                onRememberToggled = { isOn -> onRememberToggled(topCard, isOn) },
+                onAmountRulesClicked = { onAmountRulesClicked(topCard) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -445,6 +451,8 @@ private fun CardStack(
     cardHeightPx: androidx.compose.runtime.MutableState<Float>,
     onCommit: (SwipeAction) -> Unit,
     onAlternativeClicked: (ViewInboxCardCategory) -> Unit,
+    onRememberToggled: (Boolean) -> Unit,
+    onAmountRulesClicked: () -> Unit,
 ) = BoxWithConstraints(
     modifier = modifier,
 ) {
@@ -539,6 +547,8 @@ private fun CardStack(
         CardContent(
             card = card,
             onAlternativeClicked = onAlternativeClicked,
+            onRememberToggled = onRememberToggled,
+            onAmountRulesClicked = onAmountRulesClicked,
         )
 
         val action = actionOf(offset.value)
@@ -610,6 +620,8 @@ private fun Stamp(
 private fun CardContent(
     card: ViewInboxCard,
     onAlternativeClicked: (ViewInboxCardCategory) -> Unit,
+    onRememberToggled: (Boolean) -> Unit,
+    onAmountRulesClicked: () -> Unit,
 ) = Column(
     verticalArrangement = Arrangement.spacedBy(16.dp),
     modifier = Modifier
@@ -681,6 +693,72 @@ private fun CardContent(
         iconTint = colors.accent,
         text = card.reasonText ?: "No suggestion yet: pick a category",
     )
+
+    val isRememberOn = card.isRememberOn
+    if (isRememberOn != null) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MoneyShapes.medium)
+                .clickable { onRememberToggled(!isRememberOn) }
+                .padding(
+                    horizontal = 4.dp,
+                    vertical = 2.dp,
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Text(
+                    text = "Remember for this payee",
+                    style = MoneyTheme.typography.label,
+                )
+                Text(
+                    text =
+                        if (isRememberOn)
+                            "Next time it is recorded automatically"
+                        else
+                            "Next time it waits here again",
+                    style = MoneyTheme.typography.small,
+                    color = colors.ink3,
+                )
+            }
+            MoneySwitch(
+                isOn = isRememberOn,
+                onToggled = null,
+            )
+        }
+    }
+
+    if (card.isAmountRulesHinted) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .clip(MoneyShapes.pill)
+                .clickable(onClick = onAmountRulesClicked)
+                .padding(
+                    horizontal = 4.dp,
+                    vertical = 4.dp,
+                )
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_tabler_adjustments_horizontal),
+                contentDescription = null,
+                tint = colors.accent,
+                modifier = Modifier
+                    .size(16.dp)
+            )
+            Text(
+                text = "Different categories here: set up amount rules",
+                style = MoneyTheme.typography.label,
+                color = colors.accent,
+            )
+        }
+    }
 
     if (card.alternatives.isNotEmpty()) {
         Column(
@@ -755,6 +833,8 @@ fun InboxCardsScreen(
     onSkipClicked = remember { viewModel::onSkipClicked },
     onPickClicked = remember { viewModel::onPickClicked },
     onAlternativeClicked = remember { viewModel::onAlternativeClicked },
+    onRememberToggled = remember { viewModel::onRememberToggled },
+    onAmountRulesClicked = remember { viewModel::onAmountRulesClicked },
     onUndoClicked = remember { viewModel::onUndoClicked },
     onUndoTimedOut = remember { viewModel::onUndoTimedOut },
     onRulesClicked = onRulesClicked,
