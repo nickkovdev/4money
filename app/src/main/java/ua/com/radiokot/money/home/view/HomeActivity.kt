@@ -115,6 +115,7 @@ import ua.com.radiokot.money.transfers.view.TransfersNavigator
 import ua.com.radiokot.money.transfers.view.transferCounterpartySelectionSheet
 import ua.com.radiokot.money.transfers.view.transferSheet
 import ua.com.radiokot.money.uikit.ScaleIndication
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 class HomeActivity : MoneyAppActivity(
     requiresSession = true,
@@ -126,18 +127,20 @@ class HomeActivity : MoneyAppActivity(
     override fun onCreateAllowed(savedInstanceState: Bundle?) {
 
         enableEdgeToEdge(
-            navigationBarStyle = SystemBarStyle.light(
-                scrim = 0,
-                darkScrim = 0,
+            navigationBarStyle = SystemBarStyle.auto(
+                lightScrim = android.graphics.Color.TRANSPARENT,
+                darkScrim = android.graphics.Color.TRANSPARENT,
             ),
         )
 
         setContent {
-            UserSessionScope {
-                HomeScreen(
-                    viewModel = viewModel,
-                    goToAuth = ::goToAuth,
-                )
+            MoneyTheme {
+                UserSessionScope {
+                    HomeScreen(
+                        viewModel = viewModel,
+                        goToAuth = ::goToAuth,
+                    )
+                }
             }
         }
     }

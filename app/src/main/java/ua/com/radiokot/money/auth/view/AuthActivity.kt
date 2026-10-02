@@ -21,8 +21,8 @@ package ua.com.radiokot.money.auth.view
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,22 +31,25 @@ import androidx.navigation.compose.NavHost
 import ua.com.radiokot.money.auth.logic.UserSessionScope
 import ua.com.radiokot.money.home.view.HomeActivity
 import ua.com.radiokot.money.rememberMoneyAppNavController
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
-class AuthActivity : ComponentActivity() {
+class AuthActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            UserSessionScope {
-                Content(
-                    goHome = {
-                        startActivity(
-                            Intent(this, HomeActivity::class.java)
-                        )
-                        finishAffinity()
-                    },
-                )
+            MoneyTheme {
+                UserSessionScope {
+                    Content(
+                        goHome = {
+                            startActivity(
+                                Intent(this, HomeActivity::class.java)
+                            )
+                            finishAffinity()
+                        },
+                    )
+                }
             }
         }
     }

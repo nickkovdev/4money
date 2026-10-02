@@ -76,6 +76,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Navigator.Name("bottom-sheet")
 class BottomSheetNavigator : Navigator<BottomSheetNavigator.Destination>() {
@@ -206,7 +207,7 @@ fun MoneyAppModalBottomSheetHost(
         ImmediateLaunchedEffect {
             val modalWindow: Window = LocalModalWindow.current
             WindowInsetsControllerCompat(modalWindow, modalWindow.decorView)
-                .isAppearanceLightNavigationBars = true
+                .isAppearanceLightNavigationBars = !MoneyTheme.colors.isDark
             // This removes the default navigation bar scrim.
             modalWindow.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
         }
