@@ -33,6 +33,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -193,7 +194,9 @@ private fun HomeScreen(
         NavHost(
             navController = navController,
             startDestination = AccountsScreenRoute,
-            enterTransition = { fadeIn(tween(150)) },
+            enterTransition = {
+                fadeIn(tween(200)) + scaleIn(initialScale = 0.98f, animationSpec = tween(200))
+            },
             exitTransition = { fadeOut(tween(150)) },
             modifier = Modifier
                 .weight(1f)
