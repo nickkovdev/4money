@@ -19,7 +19,9 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import android.widget.Toast
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
@@ -41,6 +43,8 @@ fun NavGraphBuilder.inboxScreen(
     onClose: () -> Unit,
 ) = composable<InboxScreenRoute> {
 
+    val context = LocalContext.current
+
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
@@ -58,6 +62,15 @@ fun NavGraphBuilder.inboxScreen(
 
                 InboxScreenViewModel.Event.Close ->
                     onClose()
+
+                is InboxScreenViewModel.Event.ShowUndoError ->
+                    Toast
+                        .makeText(
+                            context,
+                            "Failed to undo: ${event.technicalReason}",
+                            Toast.LENGTH_LONG,
+                        )
+                        .show()
             }
         }
     }
