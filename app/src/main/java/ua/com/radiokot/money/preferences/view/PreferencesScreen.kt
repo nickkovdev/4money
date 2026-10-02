@@ -22,13 +22,16 @@ package ua.com.radiokot.money.preferences.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -49,12 +52,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
+import ua.com.radiokot.money.theme.data.ThemeMode
 import ua.com.radiokot.money.uikit.RedToggleSwitch
 import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 private fun PreferencesScreen(
     modifier: Modifier = Modifier,
+    themeMode: State<ThemeMode>,
+    onThemeModeClicked: (ThemeMode) -> Unit,
     primaryCurrencyCode: State<String>,
     onPrimaryCurrencyCodeChanged: (String) -> Unit,
     isSaveCurrencyPreferencesEnabled: State<Boolean>,
@@ -90,6 +97,60 @@ private fun PreferencesScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
     }
+
+    Text(
+        text = "Appearance",
+        fontSize = 16.sp,
+        fontWeight = FontWeight(500),
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    ThemeMode.entries.forEach { mode ->
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = { onThemeModeClicked(mode) },
+                )
+                .padding(
+                    vertical = 10.dp,
+                )
+        ) {
+            Text(
+                text = when (mode) {
+                    ThemeMode.System -> "Follow the system"
+                    ThemeMode.Light -> "Light"
+                    ThemeMode.Dark -> "Dark"
+                },
+                modifier = Modifier
+                    .weight(1f)
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(18.dp)
+                    .border(
+                        width = 1.dp,
+                        color = MoneyTheme.colors.outline,
+                        shape = CircleShape,
+                    )
+                    .padding(4.dp)
+                    .then(
+                        if (themeMode.value == mode)
+                            Modifier.background(
+                                color = MoneyTheme.colors.onBackground,
+                                shape = CircleShape,
+                            )
+                        else
+                            Modifier
+                    )
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(40.dp))
 
     Text(
         text = "Currency",
@@ -203,6 +264,8 @@ fun PreferencesScreen(
     viewModel: PreferencesScreenViewModel,
 ) = PreferencesScreen(
     modifier = modifier,
+    themeMode = viewModel.themeMode.collectAsState(),
+    onThemeModeClicked = remember { viewModel::onThemeModeClicked },
     primaryCurrencyCode = viewModel.primaryCurrencyCodeValue.collectAsState(),
     onPrimaryCurrencyCodeChanged = remember { viewModel::onPrimaryCurrencyCodeChanged },
     isSaveCurrencyPreferencesEnabled = viewModel.isSaveCurrencyPreferencesEnabled.collectAsState(),
@@ -220,6 +283,8 @@ fun PreferencesScreen(
 @Composable
 private fun PreferencesScreenPreview(
 ) = PreferencesScreen(
+    themeMode = ThemeMode.System.let(::mutableStateOf),
+    onThemeModeClicked = {},
     primaryCurrencyCode = "USD".let(::mutableStateOf),
     onPrimaryCurrencyCodeChanged = {},
     isSaveCurrencyPreferencesEnabled = true.let(::mutableStateOf),
