@@ -25,6 +25,7 @@ import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -52,6 +53,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -73,6 +75,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -83,12 +86,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import com.composeunstyled.Icon
 import com.composeunstyled.Text
 import kotlinx.coroutines.flow.mapNotNull
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.compose.koinInject
 import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.MoneyAppModalBottomSheetHost
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.accounts.view.AccountActionSheetRoute
 import ua.com.radiokot.money.accounts.view.AccountsScreenRoute
 import ua.com.radiokot.money.accounts.view.ArchivedAccountsActivity
@@ -413,7 +418,7 @@ private fun BottomNavigation(
 
     BottomNavigationEntry(
         text = "Accounts",
-        icon = "👛",
+        icon = R.drawable.ic_tabler_wallet,
         isCurrent = lastVisitedBottomRoute == AccountsScreenRoute,
         modifier = Modifier
             .weight(1f)
@@ -427,7 +432,7 @@ private fun BottomNavigation(
 
     BottomNavigationEntry(
         text = "Categories",
-        icon = "📊",
+        icon = R.drawable.ic_tabler_chart_donut,
         isCurrent = lastVisitedBottomRoute == CategoriesScreenRoute,
         modifier = Modifier
             .weight(1f)
@@ -441,7 +446,7 @@ private fun BottomNavigation(
 
     BottomNavigationEntry(
         text = "Activity",
-        icon = "📜",
+        icon = R.drawable.ic_tabler_list_details,
         isCurrent = lastVisitedBottomRoute == ActivityScreenRoute,
         modifier = Modifier
             .weight(1f)
@@ -455,7 +460,7 @@ private fun BottomNavigation(
 
     BottomNavigationEntry(
         text = "More",
-        icon = "⚙️",
+        icon = R.drawable.ic_tabler_user_circle,
         isCurrent = lastVisitedBottomRoute == PreferencesScreenRoute
                 || LocalInspectionMode.current,
         hasNotice = hasMoreNotice.value,
@@ -474,7 +479,7 @@ private fun BottomNavigation(
 private fun BottomNavigationEntry(
     modifier: Modifier = Modifier,
     text: String,
-    icon: String,
+    @DrawableRes icon: Int,
     isCurrent: Boolean,
     hasNotice: Boolean = false,
 ) = Column(
@@ -528,17 +533,15 @@ private fun BottomNavigationEntry(
 
         val noticeColor = MoneyTheme.colors.notice
 
-        Text(
-            text = icon,
-            style = TextStyle(
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-            ),
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = text,
+            tint = MoneyTheme.colors.onBackground,
             modifier = Modifier
-                .fillMaxWidth(0.65f)
                 .padding(
                     vertical = 4.dp,
                 )
+                .size(22.dp)
                 .run {
                     if (!hasNotice) {
                         return@run this
@@ -549,8 +552,8 @@ private fun BottomNavigationEntry(
                     with(LocalDensity.current) {
                         noticeCircleRadiusPx = 4.dp.toPx()
                         noticeCircleOffset = Offset(
-                            x = 18.dp.toPx(),
-                            y = (-8).dp.toPx(),
+                            x = 12.dp.toPx(),
+                            y = (-10).dp.toPx(),
                         )
                     }
 
