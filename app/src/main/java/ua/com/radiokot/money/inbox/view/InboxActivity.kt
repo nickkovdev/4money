@@ -44,7 +44,7 @@ import ua.com.radiokot.money.transfers.view.TransferSheetRoute
 import ua.com.radiokot.money.transfers.view.TransfersNavigator
 import ua.com.radiokot.money.transfers.view.transferCounterpartySelectionSheet
 import ua.com.radiokot.money.transfers.view.transferSheet
-import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import ua.com.radiokot.money.theme.view.MoneyAppTheme
 
 class InboxActivity : MoneyAppActivity(
     requiresUnlocking = true,
@@ -56,7 +56,7 @@ class InboxActivity : MoneyAppActivity(
         enableEdgeToEdge()
 
         setContent {
-            MoneyTheme {
+            MoneyAppTheme {
                 UserSessionScope {
                     Content(
                         finishActivity = ::finish,

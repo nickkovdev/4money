@@ -28,8 +28,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -49,6 +47,7 @@ import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemColorSchemeAccents
 import ua.com.radiokot.money.colors.data.ItemIcon
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -57,9 +56,8 @@ fun ItemLogo(
     title: String,
     colorScheme: ItemColorScheme,
     icon: ItemIcon?,
-    shape: Shape = RoundedCornerShape(12.dp),
+    shape: Shape = MoneyShapes.itemTile,
 ) {
-    val isDark = MoneyTheme.colors.isDark
     val (backgroundColor, foregroundColor) = itemLogoColors(colorScheme)
 
     BoxWithConstraints(
@@ -67,12 +65,7 @@ fun ItemLogo(
         modifier = modifier
             .background(
                 color = backgroundColor,
-                // Dark avatars are always circles.
-                shape =
-                    if (isDark)
-                        CircleShape
-                    else
-                        shape,
+                shape = shape,
             )
     ) {
         if (icon != null) {
@@ -114,30 +107,26 @@ fun ItemLogo(
 }
 
 /**
- * The background and foreground colors of the item logo
- * for the current theme: pastel in light, dark tint with saturated foreground in dark.
+ * The background and foreground colors of the item logo for the current theme:
+ * a translucent tint of the item accent with the accent glyph on top, the same in every palette.
  */
 @Composable
 fun itemLogoColors(colorScheme: ItemColorScheme): Pair<Color, Color> {
-    val isDark = MoneyTheme.colors.isDark
-    return remember(colorScheme, isDark) {
-        if (isDark) {
-            val darkColors = ItemColorSchemeAccents.darkLogoColors(colorScheme)
-            Color(darkColors.background) to Color(darkColors.foreground)
-        } else {
-            Color(colorScheme.primary) to Color(colorScheme.onPrimary)
-        }
+    val colors = MoneyTheme.colors
+    return remember(colorScheme, colors) {
+        val accent = Color(ItemColorSchemeAccents.themedAccent(colorScheme, colors.isDark))
+        accent.copy(alpha = colors.itemTintAlpha) to accent
     }
 }
 
 /**
- * The saturated color of the item for charts, borders and accents.
+ * The item color for charts, selected chips and accents.
  */
 @Composable
 fun itemAccentColor(colorScheme: ItemColorScheme): Color {
     val isDark = MoneyTheme.colors.isDark
     return remember(colorScheme, isDark) {
-        Color(ItemColorSchemeAccents.accent(colorScheme, isDark))
+        Color(ItemColorSchemeAccents.themedAccent(colorScheme, isDark))
     }
 }
 

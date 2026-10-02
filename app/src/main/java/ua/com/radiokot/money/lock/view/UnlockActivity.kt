@@ -50,6 +50,7 @@ import com.composeunstyled.Text
 import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import ua.com.radiokot.money.theme.view.MoneyAppTheme
 
 class UnlockActivity : MoneyAppActivity(
     requiresUnlocking = false,
@@ -72,7 +73,7 @@ class UnlockActivity : MoneyAppActivity(
         setResult(RESULT_CANCELED)
 
         setContent {
-            MoneyTheme {
+            MoneyAppTheme {
                 Content()
             }
         }

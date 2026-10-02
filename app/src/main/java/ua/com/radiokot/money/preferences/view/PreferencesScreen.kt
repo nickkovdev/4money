@@ -127,8 +127,10 @@ private fun PreferencesScreen(
             Text(
                 text = when (mode) {
                     ThemeMode.System -> "Follow the system"
-                    ThemeMode.Light -> "Light"
-                    ThemeMode.Dark -> "Dark"
+                    ThemeMode.Light -> "Paper (light)"
+                    ThemeMode.Dark -> "Midnight (dark)"
+                    ThemeMode.Ember -> "Ember (dark)"
+                    ThemeMode.Aurora -> "Aurora (dark)"
                 },
                 modifier = Modifier
                     .weight(1f)

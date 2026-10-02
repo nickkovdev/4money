@@ -25,34 +25,38 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.composeunstyled.LocalContentColor
+import com.composeunstyled.LocalTextStyle
 
 /**
- * Light by default so previews without [MoneyTheme] look like before.
+ * Paper by default so previews without [MoneyTheme] look light.
  */
-val LocalMoneyColors = staticCompositionLocalOf { LightMoneyColors }
+val LocalMoneyColors = staticCompositionLocalOf { PaperMoneyColors }
+val LocalMoneyTypography = staticCompositionLocalOf { DefaultMoneyTypography }
 
 /**
- * Provides the color tokens. [isDark] defaults to the configuration's night mode,
- * which AppCompat overrides with the stored [ua.com.radiokot.money.theme.data.ThemeMode],
- * see MoneyApp.initTheme().
+ * Provides the tokens. With no [colors] given, picks Paper or Midnight
+ * by the configuration's night mode, which AppCompat overrides
+ * with the stored [ua.com.radiokot.money.theme.data.ThemeMode], see MoneyApp.initTheme().
+ * The app passes the chosen palette, see `MoneyAppTheme`.
  *
- * `com.composeunstyled.Text` and `Icon` read [LocalContentColor],
- * so they get the right text color without passing it explicitly.
+ * `com.composeunstyled.Text` and `Icon` read [LocalContentColor] and [LocalTextStyle],
+ * so they get the font and the text color without passing them explicitly.
  */
 @Composable
 fun MoneyTheme(
-    isDark: Boolean = isSystemInDarkTheme(),
+    colors: MoneyColors =
+        if (isSystemInDarkTheme())
+            MidnightMoneyColors
+        else
+            PaperMoneyColors,
+    typography: MoneyTypography = DefaultMoneyTypography,
     content: @Composable () -> Unit,
 ) {
-    val colors =
-        if (isDark)
-            DarkMoneyColors
-        else
-            LightMoneyColors
-
     CompositionLocalProvider(
         LocalMoneyColors provides colors,
-        LocalContentColor provides colors.onBackground,
+        LocalMoneyTypography provides typography,
+        LocalContentColor provides colors.ink,
+        LocalTextStyle provides typography.body,
         content = content,
     )
 }
@@ -63,4 +67,15 @@ object MoneyTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalMoneyColors.current
+
+    val typography: MoneyTypography
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalMoneyTypography.current
+
+    val shapes: MoneyShapes
+        get() = MoneyShapes
+
+    val spacing: MoneySpacing
+        get() = MoneySpacing
 }

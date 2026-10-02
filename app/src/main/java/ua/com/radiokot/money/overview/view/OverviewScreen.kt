@@ -195,7 +195,7 @@ private fun OverviewContent(
             overview.bars.map { bar ->
                 bar.segments.map { segment ->
                     (segment.colorScheme
-                        ?.let { Color(ItemColorSchemeAccents.accent(it, isDark)) }
+                        ?.let { Color(ItemColorSchemeAccents.themedAccent(it, isDark)) }
                         ?: chartOther) to segment.value
                 }
             }

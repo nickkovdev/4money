@@ -40,7 +40,7 @@ import ua.com.radiokot.money.colors.view.itemLogoScreen
 import ua.com.radiokot.money.currency.view.CurrencySelectionScreenRoute
 import ua.com.radiokot.money.currency.view.currencySelectionScreen
 import ua.com.radiokot.money.rememberMoneyAppNavController
-import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import ua.com.radiokot.money.theme.view.MoneyAppTheme
 
 class EditAccountActivity : MoneyAppActivity(
     requiresUnlocking = true,
@@ -52,7 +52,7 @@ class EditAccountActivity : MoneyAppActivity(
         enableEdgeToEdge()
 
         setContent {
-            MoneyTheme {
+            MoneyAppTheme {
                 UserSessionScope {
                     Content(
                         route = intent

@@ -126,6 +126,7 @@ import ua.com.radiokot.money.transfers.view.transferCounterpartySelectionSheet
 import ua.com.radiokot.money.transfers.view.transferSheet
 import ua.com.radiokot.money.uikit.ScaleIndication
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import ua.com.radiokot.money.theme.view.MoneyAppTheme
 
 class HomeActivity : MoneyAppActivity(
     requiresSession = true,
@@ -144,7 +145,7 @@ class HomeActivity : MoneyAppActivity(
         )
 
         setContent {
-            MoneyTheme {
+            MoneyAppTheme {
                 UserSessionScope {
                     HomeScreen(
                         viewModel = viewModel,
