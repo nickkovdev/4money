@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -58,6 +59,12 @@ class OverviewScreenViewModel(
                 getOverviewStatsUseCase(
                     period = period,
                 )
+                    .catch { error ->
+                        log.error(error) {
+                            "overviewDataFlow(): failed getting overview stats for $period"
+                        }
+                        emit(null)
+                    }
             }
             .shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
 
