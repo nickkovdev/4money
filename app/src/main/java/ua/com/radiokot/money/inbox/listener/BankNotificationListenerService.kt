@@ -52,7 +52,8 @@ class BankNotificationListenerService :
         }
 
         val notification = sbn.notification
-        if (notification.flags and Notification.FLAG_GROUP_SUMMARY != 0) {
+        // Summaries and ongoing status notifications are not payments.
+        if (notification.flags and IGNORED_FLAGS != 0) {
             return
         }
 
@@ -91,9 +92,10 @@ class BankNotificationListenerService :
                     }
                 }
                 .onFailure { error ->
+                    // No text, payee, amount or card digits: the log is public.
                     log.error(error) {
                         "onNotificationPosted(): failed to process:" +
-                                "\nincoming=$incoming"
+                                "\npackageName=${incoming.packageName}"
                     }
                 }
         }
@@ -102,5 +104,12 @@ class BankNotificationListenerService :
     override fun onDestroy() {
         coroutineScope.cancel()
         super.onDestroy()
+    }
+
+    private companion object {
+        const val IGNORED_FLAGS =
+            Notification.FLAG_GROUP_SUMMARY or
+                    Notification.FLAG_ONGOING_EVENT or
+                    Notification.FLAG_FOREGROUND_SERVICE
     }
 }

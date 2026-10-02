@@ -25,13 +25,16 @@ import ua.com.radiokot.money.inbox.data.MostUsedAccountSource
 interface CardAccountResolver {
 
     /**
+     * @param usableAccountIds IDs of existing non-archived accounts;
+     * a mapped, rule or most used account not among them is skipped.
+     *
      * @return the account to use: the account mapped to [cardLast4] in settings,
      * otherwise [ruleAccountId], otherwise the most used account.
-     * The caller must check the account still exists and is not archived.
      */
     suspend fun resolve(
         cardLast4: String?,
         ruleAccountId: String?,
+        usableAccountIds: Set<String>,
     ): String?
 }
 
@@ -43,8 +46,11 @@ class DefaultCardAccountResolver(
     override suspend fun resolve(
         cardLast4: String?,
         ruleAccountId: String?,
+        usableAccountIds: Set<String>,
     ): String? =
-        cardLast4?.let(cardAccountPreferences::getAccountIdForCard)
-            ?: ruleAccountId
-            ?: mostUsedAccountSource.getMostUsedAccountId()
+        cardLast4
+            ?.let(cardAccountPreferences::getAccountIdForCard)
+            ?.takeIf(usableAccountIds::contains)
+            ?: ruleAccountId?.takeIf(usableAccountIds::contains)
+            ?: mostUsedAccountSource.getMostUsedAccountId()?.takeIf(usableAccountIds::contains)
 }
