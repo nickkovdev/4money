@@ -325,7 +325,7 @@ private fun OverviewContent(
 
                 ListRow(
                     title = category.title,
-                    subtitle = "${category.percent}%",
+                    subtitle = category.shareText,
                     leading = {
                         ItemLogo(
                             title = category.title,

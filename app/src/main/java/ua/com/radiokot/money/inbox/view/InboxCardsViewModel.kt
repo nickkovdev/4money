@@ -262,6 +262,7 @@ class InboxCardsViewModel(
             key = item.id,
             title = payeeDisplayName
                 ?: item.rawText.lineSequence().last().take(120),
+            isTitleRawText = payeeDisplayName == null,
             amount = viewAmountOf(item),
             isIncoming = isIncoming,
             isForeignCurrency = account != null

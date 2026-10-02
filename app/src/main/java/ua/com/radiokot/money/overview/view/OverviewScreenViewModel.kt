@@ -35,6 +35,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import ua.com.radiokot.money.eventSharedFlow
 import ua.com.radiokot.money.lazyLogger
@@ -73,6 +75,12 @@ class OverviewScreenViewModel(
                     }
             }
             .shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
+
+    init {
+        historyStatsPeriod
+            .onEach { _isExpanded.value = false }
+            .launchIn(viewModelScope)
+    }
 
     val state: StateFlow<OverviewScreenState> =
         combine(

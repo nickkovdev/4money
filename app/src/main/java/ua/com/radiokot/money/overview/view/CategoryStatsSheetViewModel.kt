@@ -26,12 +26,16 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import ua.com.radiokot.money.categories.data.Category
 import ua.com.radiokot.money.categories.logic.GetCategoryAmountsBySubcategoryUseCase
 import ua.com.radiokot.money.eventSharedFlow
+import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.overview.logic.GetOverviewStatsUseCase
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
@@ -45,6 +49,7 @@ class CategoryStatsSheetViewModel(
     getOverviewStatsUseCase: GetOverviewStatsUseCase,
 ) : ViewModel() {
 
+    private val log by lazyLogger("CategoryStatsSheetVM")
     private val viewPeriod = ViewHistoryPeriod.fromHistoryPeriod(parameters.statsPeriod)
 
     /**
@@ -72,6 +77,15 @@ class CategoryStatsSheetViewModel(
                 period = viewPeriod,
             )
         }
+            .map<ViewCategoryStats, ViewCategoryStats?> { it }
+            .retryWhen { error, _ ->
+                log.error(error) {
+                    "stats: failed getting stats of ${parameters.categoryId}"
+                }
+                emit(null)
+                delay(5_000)
+                true
+            }
             .flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
 

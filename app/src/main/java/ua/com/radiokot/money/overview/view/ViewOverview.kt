@@ -24,6 +24,7 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
 import ua.com.radiokot.money.overview.logic.OverviewCategoryShare
 import ua.com.radiokot.money.overview.logic.OverviewData
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
@@ -81,6 +82,7 @@ class ViewOverview(
                     icon = category.icon,
                     amount = amount(share.amount),
                     percent = share.percent,
+                    shareText = PrivacyAmounts.shareText(share.amount, stats.total),
                 )
             }
 
@@ -138,4 +140,8 @@ class ViewOverviewTopCategory(
     val icon: ItemIcon?,
     val amount: ViewAmount,
     val percent: Int,
+    /**
+     * "33%", "<1%" for a tiny non-zero share.
+     */
+    val shareText: String,
 )
