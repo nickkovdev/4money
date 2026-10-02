@@ -109,6 +109,15 @@ object OverviewStatsCalculator {
             else
                 BigInteger.ZERO
 
+        val shares = rankedIds.map { categoryId ->
+            val amount = totalsByCategoryId.getValue(categoryId)
+            OverviewCategoryShare(
+                categoryId = categoryId,
+                amount = amount,
+                percent = percentOf(amount, total),
+            )
+        }
+
         return OverviewStats(
             total = total,
             days = days,
@@ -116,17 +125,9 @@ object OverviewStatsCalculator {
             dayAverage = dayAverage,
             // Before a week has passed, a week can't average more than the total so far.
             weekAverage = (dayAverage * SEVEN).min(total),
-            topCategories = rankedIds
-                .take(topCategoryCount)
-                .map { categoryId ->
-                    val amount = totalsByCategoryId.getValue(categoryId)
-                    OverviewCategoryShare(
-                        categoryId = categoryId,
-                        amount = amount,
-                        percent = percentOf(amount, total),
-                    )
-                },
+            topCategories = shares.take(topCategoryCount),
             categoryCount = totalsByCategoryId.size,
+            categories = shares,
         )
     }
 

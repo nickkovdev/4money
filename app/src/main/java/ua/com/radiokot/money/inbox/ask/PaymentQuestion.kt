@@ -39,6 +39,19 @@ object PaymentQuestion {
         reason == AutoExpenseResolver.PendingReason.AskRequested
 
     /**
+     * The notification title: "Fuelstop · −18.40 €", or just the payee in privacy mode.
+     */
+    fun notificationTitle(
+        payee: String,
+        signedAmount: String,
+        isPrivate: Boolean,
+    ): String =
+        if (isPrivate)
+            payee
+        else
+            "$payee · $signedAmount"
+
+    /**
      * @return up to [MAX_ACTIONS] categories for the action buttons: the suggestion first,
      * then the alternatives.
      */

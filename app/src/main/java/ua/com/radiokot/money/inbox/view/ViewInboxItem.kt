@@ -39,6 +39,10 @@ class ViewInboxItem(
      */
     val amount: ViewAmount? = null,
     val isIncoming: Boolean = false,
+    /**
+     * The [title] is the last line of the raw bank text, which usually contains the amount.
+     */
+    val isTitleRawText: Boolean = false,
 ) {
     /**
      * @param accountCurrencyCode currency of the item's account, if known
@@ -66,8 +70,14 @@ class ViewInboxItem(
         source = item,
         amount = viewAmountOf(item),
         isIncoming = item.direction == InboxItem.Direction.Incoming,
+        isTitleRawText = item.payee?.let(PayeeNormalizer::displayName) == null,
     )
 }
+
+/**
+ * Neutral title shown instead of a raw bank text fallback while the privacy mode is on.
+ */
+const val PRIVATE_TITLE = "Bank payment"
 
 /**
  * The bank amount as an app amount, e.g. 18.90 EUR → −18.90 €,

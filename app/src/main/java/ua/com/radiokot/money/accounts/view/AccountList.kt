@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -364,6 +366,7 @@ private fun HeaderItem(
     isFirst: Boolean = false,
 ) {
     val amountFormat = rememberViewAmountFormat()
+    val isPrivate = LocalPrivacyMode.current
     val animatedAmount = amount?.let {
         animateAmountValueAsState(
             targetAmount = amount
@@ -374,10 +377,13 @@ private fun HeaderItem(
         title = title,
         trailing =
             if (amount != null && animatedAmount != null)
-                amountFormat(
-                    value = animatedAmount.value,
-                    currency = amount.currency,
-                ).text
+                if (isPrivate)
+                    PrivacyAmounts.MASK
+                else
+                    amountFormat(
+                        value = animatedAmount.value,
+                        currency = amount.currency,
+                    ).text
             else
                 null,
         modifier = modifier
@@ -440,12 +446,22 @@ private fun AccountItem(
             targetAmount = item.balance,
         )
 
+        val isPrivate = LocalPrivacyMode.current
+
         Text(
-            text = amountFormat(
-                value = animatedAmount.value,
-                currency = item.balance.currency,
-                customColor = balanceColor(animatedAmount.value),
-            ),
+            text =
+                if (isPrivate)
+                    amountFormat.privateText(
+                        text = PrivacyAmounts.MASK,
+                        value = animatedAmount.value,
+                        customColor = balanceColor(animatedAmount.value),
+                    )
+                else
+                    amountFormat(
+                        value = animatedAmount.value,
+                        currency = item.balance.currency,
+                        customColor = balanceColor(animatedAmount.value),
+                    ),
             maxLines = 1,
             style = MoneyTheme.typography.bodyStrong,
         )

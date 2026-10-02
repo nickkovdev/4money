@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFilter
+import java.math.BigInteger
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemColorSchemeAccents
 import ua.com.radiokot.money.uikit.chart.DonutRing
@@ -79,6 +80,7 @@ fun CategoryRingGrid(
     onRingClicked: () -> Unit,
     modeSwitch: @Composable () -> Unit,
     ringCenter: @Composable BoxScope.() -> Unit,
+    currentModeTotal: BigInteger? = null,
 ) {
     val rowGap = 14.dp
     val columnGap = 6.dp
@@ -116,6 +118,8 @@ fun CategoryRingGrid(
         is RingGridCell.Category ->
             CategoryListItem(
                 item = cell.item,
+                isShareAvailable = true,
+                currentModeTotal = currentModeTotal,
                 modifier = cellModifier
                     .combinedClickable(
                         onClick = { onItemClicked(cell.item) },

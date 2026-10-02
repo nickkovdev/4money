@@ -56,4 +56,13 @@ interface HistoryStatsRepository {
         accountId: String,
         period: HistoryPeriod,
     ): Flow<TotalIncomeAndExpense>
+
+    /**
+     * @return number of transfers of the category and its subcategories within the [period].
+     */
+    fun getCategoryTransferCountFlow(
+        categoryId: String,
+        isIncome: Boolean,
+        period: HistoryPeriod,
+    ): Flow<Int>
 }

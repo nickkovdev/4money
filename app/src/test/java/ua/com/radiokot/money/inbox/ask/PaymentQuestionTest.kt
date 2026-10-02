@@ -63,4 +63,16 @@ class PaymentQuestionTest {
         Assert.assertTrue(id > 0)
         Assert.assertEquals(id, PaymentQuestionNotifier.notificationIdOf("item-1"))
     }
+
+    @Test
+    fun `title hides the amount in privacy mode`() {
+        Assert.assertEquals(
+            "Fuelstop · −18.40 €",
+            PaymentQuestion.notificationTitle("Fuelstop", "−18.40 €", isPrivate = false)
+        )
+        Assert.assertEquals(
+            "Fuelstop",
+            PaymentQuestion.notificationTitle("Fuelstop", "−18.40 €", isPrivate = true)
+        )
+    }
 }

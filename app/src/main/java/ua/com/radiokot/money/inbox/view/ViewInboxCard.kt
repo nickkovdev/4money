@@ -52,6 +52,10 @@ data class ViewInboxCard(
     val key: String,
     val title: String,
     /**
+     * The [title] is the last line of the raw bank text, which usually contains the amount.
+     */
+    val isTitleRawText: Boolean = false,
+    /**
      * Negative for an outgoing payment.
      */
     val amount: ViewAmount?,

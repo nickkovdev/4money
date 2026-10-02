@@ -63,6 +63,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
+import ua.com.radiokot.money.uikit.EmptyState
+import androidx.paging.LoadState
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.composeunstyled.Icon
@@ -78,7 +80,10 @@ import ua.com.radiokot.money.R
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewAmountFormat
+import ua.com.radiokot.money.currency.view.formatOrPrivate
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -90,6 +95,7 @@ fun TransferList(
     onTransferItemLongClicked: (ViewTransferListItem.Transfer) -> Unit,
     onTransferItemEditClicked: ((ViewTransferListItem.Transfer) -> Unit)? = null,
     onTransferItemDeleteClicked: ((ViewTransferListItem.Transfer) -> Unit)? = null,
+    privacyTotals: ViewPrivacyTotals? = null,
 ) {
     val locale = LocalConfiguration.current.locales.get(0)
     val amountFormat = rememberViewAmountFormat()
@@ -115,6 +121,27 @@ fun TransferList(
         state = state,
         modifier = modifier,
     ) {
+        if (lazyPagingItems.itemCount == 0
+            && lazyPagingItems.loadState.refresh is LoadState.NotLoading
+        ) {
+            item(
+                key = "empty",
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillParentMaxHeight(0.7f)
+                        .fillMaxWidth(),
+                ) {
+                    EmptyState(
+                        icon = R.drawable.ic_tabler_receipt,
+                        title = "No transactions",
+                        text = "Nothing recorded in this period yet",
+                    )
+                }
+            }
+        }
+
         items(
             lazyPagingItems.itemCount,
             key = lazyPagingItems.itemKey(ViewTransferListItem::key),
@@ -188,6 +215,7 @@ fun TransferList(
                         TransferItem(
                             item = item,
                             amountFormat = amountFormat,
+                            privacyTotals = privacyTotals,
                             modifier = Modifier
                                 .listGroupItem(
                                     position = groupPosition,
@@ -252,6 +280,7 @@ private fun TransferItem(
     modifier: Modifier = Modifier,
     item: ViewTransferListItem.Transfer,
     amountFormat: ViewAmountFormat,
+    privacyTotals: ViewPrivacyTotals?,
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -339,18 +368,26 @@ private fun TransferItem(
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
-            text = amountFormat(
+            text = amountFormat.formatOrPrivate(
                 amount = ViewAmount(
                     value = item.primaryAmount,
                     currency = primary.currency,
                 ),
                 customColor = amountColor,
+                privateAs = PrivacyAmounts.forTransfer(
+                    isExpense = item.type == ViewTransferListItem.Transfer.Type.Expense,
+                    isIncome = item.type == ViewTransferListItem.Transfer.Type.Income,
+                    isInTotalsCurrency = privacyTotals != null
+                            && primary.currency == privacyTotals.currency,
+                    expenseTotal = privacyTotals?.expense,
+                    incomeTotal = privacyTotals?.income,
+                ),
             ),
             maxLines = 1,
             style = MoneyTheme.typography.bodyStrong,
         )
 
-        if (primary.currency != secondary.currency) {
+        if (primary.currency != secondary.currency && !LocalPrivacyMode.current) {
             Text(
                 text = amountFormat(
                     amount = ViewAmount(

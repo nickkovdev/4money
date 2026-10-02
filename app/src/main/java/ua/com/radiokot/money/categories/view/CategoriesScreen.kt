@@ -50,6 +50,7 @@ import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import ua.com.radiokot.money.uikit.SegmentedControl
 import ua.com.radiokot.money.home.view.HomeTabHeader
 import androidx.compose.foundation.layout.Arrangement
+import java.math.BigInteger
 
 @Composable
 fun CategoriesScreenRoot(
@@ -63,6 +64,7 @@ fun CategoriesScreenRoot(
     incomeTotal = viewModel.incomeTotalAmount.collectAsState(),
     ringSegments = viewModel.ringSegments.collectAsState(),
     categoryItemList = viewModel.categoryItemList.collectAsState(),
+    currentModeTotal = viewModel.currentModeTotal.collectAsState(),
     onTitleClicked = remember { viewModel::onTitleClicked },
     onCategoryItemClicked = remember { viewModel::onCategoryItemClicked },
     onCategoryItemLongClicked = remember { viewModel::onCategoryItemLongClicked },
@@ -85,6 +87,7 @@ private fun CategoriesScreen(
     incomeTotal: State<ViewAmount?>,
     ringSegments: State<List<DonutSegment<ItemColorScheme>>>,
     categoryItemList: State<List<ViewCategoryListItem>>,
+    currentModeTotal: State<BigInteger?>,
     onTitleClicked: () -> Unit,
     onCategoryItemClicked: (ViewCategoryListItem) -> Unit,
     onCategoryItemLongClicked: (ViewCategoryListItem) -> Unit,
@@ -125,6 +128,7 @@ private fun CategoriesScreen(
             onItemLongClicked = onCategoryItemLongClicked,
             onAddClicked = onAddClicked,
             onRingClicked = onTitleClicked,
+            currentModeTotal = currentModeTotal.value,
             modeSwitch = {
                 SegmentedControl(
                     options = listOf("Expenses", "Income"),
