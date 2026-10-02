@@ -1,4 +1,4 @@
-﻿package ua.com.radiokot.money.inbox.logic
+package ua.com.radiokot.money.inbox.logic
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
