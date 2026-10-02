@@ -74,6 +74,11 @@
             android:windowSoftInputMode="adjustNothing" />
 
         <activity
+            android:name=".inbox.view.InboxActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustNothing" />
+
+        <activity
             android:name=".lock.view.UnlockActivity"
             android:exported="false"
             android:launchMode="singleInstance" />
