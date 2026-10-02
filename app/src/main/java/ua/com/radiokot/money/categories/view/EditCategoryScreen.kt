@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.categories.view
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.draw.alpha
@@ -124,10 +125,14 @@ private fun EditCategoryScreen(
 ) {
     ScreenTopBar(
         title =
-            if (isNewCategory)
-                "New " + (if (isIncome) "income" else "expense") + " category"
-            else
-                "Edit " + (if (isIncome) "income" else "expense") + " category",
+            stringResource(
+                when {
+                    isNewCategory && isIncome -> R.string.categories_new_income
+                    isNewCategory -> R.string.categories_new_expense
+                    isIncome -> R.string.categories_edit_income
+                    else -> R.string.categories_edit_expense
+                }
+            ),
         onNavigationClicked = onCloseClicked,
     )
 
@@ -173,11 +178,11 @@ private fun EditCategoryScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                FieldLabel(text = "Title")
+                FieldLabel(text = stringResource(R.string.accounts_field_title))
                 MoneyTextField(
                     value = title.value,
                     onValueChange = onTitleChanged,
-                    placeholder = "Category title",
+                    placeholder = stringResource(R.string.categories_field_title_placeholder),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         capitalization = KeyboardCapitalization.Words,
@@ -189,7 +194,7 @@ private fun EditCategoryScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                FieldLabel(text = "Currency")
+                FieldLabel(text = stringResource(R.string.accounts_field_currency))
                 MoneyPickerField(
                     value = currencyCode.value,
                     leadingIcon = R.drawable.ic_tabler_currency_euro,
@@ -203,7 +208,7 @@ private fun EditCategoryScreen(
                 )
 
                 SectionHeader(
-                    title = "Subcategories",
+                    title = stringResource(R.string.categories_subcategories),
                     modifier = Modifier
                         .padding(top = 16.dp)
                 )
@@ -254,7 +259,7 @@ private fun EditCategoryScreen(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_tabler_grip_vertical),
-                        contentDescription = "Hold to move",
+                        contentDescription = stringResource(R.string.categories_hold_to_move),
                         tint = MoneyTheme.colors.ink3,
                         modifier = Modifier
                             .size(18.dp)
@@ -271,7 +276,7 @@ private fun EditCategoryScreen(
 
                     Icon(
                         painter = painterResource(R.drawable.ic_tabler_pencil),
-                        contentDescription = "Edit",
+                        contentDescription = stringResource(R.string.common_edit),
                         tint = MoneyTheme.colors.ink3,
                         modifier = Modifier
                             .size(16.dp)
@@ -310,7 +315,7 @@ private fun EditCategoryScreen(
                 )
 
                 Text(
-                    text = "Add subcategory",
+                    text = stringResource(R.string.categories_add_subcategory),
                     style = MoneyTheme.typography.label,
                     color = MoneyTheme.colors.accent,
                     modifier = Modifier
@@ -328,8 +333,8 @@ private fun EditCategoryScreen(
                         .padding(top = 16.dp)
                 ) {
                     ListRow(
-                        title = "Archived",
-                        subtitle = "Hidden from the lists, the history stays",
+                        title = stringResource(R.string.accounts_field_archived),
+                        subtitle = stringResource(R.string.accounts_field_archived_hint),
                         leading = {
                             IconTile(
                                 icon = R.drawable.ic_tabler_archive,
@@ -351,7 +356,7 @@ private fun EditCategoryScreen(
     }
 
     MoneyButton(
-        text = "Save",
+        text = stringResource(R.string.common_save),
         style = MoneyButtonStyle.Filled,
         isEnabled = isSaveEnabled.value,
         onClick = onSaveClicked,

@@ -12,6 +12,8 @@
     <string name="common_close">Закрыть</string>
     <string name="common_done">Готово</string>
     <string name="common_undo">Отменить</string>
+    <string name="common_expand">Развернуть</string>
+    <string name="common_collapse">Свернуть</string>
 
     <string name="settings_language">Язык</string>
     <string name="settings_language_system">Как в системе</string>
@@ -106,4 +108,41 @@
     <string name="colors_group_travel">Путешествия</string>
     <string name="colors_group_vehicle">Авто</string>
     <string name="colors_group_work">Работа</string>
+
+    <!-- Categories -->
+    <string name="categories_expenses">Расходы</string>
+    <string name="categories_income">Доходы</string>
+    <string name="categories_add">Добавить</string>
+    <string name="categories_archived_header">АРХИВ</string>
+    <string name="categories_sheet_other">Прочее</string>
+    <string name="categories_new_expense">Новая категория расходов</string>
+    <string name="categories_new_income">Новая категория доходов</string>
+    <string name="categories_edit_expense">Категория расходов</string>
+    <string name="categories_edit_income">Категория доходов</string>
+    <string name="categories_field_title_placeholder">Название категории</string>
+    <string name="categories_subcategories">Подкатегории</string>
+    <string name="categories_hold_to_move">Удерживайте, чтобы переместить</string>
+    <string name="categories_add_subcategory">Добавить подкатегорию</string>
+    <string name="categories_new_subcategory">Новая подкатегория</string>
+    <string name="categories_edit_subcategory">Подкатегория</string>
+    <plurals name="transaction_count">
+        <item quantity="one">%d операция</item>
+        <item quantity="few">%d операции</item>
+        <item quantity="many">%d операций</item>
+        <item quantity="other">%d операции</item>
+    </plurals>
+
+    <!-- Overview -->
+    <string name="overview_no_primary_currency">Нет основной валюты</string>
+    <string name="overview_no_primary_currency_hint">Выберите основную валюту в настройках, чтобы увидеть обзор</string>
+    <string name="overview_income_minus_expenses">Доходы минус расходы</string>
+    <string name="overview_by_day">По дням</string>
+    <string name="overview_day_avg">В день</string>
+    <string name="overview_week_avg">В неделю</string>
+    <string name="overview_month_total">За месяц</string>
+    <string name="overview_top_categories">Топ категорий</string>
+    <string name="overview_show_less">Свернуть</string>
+    <string name="overview_all_categories">Все категории</string>
+    <string name="overview_transactions">Операции</string>
+    <string name="overview_no_subcategory">Без подкатегории</string>
 </resources>

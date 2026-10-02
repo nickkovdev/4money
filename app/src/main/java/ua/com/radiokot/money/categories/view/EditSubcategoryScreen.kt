@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.categories.view
 
+import ua.com.radiokot.money.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.text.KeyboardActions
 import ua.com.radiokot.money.uikit.MoneyButton
@@ -87,10 +89,12 @@ private fun EditSubcategoryScreen(
 ) {
     Text(
         text =
-            if (isNewSubcategory)
-                "New subcategory"
-            else
-                "Edit subcategory",
+            stringResource(
+                if (isNewSubcategory)
+                    R.string.categories_new_subcategory
+                else
+                    R.string.categories_edit_subcategory
+            ),
         style = MoneyTheme.typography.title,
     )
 
@@ -101,7 +105,7 @@ private fun EditSubcategoryScreen(
     MoneyTextField(
         value = title.value,
         onValueChange = onTitleChanged,
-        placeholder = "Title",
+        placeholder = stringResource(R.string.accounts_field_title),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
             capitalization = KeyboardCapitalization.Words,
@@ -125,13 +129,13 @@ private fun EditSubcategoryScreen(
             .fillMaxWidth()
     ) {
         MoneyButton(
-            text = "Cancel",
+            text = stringResource(R.string.common_cancel),
             onClick = onCloseClicked,
             modifier = Modifier
                 .weight(1f)
         )
         MoneyButton(
-            text = "Done",
+            text = stringResource(R.string.common_done),
             style = MoneyButtonStyle.Filled,
             isEnabled = isSaveEnabled.value,
             onClick = onSaveClicked,

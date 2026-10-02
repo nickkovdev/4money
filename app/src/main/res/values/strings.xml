@@ -14,6 +14,8 @@
     <string name="common_close">Close</string>
     <string name="common_done">Done</string>
     <string name="common_undo">Undo</string>
+    <string name="common_expand">Expand</string>
+    <string name="common_collapse">Collapse</string>
 
     <string name="settings_language">Language</string>
     <string name="settings_language_system">Follow the system</string>
@@ -110,4 +112,39 @@
     <string name="colors_group_travel">Travel</string>
     <string name="colors_group_vehicle">Vehicles</string>
     <string name="colors_group_work">Work</string>
+
+    <!-- Categories -->
+    <string name="categories_expenses">Expenses</string>
+    <string name="categories_income">Income</string>
+    <string name="categories_add">Add</string>
+    <string name="categories_archived_header">ARCHIVED</string>
+    <string name="categories_sheet_other">Other</string>
+    <string name="categories_new_expense">New expense category</string>
+    <string name="categories_new_income">New income category</string>
+    <string name="categories_edit_expense">Edit expense category</string>
+    <string name="categories_edit_income">Edit income category</string>
+    <string name="categories_field_title_placeholder">Category title</string>
+    <string name="categories_subcategories">Subcategories</string>
+    <string name="categories_hold_to_move">Hold to move</string>
+    <string name="categories_add_subcategory">Add subcategory</string>
+    <string name="categories_new_subcategory">New subcategory</string>
+    <string name="categories_edit_subcategory">Edit subcategory</string>
+    <plurals name="transaction_count">
+        <item quantity="one">%d transaction</item>
+        <item quantity="other">%d transactions</item>
+    </plurals>
+
+    <!-- Overview -->
+    <string name="overview_no_primary_currency">No primary currency</string>
+    <string name="overview_no_primary_currency_hint">Set an existing primary currency in Settings to see the overview</string>
+    <string name="overview_income_minus_expenses">Income minus expenses</string>
+    <string name="overview_by_day">By day</string>
+    <string name="overview_day_avg">Day avg</string>
+    <string name="overview_week_avg">Week avg</string>
+    <string name="overview_month_total">Month total</string>
+    <string name="overview_top_categories">Top categories</string>
+    <string name="overview_show_less">Show less</string>
+    <string name="overview_all_categories">All categories</string>
+    <string name="overview_transactions">Transactions</string>
+    <string name="overview_no_subcategory">No subcategory</string>
 </resources>
