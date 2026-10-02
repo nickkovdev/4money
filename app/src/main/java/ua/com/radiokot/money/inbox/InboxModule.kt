@@ -38,6 +38,8 @@ import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
 import ua.com.radiokot.money.inbox.logic.DefaultCardAccountResolver
 import ua.com.radiokot.money.inbox.logic.ProcessBankNotificationUseCase
 import ua.com.radiokot.money.inbox.logic.SebLatviaNotificationParser
+import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
+import ua.com.radiokot.money.inbox.view.InboxScreenViewModel
 import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
 import ua.com.radiokot.money.transfers.transfersModule
 
@@ -103,6 +105,23 @@ val inboxModule = module {
                 payeeRuleRepository = get(),
             )
         } bind CompleteInboxItemUseCase::class
+
+        factory {
+            UndoInboxItemUseCase(
+                inboxRepository = get(),
+                revertTransferUseCase = get(),
+            )
+        } bind UndoInboxItemUseCase::class
+
+        viewModel {
+            InboxScreenViewModel(
+                inboxRepository = get(),
+                accountRepository = get(),
+                cardAccountPreferences = get(),
+                cardAccountResolver = get(),
+                undoInboxItemUseCase = get(),
+            )
+        } bind InboxScreenViewModel::class
 
         viewModel {
             RulesScreenViewModel(
