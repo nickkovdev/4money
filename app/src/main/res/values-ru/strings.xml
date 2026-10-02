@@ -1,0 +1,18 @@
+<resources>
+    <string name="add_operation_shortcut_title">Добавить операцию</string>
+    <string name="add_income_shortcut_title">Добавить доход</string>
+    <string name="add_expense_shortcut_title">Добавить расход</string>
+    <string name="bank_notification_listener_label">Банковские платежи в расходы</string>
+
+    <string name="common_back">Назад</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_edit">Изменить</string>
+    <string name="common_close">Закрыть</string>
+    <string name="common_done">Готово</string>
+    <string name="common_undo">Отменить</string>
+
+    <string name="settings_language">Язык</string>
+    <string name="settings_language_system">Как в системе</string>
+</resources>
