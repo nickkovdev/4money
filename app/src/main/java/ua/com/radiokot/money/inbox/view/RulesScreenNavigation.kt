@@ -38,7 +38,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.composeunstyled.Text
 import kotlinx.serialization.Serializable
-import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.collectAsState
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.uikit.IconTile
@@ -63,11 +63,15 @@ private sealed interface RuleDialog {
     class ConfirmDelete(override val rule: PayeeRule) : RuleDialog
 }
 
+/**
+ * @param viewModel activity-level instance, as it also receives selection results
+ */
 fun NavGraphBuilder.rulesScreen(
+    viewModel: RulesScreenViewModel,
+    onProceedToCategorySelection: (isIncome: Boolean) -> Unit,
     onClose: () -> Unit,
 ) = composable<RulesScreenRoute> {
 
-    val viewModel: RulesScreenViewModel = koinViewModel()
     var dialog by remember { mutableStateOf<RuleDialog?>(null) }
 
     LaunchedEffect(viewModel) {
@@ -78,6 +82,9 @@ fun NavGraphBuilder.rulesScreen(
 
                 is RulesScreenViewModel.Event.ProceedToRuleActions ->
                     dialog = RuleDialog.Actions(event.rule)
+
+                is RulesScreenViewModel.Event.ProceedToCategorySelection ->
+                    onProceedToCategorySelection(event.isIncome)
             }
         }
     }
@@ -85,6 +92,20 @@ fun NavGraphBuilder.rulesScreen(
     RulesScreen(
         viewModel = viewModel,
     )
+
+    val rangeDraft = viewModel.rangeDraft.collectAsState().value
+    if (rangeDraft != null) {
+        RangeEditorDialog(
+            draft = rangeDraft,
+            onFromChanged = viewModel::onDraftFromChanged,
+            onUnderChanged = viewModel::onDraftUnderChanged,
+            onTargetSelected = viewModel::onDraftTargetSelected,
+            onPickCategoryClicked = viewModel::onDraftPickCategoryClicked,
+            onSaveClicked = viewModel::onDraftSaveClicked,
+            onDeleteClicked = viewModel::onDraftDeleteClicked,
+            onDismissRequest = viewModel::onDraftDismissed,
+        )
+    }
 
     when (val currentDialog = dialog) {
         is RuleDialog.Actions ->
@@ -111,9 +132,9 @@ fun NavGraphBuilder.rulesScreen(
 
         is RuleDialog.ConfirmDelete ->
             MoneyDialog(
-                title = "Delete the rule?",
-                text = "Payments from “${currentDialog.rule.payeePattern}” " +
-                        "will wait in the inbox again.",
+                title = "Delete the rules?",
+                text = "All rules for “${currentDialog.rule.payeePattern}” are deleted, " +
+                        "its payments will wait in the inbox again.",
                 confirmText = "Delete",
                 isDestructive = true,
                 onConfirm = {
