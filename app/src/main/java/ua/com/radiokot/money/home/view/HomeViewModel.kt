@@ -29,6 +29,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import ua.com.radiokot.money.inbox.data.InboxRepository
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.map
@@ -60,7 +65,7 @@ class HomeViewModel(
 
     override val isNextHistoryStatsPeriodButtonEnabled: StateFlow<Boolean> =
         _historyStatsPeriod
-            .map(viewModelScope) { it.getNext() != null }
+            .map(viewModelScope) { it.hasNextUpTo(localNow()) }
 
     override val isPreviousHistoryStatsPeriodButtonEnabled: StateFlow<Boolean> =
         _historyStatsPeriod
@@ -95,6 +100,11 @@ class HomeViewModel(
         }
 
         _historyStatsPeriod.update { period ->
+            if (!period.hasNextUpTo(localNow())) {
+                // Not going into the empty future.
+                return@update period
+            }
+
             checkNotNull(period.getNext()) {
                 "Next period must be obtainable"
             }
@@ -143,3 +153,7 @@ class HomeViewModel(
         }
     }
 }
+
+@OptIn(ExperimentalTime::class)
+private fun localNow(): LocalDateTime =
+    Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())

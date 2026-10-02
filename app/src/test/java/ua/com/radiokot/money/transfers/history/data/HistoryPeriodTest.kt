@@ -153,4 +153,28 @@ class HistoryPeriodTest {
             )
         }
     }
+
+    @Test
+    fun nextIsNotInTheFuture() {
+        val now = LocalDateTime(2026, 10, 2, 22, 44)
+
+        // The current month can't go to the next one.
+        Assert.assertFalse(
+            HistoryPeriod.Month(localMonth = LocalDate(2026, 10, 2)).hasNextUpTo(now)
+        )
+        // A past month can.
+        Assert.assertTrue(
+            HistoryPeriod.Month(localMonth = LocalDate(2026, 9, 30)).hasNextUpTo(now)
+        )
+        // The next day starting exactly now is reachable.
+        Assert.assertTrue(
+            HistoryPeriod.Day(localDay = LocalDate(2026, 10, 1))
+                .hasNextUpTo(LocalDateTime(2026, 10, 2, 0, 0))
+        )
+        Assert.assertFalse(
+            HistoryPeriod.Day(localDay = LocalDate(2026, 10, 2)).hasNextUpTo(now)
+        )
+        // The whole time has no next.
+        Assert.assertFalse(HistoryPeriod.Since70th.hasNextUpTo(now))
+    }
 }
