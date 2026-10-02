@@ -81,6 +81,18 @@ private fun Content(
         )
     }
     val inboxViewModel: InboxScreenViewModel = koinViewModel()
+    val inboxCardsViewModel: InboxCardsViewModel = koinViewModel()
+    val onProceedToCategorySelection = { accountId: TransferCounterpartyId.Account, isIncome: Boolean ->
+        navController.navigate(
+            route = TransferCounterpartySelectionSheetRoute(
+                // An income category is the source of an income.
+                isForSource = isIncome,
+                alreadySelectedCounterpartyId = accountId,
+                showAccounts = false,
+                showCategories = true,
+            ),
+        )
+    }
 
     NavHost(
         navController = navController,
@@ -120,7 +132,22 @@ private fun Content(
             onProceedToRules = {
                 navController.navigate(RulesScreenRoute)
             },
+            onProceedToCards = {
+                navController.navigate(InboxCardsScreenRoute)
+            },
             onClose = finishActivity,
+        )
+
+        inboxCardsScreen(
+            viewModel = inboxCardsViewModel,
+            onProceedToCategorySelection = onProceedToCategorySelection,
+            onProceedToTransfer = { route ->
+                navController.navigate(route)
+            },
+            onProceedToRules = {
+                navController.navigate(RulesScreenRoute)
+            },
+            onClose = navController::navigateUp,
         )
 
         rulesScreen(
@@ -130,8 +157,12 @@ private fun Content(
         transferCounterpartySelectionSheet(
             onSelected = { result ->
                 // Selection requested by the transfer sheet itself (changing the account/category).
-                if (navController.previousBackStackEntry?.destination?.routeIs<TransferSheetRoute>() == true) {
+                val previousDestination = navController.previousBackStackEntry?.destination
+                if (previousDestination?.routeIs<TransferSheetRoute>() == true) {
                     transfersNavigator.proceedToTransfer(result)
+                } else if (previousDestination?.routeIs<InboxCardsScreenRoute>() == true) {
+                    navController.navigateUp()
+                    inboxCardsViewModel.onCounterpartySelected(result)
                 } else {
                     navController.navigateUp()
                     inboxViewModel.onCounterpartySelected(result)

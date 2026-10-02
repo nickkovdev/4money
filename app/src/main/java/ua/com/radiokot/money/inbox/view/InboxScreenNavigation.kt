@@ -40,6 +40,7 @@ fun NavGraphBuilder.inboxScreen(
     onProceedToAccountSelection: () -> Unit,
     onProceedToTransfer: (TransferSheetRoute) -> Unit,
     onProceedToRules: () -> Unit,
+    onProceedToCards: () -> Unit,
     onClose: () -> Unit,
 ) = composable<InboxScreenRoute> {
 
@@ -77,5 +78,6 @@ fun NavGraphBuilder.inboxScreen(
 
     InboxScreen(
         viewModel = viewModel,
+        onSortAsCardsClicked = onProceedToCards,
     )
 }

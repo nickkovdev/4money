@@ -342,7 +342,9 @@ private fun InboxItemRow(
 @Composable
 fun InboxScreen(
     viewModel: InboxScreenViewModel,
+    onSortAsCardsClicked: () -> Unit,
 ) = InboxScreen(
+    onSortAsCardsClicked = onSortAsCardsClicked,
     pendingItemList = viewModel.pendingItemList.collectAsState(),
     doneItemList = viewModel.doneItemList.collectAsState(),
     cardItemList = viewModel.cardItemList.collectAsState(),
