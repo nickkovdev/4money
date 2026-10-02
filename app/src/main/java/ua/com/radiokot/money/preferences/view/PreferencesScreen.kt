@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -54,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import com.composeunstyled.Icon
 import com.composeunstyled.Text
 import ua.com.radiokot.money.R
+import ua.com.radiokot.money.preferences.logic.AppLanguage
 import ua.com.radiokot.money.theme.data.ThemeMode
 import ua.com.radiokot.money.theme.view.moneyColorsOf
 import ua.com.radiokot.money.uikit.IconTile
@@ -80,6 +82,8 @@ private fun PreferencesScreen(
     onBack: () -> Unit,
     themeMode: State<ThemeMode>,
     onThemeModeClicked: (ThemeMode) -> Unit,
+    language: State<AppLanguage>,
+    onLanguageClicked: (AppLanguage) -> Unit,
     primaryCurrencyCode: State<String>,
     onPrimaryCurrencyCodeChanged: (String) -> Unit,
     isSaveCurrencyPreferencesEnabled: State<Boolean>,
@@ -192,6 +196,36 @@ private fun PreferencesScreen(
                         )
                     },
                     onClick = { onThemeModeClicked(mode) },
+                )
+            }
+        }
+
+        SectionHeader(
+            title = stringResource(R.string.settings_language),
+            modifier = Modifier
+                .padding(top = MoneySpacing.section)
+        )
+
+        ListGroup {
+            AppLanguage.entries.forEachIndexed { index, appLanguage ->
+                if (index > 0) {
+                    ListDivider(startInset = MoneySpacing.rowHorizontal)
+                }
+
+                ListRow(
+                    title = stringResource(
+                        when (appLanguage) {
+                            AppLanguage.System -> R.string.settings_language_system
+                            AppLanguage.English -> R.string.language_english
+                            AppLanguage.Russian -> R.string.language_russian
+                        }
+                    ),
+                    trailing = {
+                        SelectionMark(
+                            isSelected = language.value == appLanguage,
+                        )
+                    },
+                    onClick = { onLanguageClicked(appLanguage) },
                 )
             }
         }
@@ -497,6 +531,8 @@ fun PreferencesScreen(
     onBack = onBack,
     themeMode = viewModel.themeMode.collectAsState(),
     onThemeModeClicked = remember { viewModel::onThemeModeClicked },
+    language = viewModel.language.collectAsState(),
+    onLanguageClicked = remember { viewModel::onLanguageClicked },
     primaryCurrencyCode = viewModel.primaryCurrencyCodeValue.collectAsState(),
     onPrimaryCurrencyCodeChanged = remember { viewModel::onPrimaryCurrencyCodeChanged },
     isSaveCurrencyPreferencesEnabled = viewModel.isSaveCurrencyPreferencesEnabled.collectAsState(),
@@ -525,6 +561,8 @@ private fun PreferencesScreenPreview(
         onBack = {},
         themeMode = ThemeMode.System.let(::mutableStateOf),
         onThemeModeClicked = {},
+        language = AppLanguage.System.let(::mutableStateOf),
+        onLanguageClicked = {},
         primaryCurrencyCode = "USD".let(::mutableStateOf),
         onPrimaryCurrencyCodeChanged = {},
         isSaveCurrencyPreferencesEnabled = true.let(::mutableStateOf),

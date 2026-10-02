@@ -1,8 +1,22 @@
 <resources>
-    <string name="app_name">4Money</string>
-    <string name="template_category_subcategory">%1$s (%2$s)</string>
+    <string name="app_name" translatable="false">4Money</string>
+    <string name="template_category_subcategory" translatable="false">%1$s (%2$s)</string>
     <string name="add_operation_shortcut_title">Add operation</string>
     <string name="add_income_shortcut_title">Add income</string>
     <string name="add_expense_shortcut_title">Add expense</string>
     <string name="bank_notification_listener_label">Bank payments to expenses</string>
+
+    <string name="common_back">Back</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_close">Close</string>
+    <string name="common_done">Done</string>
+    <string name="common_undo">Undo</string>
+
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">Follow the system</string>
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_russian" translatable="false">Русский</string>
 </resources>
