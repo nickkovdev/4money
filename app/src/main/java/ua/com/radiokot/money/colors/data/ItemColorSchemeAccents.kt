@@ -60,6 +60,25 @@ object ItemColorSchemeAccents {
             ?: scheme.primary
 
     /**
+     * The accent tuned for the theme ground: a bit lighter on dark, a bit deeper on light,
+     * so the icon glyph on its tinted tile, ring segments and bars stay readable.
+     */
+    fun themedAccent(
+        scheme: ItemColorScheme,
+        isDark: Boolean,
+        schemesByName: Map<String, ItemColorScheme> = defaultSchemesByName,
+    ): Long {
+        val accent = accent(scheme, isDark, schemesByName)
+        return if (isDark)
+            blend(top = 0xFFFFFFFF, bottom = accent, alpha = THEMED_DARK_LIGHTEN)
+        else
+            blend(top = 0xFF000000, bottom = accent, alpha = THEMED_LIGHT_DEEPEN)
+    }
+
+    private const val THEMED_DARK_LIGHTEN = 0.2f
+    private const val THEMED_LIGHT_DEEPEN = 0.12f
+
+    /**
      * @return a color readable on top of [accent].
      */
     fun onAccent(

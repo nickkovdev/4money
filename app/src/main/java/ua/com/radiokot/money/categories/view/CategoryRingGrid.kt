@@ -97,7 +97,7 @@ fun CategoryRingGrid(
     val coloredSegments = remember(ringSegments.value, isDark) {
         ringSegments.value.map { segment ->
             DonutSegment(
-                key = Color(ItemColorSchemeAccents.accent(segment.key, isDark)),
+                key = Color(ItemColorSchemeAccents.themedAccent(segment.key, isDark)),
                 startAngle = segment.startAngle,
                 sweepAngle = segment.sweepAngle,
             )

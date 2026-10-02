@@ -35,7 +35,7 @@ import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.MoneyAppModalBottomSheetHost
 import ua.com.radiokot.money.auth.logic.UserSessionScope
 import ua.com.radiokot.money.rememberMoneyAppNavController
-import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import ua.com.radiokot.money.theme.view.MoneyAppTheme
 
 class ArchivedAccountsActivity : MoneyAppActivity(
     requiresUnlocking = true,
@@ -47,7 +47,7 @@ class ArchivedAccountsActivity : MoneyAppActivity(
         enableEdgeToEdge()
 
         setContent {
-            MoneyTheme {
+            MoneyAppTheme {
                 UserSessionScope {
                     Content(
                         finishActivity = ::finish,

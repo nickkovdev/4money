@@ -31,7 +31,7 @@ import androidx.navigation.compose.NavHost
 import ua.com.radiokot.money.auth.logic.UserSessionScope
 import ua.com.radiokot.money.home.view.HomeActivity
 import ua.com.radiokot.money.rememberMoneyAppNavController
-import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import ua.com.radiokot.money.theme.view.MoneyAppTheme
 
 class AuthActivity : AppCompatActivity() {
 
@@ -39,7 +39,7 @@ class AuthActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MoneyTheme {
+            MoneyAppTheme {
                 UserSessionScope {
                     Content(
                         goHome = {

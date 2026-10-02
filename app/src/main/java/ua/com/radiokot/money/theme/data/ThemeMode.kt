@@ -25,18 +25,36 @@ enum class ThemeMode(
     val storedName: String,
 ) {
     /**
-     * Follow the system dark mode setting. The default.
+     * Follow the system dark mode setting: Paper in light, Midnight in dark. The default.
      */
     System("system"),
+
+    /**
+     * The Paper palette.
+     */
     Light("light"),
+
+    /**
+     * The Midnight palette.
+     */
     Dark("dark"),
+
+    /**
+     * A warm dark palette.
+     */
+    Ember("ember"),
+
+    /**
+     * A teal dark palette.
+     */
+    Aurora("aurora"),
     ;
 
     val appCompatNightMode: Int
         get() = when (this) {
             System -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
             Light -> AppCompatDelegate.MODE_NIGHT_NO
-            Dark -> AppCompatDelegate.MODE_NIGHT_YES
+            Dark, Ember, Aurora -> AppCompatDelegate.MODE_NIGHT_YES
         }
 
     companion object {

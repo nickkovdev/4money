@@ -30,6 +30,8 @@ class ThemeModeTest {
         Assert.assertEquals(ThemeMode.System, ThemeMode.fromStoredName("system"))
         Assert.assertEquals(ThemeMode.Light, ThemeMode.fromStoredName("light"))
         Assert.assertEquals(ThemeMode.Dark, ThemeMode.fromStoredName("dark"))
+        Assert.assertEquals(ThemeMode.Ember, ThemeMode.fromStoredName("ember"))
+        Assert.assertEquals(ThemeMode.Aurora, ThemeMode.fromStoredName("aurora"))
     }
 
     @Test
@@ -52,6 +54,14 @@ class ThemeModeTest {
         Assert.assertEquals(
             AppCompatDelegate.MODE_NIGHT_YES,
             ThemeMode.Dark.appCompatNightMode,
+        )
+        Assert.assertEquals(
+            AppCompatDelegate.MODE_NIGHT_YES,
+            ThemeMode.Ember.appCompatNightMode,
+        )
+        Assert.assertEquals(
+            AppCompatDelegate.MODE_NIGHT_YES,
+            ThemeMode.Aurora.appCompatNightMode,
         )
     }
 

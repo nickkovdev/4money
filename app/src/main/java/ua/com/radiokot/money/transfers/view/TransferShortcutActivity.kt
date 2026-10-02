@@ -37,7 +37,7 @@ import ua.com.radiokot.money.MoneyAppModalBottomSheetHost
 import ua.com.radiokot.money.auth.logic.UserSessionScope
 import ua.com.radiokot.money.rememberMoneyAppNavController
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
-import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import ua.com.radiokot.money.theme.view.MoneyAppTheme
 
 class TransferShortcutActivity : MoneyAppActivity(
     requiresUnlocking = false,
@@ -53,7 +53,7 @@ class TransferShortcutActivity : MoneyAppActivity(
         }
 
         setContent {
-            MoneyTheme {
+            MoneyAppTheme(paintWindow = false) {
                 UserSessionScope {
                     TransferShortcutScreen(
                         action = when (intent.action) {
