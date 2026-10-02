@@ -1,0 +1,210 @@
+/* Copyright 2025 Oleg Koretsky
+
+   This file is part of the 4Money,
+   a budget tracking Android app.
+
+   4Money is free software: you can redistribute it
+   and/or modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
+
+   4Money is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+   See the GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with 4Money. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+package ua.com.radiokot.money.inbox.logic
+
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import ua.com.radiokot.money.accounts.data.Account
+import ua.com.radiokot.money.accounts.data.AccountRepository
+import ua.com.radiokot.money.categories.data.CategoryRepository
+import ua.com.radiokot.money.inbox.data.InboxItem
+import ua.com.radiokot.money.inbox.data.InboxRepository
+import ua.com.radiokot.money.inbox.data.IncomingBankNotification
+import ua.com.radiokot.money.inbox.data.ParsedBankNotification
+import ua.com.radiokot.money.inbox.data.PayeeRule
+import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
+import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
+import ua.com.radiokot.money.transfers.logic.TransferFundsUseCase
+import java.util.UUID
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+
+/**
+ * Turns a bank notification into an expense (rule matched) or a pending inbox item.
+ * Local writes only. Bind as a single instance per session: [mutex] serializes
+ * the dedup check and the writes for notifications arriving at once.
+ */
+class ProcessBankNotificationUseCase(
+    private val parsers: List<BankNotificationParser>,
+    private val inboxRepository: InboxRepository,
+    private val payeeRuleRepository: PayeeRuleRepository,
+    private val accountRepository: AccountRepository,
+    private val categoryRepository: CategoryRepository,
+    private val cardAccountResolver: CardAccountResolver,
+    private val transferFundsUseCase: TransferFundsUseCase,
+    private val timeZone: TimeZone = TimeZone.currentSystemDefault(),
+    private val newId: () -> String = { UUID.randomUUID().toString() },
+) {
+    private val mutex = Mutex()
+
+    sealed interface Outcome {
+        data object Ignored : Outcome
+        data object Duplicate : Outcome
+
+        data class AutoRecorded(
+            val itemId: String,
+            val transferId: String,
+            val ruleId: String,
+        ) : Outcome
+
+        data class Pending(
+            val itemId: String,
+            val reason: AutoExpenseResolver.PendingReason,
+        ) : Outcome
+    }
+
+    @OptIn(ExperimentalTime::class)
+    suspend operator fun invoke(
+        notification: IncomingBankNotification,
+    ): Result<Outcome> = runCatching {
+
+        val parser = parsers.firstOrNull { it.packageName == notification.packageName }
+            ?: return@runCatching Outcome.Ignored
+
+        val payment = parser.parse(notification.title, notification.text)
+                as? ParsedBankNotification.CardPayment
+        val dedupHash = BankNotificationDedupHash.compute(
+            notification = notification,
+            includePostTime = payment == null,
+        )
+
+        mutex.withLock {
+            if (inboxRepository.existsWithDedupHash(dedupHash)) {
+                return@withLock Outcome.Duplicate
+            }
+
+            val receivedAt = Instant
+                .fromEpochMilliseconds(notification.postTimeMillis)
+                .toLocalDateTime(timeZone)
+
+            val accountsById = accountRepository
+                .getAccounts()
+                .filterNot(Account::isArchived)
+                .associateBy(Account::id)
+
+            val rule: PayeeRule? = payment
+                ?.payee
+                ?.let(PayeeNormalizer::normalize)
+                ?.let { normalizedPayee ->
+                    PayeeRuleMatcher.match(normalizedPayee, payeeRuleRepository.getRules())
+                }
+
+            val account: Account? = cardAccountResolver
+                .resolve(
+                    cardLast4 = payment?.cardLast4,
+                    ruleAccountId = rule?.accountId,
+                )
+                ?.let(accountsById::get)
+
+            val resolution = AutoExpenseResolver.resolve(
+                payment = payment,
+                rule = rule,
+                account = account?.let { acc ->
+                    AutoExpenseResolver.AccountRef(
+                        id = acc.id,
+                        currencyCode = acc.currency.code,
+                        precision = acc.currency.precision,
+                    )
+                },
+                category = rule?.let { getCategoryRef(it) },
+            )
+
+            val item = InboxItem(
+                id = newId(),
+                receivedAt = receivedAt,
+                sourcePackage = notification.packageName,
+                rawText = listOfNotNull(notification.title, notification.text).joinToString("\n"),
+                amount = payment?.amount,
+                currencyCode = payment?.currencyCode,
+                payee = payment?.payee,
+                cardLast4 = payment?.cardLast4,
+                accountId = account?.id,
+                status = InboxItem.Status.Pending,
+                transferId = null,
+                dedupHash = dedupHash,
+            )
+
+            when (resolution) {
+                is AutoExpenseResolver.Resolution.Create -> {
+                    val transferId = newId()
+
+                    // A separate PowerSync transaction on purpose: the connector uploads
+                    // a transaction containing a transfer through the `transfer` RPC
+                    // and drops its other rows, so the inbox item must not share it.
+                    transferFundsUseCase(
+                        sourceId = TransferCounterpartyId.Account(resolution.account.id),
+                        sourceAmount = resolution.sourceAmount,
+                        destinationId = TransferCounterpartyId.Category(
+                            categoryId = resolution.category.categoryId,
+                            subcategoryId = resolution.category.subcategoryId,
+                        ),
+                        destinationAmount = resolution.destinationAmount,
+                        memo = PayeeNormalizer.displayName(requireNotNull(payment).payee),
+                        dateTime = receivedAt,
+                        transferId = transferId,
+                    ).getOrThrow()
+
+                    inboxRepository.addItem(
+                        item.copy(
+                            status = InboxItem.Status.Done,
+                            transferId = transferId,
+                        )
+                    )
+                    payeeRuleRepository.recordHit(resolution.rule.id, receivedAt)
+
+                    Outcome.AutoRecorded(
+                        itemId = item.id,
+                        transferId = transferId,
+                        ruleId = resolution.rule.id,
+                    )
+                }
+
+                is AutoExpenseResolver.Resolution.Pending -> {
+                    inboxRepository.addItem(item)
+
+                    Outcome.Pending(
+                        itemId = item.id,
+                        reason = resolution.reason,
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun getCategoryRef(rule: PayeeRule): AutoExpenseResolver.CategoryRef? {
+        val category = categoryRepository
+            .getCategory(rule.categoryId)
+            ?.takeUnless { it.isArchived }
+            ?: return null
+
+        // A deleted subcategory falls back to the parent category.
+        val subcategoryId = rule.subcategoryId
+            ?.takeIf { categoryRepository.getSubcategory(it)?.categoryId == category.id }
+
+        return AutoExpenseResolver.CategoryRef(
+            categoryId = category.id,
+            subcategoryId = subcategoryId,
+            currencyCode = category.currency.code,
+            precision = category.currency.precision,
+        )
+    }
+}

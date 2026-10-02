@@ -47,6 +47,7 @@ class PowerSyncTransferFundsUseCase(
         destinationAmount: BigInteger,
         memo: String?,
         dateTime: LocalDateTime,
+        transferId: String,
     ): Result<Unit> = runCatching {
 
         database.writeTransaction { transaction ->
@@ -90,6 +91,7 @@ class PowerSyncTransferFundsUseCase(
                 dateTime = dateTime,
                 metadata = AtomicCrudSupabaseConnector.SPECIAL_TRANSACTION_TRANSFER,
                 transaction = transaction,
+                transferId = transferId,
             )
         }
     }
