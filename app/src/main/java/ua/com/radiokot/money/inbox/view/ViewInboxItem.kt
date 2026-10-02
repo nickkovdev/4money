@@ -80,11 +80,6 @@ class ViewInboxItem(
 }
 
 /**
- * Neutral title shown instead of a raw bank text fallback while the privacy mode is on.
- */
-const val PRIVATE_TITLE = "Bank payment"
-
-/**
  * The bank amount as an app amount, e.g. 18.90 EUR → −18.90 €,
  * with the currency symbol and precision of [java.util.Currency].
  */

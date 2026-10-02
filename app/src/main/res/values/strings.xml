@@ -26,6 +26,7 @@
     <string name="date_today">Today</string>
     <string name="date_yesterday">Yesterday</string>
     <string name="date_today_at">Today %1$s</string>
+    <string name="date_at_time">%1$s %2$s</string>
     <string name="history_period_entire_time">The entire time</string>
     <string name="date_picker_previous_month">Previous month</string>
     <string name="date_picker_next_month">Next month</string>
@@ -174,4 +175,61 @@
     <string name="history_revert_title">Revert this transaction?</string>
     <string name="history_revert_text">It will be removed, and the amount goes back to the balances of the accounts it touched.</string>
     <string name="history_revert_confirm">Revert</string>
+
+    <!-- Inbox -->
+    <string name="inbox_title">Inbox</string>
+    <string name="inbox_rules">Rules</string>
+    <string name="inbox_nothing_to_sort">Nothing to sort</string>
+    <string name="inbox_to_sort">%1$d to sort</string>
+    <string name="inbox_progress_to_sort">%1$d of %2$d to sort</string>
+    <string name="inbox_sort_as_cards">Sort as cards</string>
+    <string name="inbox_section_pending">To categorize</string>
+    <string name="inbox_all_sorted">All sorted</string>
+    <string name="inbox_empty_text">New bank payments that need a category will appear here.</string>
+    <string name="inbox_dismiss">Dismiss</string>
+    <string name="inbox_section_cards">Cards</string>
+    <string name="inbox_card_title">Card •%1$s</string>
+    <string name="inbox_card_subtitle">%1$s · tap to change</string>
+    <string name="inbox_most_used_account">Most used account</string>
+    <string name="inbox_section_recorded">Recorded</string>
+    <string name="inbox_item_foreign_currency">%1$s · foreign currency</string>
+    <string name="inbox_private_title">Bank payment</string>
+    <string name="inbox_undo_failed">Failed to undo: %1$s</string>
+    <string name="inbox_no_account">No account to record to</string>
+    <string name="inbox_no_account_or_category">No account or category to record to</string>
+
+    <!-- Inbox cards -->
+    <string name="inbox_cards_title">Sort payments</string>
+    <string name="inbox_cards_empty_text">New bank payments will appear here as cards.</string>
+    <string name="inbox_cards_back_to_inbox">Back to the inbox</string>
+    <string name="inbox_cards_skip_for_now">Skip for now</string>
+    <string name="inbox_cards_choose_category">Choose a category</string>
+    <string name="inbox_cards_accept">Accept: %1$s</string>
+    <string name="inbox_cards_hint_skip">← skip</string>
+    <string name="inbox_cards_hint_pick">↑ pick</string>
+    <string name="inbox_cards_hint_accept">accept →</string>
+    <string name="inbox_cards_swipe_description">Payment card: swipe right to accept, left to skip, up to pick</string>
+    <string name="inbox_cards_stamp_pick">Pick a category</string>
+    <string name="inbox_cards_stamp_skip">Skip</string>
+    <string name="inbox_cards_foreign_hint">Foreign currency: the transfer sheet opens to convert the amount</string>
+    <string name="inbox_cards_no_suggestion">No suggestion yet: pick a category</string>
+    <string name="inbox_cards_remember">Remember for this payee</string>
+    <string name="inbox_cards_remember_on">Next time it is recorded automatically</string>
+    <string name="inbox_cards_remember_off">Next time it waits here again</string>
+    <string name="inbox_cards_amount_rules_hint">Different categories here: set up amount rules</string>
+    <string name="inbox_cards_or_pick">OR PICK</string>
+    <string name="inbox_cards_skipped">Skipped, it stays in the inbox</string>
+    <string name="inbox_cards_recorded">Recorded to %1$s</string>
+    <string name="inbox_cards_recorded_remembered">Recorded to %1$s, remembered</string>
+    <string name="inbox_cards_record_failed">Failed to record: %1$s</string>
+
+    <!-- Inbox card reasons -->
+    <string name="inbox_reason_remembered">Remembered payee → %1$s</string>
+    <string name="inbox_reason_contains">Payee contains “%1$s” → %2$s</string>
+    <plurals name="inbox_reason_history">
+        <item quantity="one">Recorded to %1$s once before</item>
+        <item quantity="other">Recorded to %1$s %2$d× before</item>
+    </plurals>
+    <string name="inbox_reason_most_used">New payee: your most used category</string>
+    <string name="inbox_reason_range">%1$s at %2$s → %3$s</string>
 </resources>

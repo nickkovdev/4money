@@ -27,6 +27,7 @@ import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.view.TransferSheetRoute
+import ua.com.radiokot.money.uikit.resolve
 
 @Serializable
 object InboxCardsScreenRoute
@@ -59,7 +60,7 @@ fun NavGraphBuilder.inboxCardsScreen(
 
                 is InboxCardsViewModel.Event.ShowError ->
                     Toast
-                        .makeText(context, event.text, Toast.LENGTH_LONG)
+                        .makeText(context, event.text.resolve(context), Toast.LENGTH_LONG)
                         .show()
             }
         }

@@ -64,7 +64,6 @@ data class ViewInboxCard(
     val isIncoming: Boolean,
     val isForeignCurrency: Boolean,
     val receivedAt: LocalDateTime,
-    val isReceivedToday: Boolean,
     /**
      * The account or the card, e.g. "Card"; shown after the time of receiving.
      */
@@ -100,6 +99,6 @@ data class ViewInboxCardsProgress(
  */
 @Immutable
 data class ViewInboxCardUndo(
-    val text: String,
+    val text: ViewText,
     val id: Long,
 )
