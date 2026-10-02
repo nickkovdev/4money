@@ -44,7 +44,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -73,6 +72,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.composeunstyled.Text
 import ua.com.radiokot.money.categories.view.SelectableSubcategoryRow
 import ua.com.radiokot.money.categories.view.ViewSelectableSubcategoryListItem
 import ua.com.radiokot.money.categories.view.ViewSelectableSubcategoryListItemPreviewParameterProvider
@@ -197,7 +197,7 @@ private fun TransferSheet(
                         )
                 }
 
-                BasicText(
+                Text(
                     text = shortSourceTitle ?: source.title,
                     style = TextStyle(
                         textAlign = TextAlign.Center,
@@ -215,7 +215,7 @@ private fun TransferSheet(
                         .padding(textPadding)
                 )
 
-                BasicText(
+                Text(
                     text = shortDestinationTitle ?: destination.title,
                     style = TextStyle(
                         textAlign = TextAlign.Center,
@@ -320,7 +320,7 @@ private fun TransferSheet(
                             }
                         )
                 ) {
-                    BasicText(
+                    Text(
                         text = "Source amount",
                         style = TextStyle(
                             textAlign = TextAlign.Center,
@@ -362,7 +362,7 @@ private fun TransferSheet(
                         }
                     )
             ) {
-                BasicText(
+                Text(
                     text = "Destination amount",
                     style = TextStyle(
                         textAlign = TextAlign.Center,
@@ -381,7 +381,7 @@ private fun TransferSheet(
             }
         }
 
-        BasicText(
+        Text(
             text = date.value.getText(),
             style = TextStyle(
                 textAlign = TextAlign.Center,
@@ -405,7 +405,7 @@ private fun TransferSheet(
             }
 
             if (memo.value.isEmpty()) {
-                BasicText(
+                Text(
                     text = "Add a note",
                     style = TextStyle(
                         fontStyle = FontStyle.Italic,
@@ -501,7 +501,7 @@ private fun TransferSheetPreview(
     val accountIcon = icons[66]
 
     isSourceInputShownOptions.forEach { isSourceInputShown ->
-        BasicText(
+        Text(
             text = "Source input shown: $isSourceInputShown",
             modifier = Modifier.padding(vertical = 16.dp)
         )

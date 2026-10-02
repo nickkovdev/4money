@@ -41,7 +41,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -55,7 +54,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -69,7 +67,7 @@ import com.composeunstyled.Tooltip
 import com.composeunstyled.TooltipPanel
 import kotlinx.coroutines.launch
 import ua.com.radiokot.money.currency.view.ViewAmount
-import ua.com.radiokot.money.currency.view.ViewAmountFormat
+import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.uikit.TextButton
 
 @Composable
@@ -144,7 +142,7 @@ private fun AccountsScreen(
         ) {
             if (Page.All in pages) {
                 val pageIndex = pages.indexOf(Page.All)
-                BasicText(
+                Text(
                     text = "Accounts",
                     style = TextStyle(
                         textAlign = TextAlign.Center,
@@ -168,7 +166,7 @@ private fun AccountsScreen(
 
             if (Page.Total in pages) {
                 val pageIndex = pages.indexOf(Page.Total)
-                BasicText(
+                Text(
                     text = "Total",
                     style = TextStyle(
                         textAlign = TextAlign.Center,
@@ -280,10 +278,7 @@ private fun TotalPage(
             horizontal = 16.dp,
         )
 ) {
-    val locale = LocalConfiguration.current.locales[0]
-    val amountFormat = remember(locale) {
-        ViewAmountFormat(locale)
-    }
+    val amountFormat = rememberViewAmountFormat()
 
     Row {
         val textStyle = remember {
@@ -308,7 +303,7 @@ private fun TotalPage(
         ) {
             amountPerCurrencyList.value.forEach { (amount, _) ->
                 key(amount.currency) {
-                    BasicText(
+                    Text(
                         text = amount.currency.symbol,
                         style = textStyle,
                         modifier = Modifier
@@ -378,7 +373,7 @@ private fun TotalPage(
                             }
                         },
                         anchor = {
-                            BasicText(
+                            Text(
                                 text = amountFormat(amount),
                                 style = textStyle,
                                 modifier = Modifier
@@ -411,7 +406,7 @@ private fun TotalPage(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        BasicText(
+        Text(
             text = amountFormat(totalAmount.value!!),
             style = TextStyle(
                 fontSize = 22.sp,

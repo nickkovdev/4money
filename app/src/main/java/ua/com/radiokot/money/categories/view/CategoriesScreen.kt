@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -33,16 +32,16 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.composeunstyled.Text
 import ua.com.radiokot.money.currency.view.ViewAmount
-import ua.com.radiokot.money.currency.view.ViewAmountFormat
+import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.transfers.history.view.PeriodBar
 import ua.com.radiokot.money.transfers.history.view.ViewHistoryPeriod
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun CategoriesScreenRoot(
@@ -103,7 +102,7 @@ private fun CategoriesScreen(
 
     Spacer(modifier = Modifier.height(12.dp))
 
-    BasicText(
+    Text(
         text =
             if (isIncome.value)
                 "Incomes"
@@ -119,27 +118,26 @@ private fun CategoriesScreen(
             )
     )
 
-    val locale = LocalConfiguration.current.locales.get(0)
-    val amountFormat = remember(locale) {
-        ViewAmountFormat(locale)
-    }
-    val totalAmountText: AnnotatedString by remember {
+    val amountFormat = rememberViewAmountFormat()
+    val incomeColor = MoneyTheme.colors.income
+    val expenseColor = MoneyTheme.colors.expense
+    val totalAmountText: AnnotatedString by remember(incomeColor, expenseColor) {
         derivedStateOf {
             if (totalAmount.value != null)
                 amountFormat(
                     amount = totalAmount.value!!,
                     customColor =
                         if (isIncome.value)
-                            Color(0xff50af99)
+                            incomeColor
                         else
-                            Color(0xffd85e8c)
+                            expenseColor
                 )
             else
                 AnnotatedString("")
         }
     }
 
-    BasicText(
+    Text(
         text = totalAmountText,
         style = TextStyle(
             textAlign = TextAlign.Center,
