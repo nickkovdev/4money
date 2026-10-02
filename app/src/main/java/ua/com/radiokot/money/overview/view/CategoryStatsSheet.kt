@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.Text
@@ -151,10 +152,7 @@ private fun Header(
         .fillMaxWidth()
         .clip(MoneyShapes.large)
         .background(
-            if (stats.isIncome)
-                MoneyTheme.colors.incomeTint
-            else
-                MoneyTheme.colors.expenseTint
+            itemAccentColor(stats.colorScheme).copy(alpha = HEADER_TINT_ALPHA)
         )
         .padding(16.dp)
 ) {
@@ -203,39 +201,34 @@ private fun Header(
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // The share is shown even while private, it is not an amount.
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                ShareBar(
+                    fraction = stats.periodShareFraction,
+                    accent = itemAccentColor(stats.colorScheme),
+                )
+            }
+
+            Text(
+                text = PrivacyAmounts.shareText(stats.periodShare, stats.periodTotal.value),
+                style = MoneyTheme.typography.caption,
+                color = MoneyTheme.colors.ink2,
+                modifier = Modifier
+                    .padding(start = 10.dp)
+            )
+        }
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = stats.period.getText(),
-                style = MoneyTheme.typography.caption,
-                color = MoneyTheme.colors.ink3,
-                modifier = Modifier
-                    .weight(1f)
-            )
-
-            // The share is shown even while private, it is not an amount.
-            Text(
-                text = PrivacyAmounts.shareText(stats.periodShare, stats.periodTotal.value),
-                style = MoneyTheme.typography.caption,
-                color = MoneyTheme.colors.ink2,
-            )
-        }
-
-        ShareBar(
-            fraction = stats.periodShareFraction,
-            accent = itemAccentColor(stats.colorScheme),
-        )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text =
-                    if (stats.isIncome)
-                        "Total income"
-                    else
-                        "Total expenses",
                 style = MoneyTheme.typography.caption,
                 color = MoneyTheme.colors.ink3,
                 modifier = Modifier
@@ -334,7 +327,7 @@ private fun Subcategories(
 @Composable
 private fun ShareBar(
     fraction: Float,
-    accent: androidx.compose.ui.graphics.Color,
+    accent: Color,
 ) = Box(
     modifier = Modifier
         .fillMaxWidth()
@@ -354,3 +347,5 @@ private fun ShareBar(
             )
     )
 }
+
+private const val HEADER_TINT_ALPHA = 0.14f

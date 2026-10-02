@@ -36,7 +36,6 @@ import ua.com.radiokot.money.uikit.EmptyState
 import ua.com.radiokot.money.uikit.ListDivider
 import ua.com.radiokot.money.uikit.ListGroup
 import ua.com.radiokot.money.uikit.ListRow
-import ua.com.radiokot.money.uikit.RowChevron
 import ua.com.radiokot.money.uikit.SectionHeader
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
