@@ -63,11 +63,6 @@ fun CategoryGrid(
     isAddShown: Boolean,
     onAddClicked: (() -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(6.dp),
-    /**
-     * Total of the shown mode in the primary currency,
-     * the denominator of the shares shown in the privacy mode.
-     */
-    currentModeTotal: BigInteger? = null,
 ) {
     val gridState = rememberLazyGridState()
     val spaceBy = 6.dp
@@ -99,7 +94,6 @@ fun CategoryGrid(
             itemList = visibleItemList,
             onItemClicked = onItemClicked,
             onItemLongClicked = onItemLongClicked,
-            currentModeTotal = currentModeTotal,
         )
 
         if (isAddShown) {
@@ -130,7 +124,6 @@ fun CategoryGrid(
                     itemList = archiveItemList,
                     onItemClicked = onItemClicked,
                     onItemLongClicked = onItemLongClicked,
-                    currentModeTotal = currentModeTotal,
                 )
             }
         }
@@ -152,7 +145,6 @@ private fun LazyGridScope.categoryItems(
     itemList: State<List<ViewCategoryListItem>>,
     onItemClicked: ((ViewCategoryListItem) -> Unit)?,
     onItemLongClicked: ((ViewCategoryListItem) -> Unit)?,
-    currentModeTotal: BigInteger?,
 ) {
     items(
         items = itemList.value,
@@ -160,7 +152,6 @@ private fun LazyGridScope.categoryItems(
     ) { item ->
         CategoryListItem(
             item = item,
-            currentModeTotal = currentModeTotal,
             modifier = Modifier
                 .combinedClickable(
                     onClick = {
@@ -228,6 +219,11 @@ internal fun ArchiveHeader(
 internal fun CategoryListItem(
     modifier: Modifier = Modifier,
     item: ViewCategoryListItem,
+    /**
+     * Whether the shares of the period total can be shown in the privacy mode.
+     * If not, the amount is masked.
+     */
+    isShareAvailable: Boolean = false,
     currentModeTotal: BigInteger? = null,
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
@@ -286,10 +282,14 @@ internal fun CategoryListItem(
                     // The share of the period total instead of the amount,
                     // no currency symbol.
                     amountFormat.privateText(
-                        text = PrivacyAmounts.shareText(
-                            part = item.amountInPrimaryCurrency ?: BigInteger.ZERO,
-                            total = currentModeTotal,
-                        ),
+                        text =
+                            if (isShareAvailable)
+                                PrivacyAmounts.shareText(
+                                    part = item.amountInPrimaryCurrency ?: BigInteger.ZERO,
+                                    total = currentModeTotal,
+                                )
+                            else
+                                PrivacyAmounts.MASK,
                         value = animatedAmountValue.value,
                         customColor = amountColor,
                     )
