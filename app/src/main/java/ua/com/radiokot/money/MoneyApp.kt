@@ -75,8 +75,14 @@ class MoneyApp : Application() {
         KotlinLogging.logger("App")
     }
 
+    private val themeScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
+
     override fun onCreate() {
         super.onCreate()
+
+        // Make Text(style = TextStyle(color = ...)) keep its color
+        // even though MoneyTheme provides LocalContentColor.
+        ComposeUnstyledFlags.strictTextColorResolutionOrder = true
 
         initLogging()
 
@@ -85,19 +91,19 @@ class MoneyApp : Application() {
             androidContext(this@MoneyApp)
 
             modules(
+                themeModule,
                 authModule,
                 appLockModule,
                 homeModule,
             )
         }
 
+        initTheme()
         initSessionHolder()
         initBackgroundSync()
         initCurrencyPricesUpdate()
         initLock()
     }
-
-    private val themeScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
 
     private fun initTheme() {
         val themePreferences: ThemePreferences = get()
