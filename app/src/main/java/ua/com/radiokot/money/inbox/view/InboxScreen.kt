@@ -41,13 +41,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 private fun InboxScreen(
@@ -142,7 +142,7 @@ private fun InboxScreen(
                     )
                     Text(
                         text = card.accountTitle ?: "Most used account",
-                        color = Color.Gray,
+                        color = MoneyTheme.colors.onBackgroundSecondary,
                     )
                 }
             }
@@ -156,7 +156,7 @@ private fun InboxScreen(
             item(key = "pending-empty") {
                 Text(
                     text = "Nothing to categorize",
-                    color = Color.Gray,
+                    color = MoneyTheme.colors.onBackgroundSecondary,
                     modifier = Modifier
                         .padding(vertical = 10.dp)
                 )
@@ -240,7 +240,7 @@ private fun InboxItemRow(
         Text(
             text = item.dateText,
             fontSize = 12.sp,
-            color = Color.Gray,
+            color = MoneyTheme.colors.onBackgroundSecondary,
         )
     }
 

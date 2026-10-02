@@ -23,6 +23,10 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.LocalActivity
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.LaunchedEffect
@@ -44,7 +48,15 @@ fun NavGraphBuilder.preferencesScreen(
     onProceedToPasscodeSetup: () -> Unit,
     onSignedOut: () -> Unit,
     onProceedToInbox: () -> Unit,
-) = composable(PreferencesScreenRoute) {
+) = composable(
+    route = PreferencesScreenRoute,
+    enterTransition = {
+        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(250)) + fadeIn(tween(250))
+    },
+    popExitTransition = {
+        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(250)) + fadeOut(tween(200))
+    },
+) {
 
     val activity: Activity? = LocalActivity.current
     val context = LocalContext.current

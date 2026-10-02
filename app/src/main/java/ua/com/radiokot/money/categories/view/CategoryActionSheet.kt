@@ -46,7 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,12 +58,13 @@ import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
-import ua.com.radiokot.money.currency.view.ViewAmountFormat
 import ua.com.radiokot.money.currency.view.ViewCurrency
+import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.transfers.history.view.ViewHistoryPeriod
 import ua.com.radiokot.money.transfers.view.ViewDate
 import ua.com.radiokot.money.uikit.TextButton
 import java.math.BigInteger
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun CategoryActionSheetRoot(
@@ -101,7 +101,7 @@ private fun CategoryActionSheet(
     onUnarchiveClicked: () -> Unit,
 ) = Column(
     modifier = modifier
-        .background(Color(0xFFF9FBE7))
+        .background(MoneyTheme.colors.actionSheet)
         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
 ) {
 
@@ -206,10 +206,7 @@ private fun Header(
 
     Spacer(modifier = Modifier.height(8.dp))
 
-    val locale = LocalConfiguration.current.locales[0]
-    val amountFormat = remember(locale) {
-        ViewAmountFormat(locale)
-    }
+    val amountFormat = rememberViewAmountFormat()
 
     Row {
         Text(

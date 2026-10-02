@@ -47,7 +47,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -286,7 +285,7 @@ private fun Pickers(
         modifier = Modifier
             .align(Alignment.CenterHorizontally)
     ) {
-        BasicText(
+        Text(
             text = "Icon",
             style = TextStyle(
                 textAlign = TextAlign.Center,
@@ -307,7 +306,7 @@ private fun Pickers(
                 }
         )
 
-        BasicText(
+        Text(
             text = "Color",
             style = TextStyle(
                 textAlign = TextAlign.Center,

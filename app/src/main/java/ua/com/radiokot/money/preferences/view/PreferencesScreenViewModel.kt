@@ -41,6 +41,8 @@ import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.lock.logic.AppLock
 import ua.com.radiokot.money.lock.logic.DisableAppLockUseCase
 import ua.com.radiokot.money.syncerrors.data.SyncErrorRepository
+import ua.com.radiokot.money.theme.data.ThemeMode
+import ua.com.radiokot.money.theme.data.ThemePreferences
 
 class PreferencesScreenViewModel(
     private val currencyPreferences: CurrencyPreferences,
@@ -50,6 +52,7 @@ class PreferencesScreenViewModel(
     private val signOutUseCase: SignOutUseCase,
     appLock: AppLock,
     private val disableAppLockUseCase: DisableAppLockUseCase,
+    private val themePreferences: ThemePreferences,
 ) : ViewModel() {
 
     private val log by lazyLogger("PreferencesScreenVM")
@@ -100,6 +103,22 @@ class PreferencesScreenViewModel(
 
     fun onInboxClicked() {
         _events.tryEmit(Event.ProceedToInbox)
+    }
+
+    val themeMode: StateFlow<ThemeMode> =
+        themePreferences.themeMode
+
+    fun onThemeModeClicked(mode: ThemeMode) {
+        if (themePreferences.themeMode.value == mode) {
+            return
+        }
+
+        log.debug {
+            "onThemeModeClicked(): switching theme mode:" +
+                    "\nmode=$mode"
+        }
+
+        themePreferences.themeMode.value = mode
     }
 
     fun onPrimaryCurrencyCodeChanged(newValue: String) {

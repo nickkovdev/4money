@@ -25,13 +25,19 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import androidx.paging.insertSeparators
 import androidx.paging.map
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -43,6 +49,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -62,6 +69,8 @@ import ua.com.radiokot.money.transfers.view.ViewDate
 import ua.com.radiokot.money.transfers.view.ViewTransferListItem
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+
+private const val DELETION_UNDO_TIMEOUT_MS = 4000L
 
 // Look mum, I'm an experimentator 🤦🏻
 @OptIn(
@@ -113,10 +122,9 @@ class ActivityViewModel(
                 )
             }
 
-    val transferItemPagingFlow: Flow<PagingData<ViewTransferListItem>> =
+    private val separatedTransferItemPagingFlow: Flow<PagingData<ViewTransferListItem>> =
         transferHistoryPagerFlow
             .flatMapLatest { it.flow }
-            .cachedIn(viewModelScope)
             .map { pagingData ->
                 val today = Clock.System.now().toLocalDateTime(localTimeZone).date
                 val yesterday = today.minus(1, DateTimeUnit.DAY)
@@ -152,6 +160,29 @@ class ActivityViewModel(
                     .map { it.first }
             }
             .flowOn(Dispatchers.Default)
+            .cachedIn(viewModelScope)
+
+    private val pendingDeletions = PendingTransferDeletions()
+    private val deletionUndoJobs = mutableMapOf<String, Job>()
+    private val undoableDeletionTransferId: MutableStateFlow<String?> = MutableStateFlow(null)
+
+    val isUndoDeletionVisible: StateFlow<Boolean> =
+        undoableDeletionTransferId
+            .map(viewModelScope) { it != null }
+
+    val transferItemPagingFlow: Flow<PagingData<ViewTransferListItem>> =
+        combine(
+            separatedTransferItemPagingFlow,
+            pendingDeletions.hiddenIdsFlow,
+        ) { pagingData, hiddenIds ->
+            if (hiddenIds.isEmpty())
+                pagingData
+            else
+                pagingData.filter { item ->
+                    item !is ViewTransferListItem.Transfer
+                            || item.source?.id !in hiddenIds
+                }
+        }
 
     val totalIncomeAndExpense: StateFlow<ViewTotalIncomeAndExpense?> =
         combine(
@@ -247,6 +278,95 @@ class ActivityViewModel(
                     }
                 }
         }
+    }
+
+    fun onTransferItemDeleteClicked(item: ViewTransferListItem.Transfer) {
+        val transferId = item.source?.id
+        if (transferId == null) {
+            log.debug { "onTransferItemDeleteClicked(): missing transfer source" }
+            return
+        }
+
+        if (!pendingDeletions.schedule(transferId)) {
+            return
+        }
+
+        log.debug {
+            "onTransferItemDeleteClicked(): scheduled deletion:" +
+                    "\ntransferId=$transferId"
+        }
+
+        // Only the latest deletion can be undone from the bar,
+        // an older pending one gets committed right away.
+        undoableDeletionTransferId.value
+            ?.also { previousTransferId ->
+                deletionUndoJobs.remove(previousTransferId)?.cancel()
+                commitDeletion(previousTransferId)
+            }
+        undoableDeletionTransferId.value = transferId
+
+        deletionUndoJobs[transferId] = viewModelScope.launch {
+            delay(DELETION_UNDO_TIMEOUT_MS)
+            if (undoableDeletionTransferId.value == transferId) {
+                undoableDeletionTransferId.value = null
+            }
+            commitDeletion(transferId)
+        }
+    }
+
+    fun onUndoDeletionClicked() {
+        val transferId = undoableDeletionTransferId.value
+            ?: return
+        undoableDeletionTransferId.value = null
+
+        if (pendingDeletions.undo(transferId)) {
+            deletionUndoJobs.remove(transferId)?.cancel()
+
+            log.debug {
+                "onUndoDeletionClicked(): undone:" +
+                        "\ntransferId=$transferId"
+            }
+        }
+    }
+
+    /**
+     * Commits the deletion exactly once: [PendingTransferDeletions.take]
+     * guards against the timer, the undo and [onCleared] racing each other.
+     */
+    private fun commitDeletion(transferId: String) {
+        if (!pendingDeletions.take(transferId)) {
+            return
+        }
+        deletionUndoJobs.remove(transferId)
+
+        revertTakenDeletion(transferId)
+    }
+
+    // The app-lifetime scope is needed so the revert survives the cleared ViewModel,
+    // there is no application-level scope in the project to use instead.
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun revertTakenDeletion(transferId: String) {
+        GlobalScope.launch {
+            // Leaving the screen mid-revert must not cancel it.
+            withContext(NonCancellable) {
+                revertTransferUseCase(
+                    transferId = transferId,
+                )
+                    .onSuccess {
+                        log.info { "Deleted (reverted) transfer $transferId" }
+                    }
+                    .onFailure { error ->
+                        log.error(error) { "commitDeletion(): failed to revert transfer" }
+                        pendingDeletions.restore(transferId)
+                    }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        // Leaving the screen commits what is still pending.
+        pendingDeletions.takeAll().forEach(::revertTakenDeletion)
+        super.onCleared()
     }
 
     fun onBack() {

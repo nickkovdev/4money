@@ -25,6 +25,7 @@ import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -32,6 +33,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -52,20 +54,22 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -73,6 +77,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -83,12 +88,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import com.composeunstyled.Icon
 import com.composeunstyled.Text
 import kotlinx.coroutines.flow.mapNotNull
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.compose.koinInject
 import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.MoneyAppModalBottomSheetHost
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.accounts.view.AccountActionSheetRoute
 import ua.com.radiokot.money.accounts.view.AccountsScreenRoute
 import ua.com.radiokot.money.accounts.view.ArchivedAccountsActivity
@@ -105,6 +112,8 @@ import ua.com.radiokot.money.categories.view.categoriesScreen
 import ua.com.radiokot.money.categories.view.categoryActionSheet
 import ua.com.radiokot.money.inbox.view.InboxActivity
 import ua.com.radiokot.money.lock.view.SetUpPasscodeActivity
+import ua.com.radiokot.money.overview.view.OverviewScreenRoute
+import ua.com.radiokot.money.overview.view.overviewScreen
 import ua.com.radiokot.money.preferences.view.PreferencesScreenRoute
 import ua.com.radiokot.money.preferences.view.preferencesScreen
 import ua.com.radiokot.money.rememberMoneyAppNavController
@@ -116,6 +125,7 @@ import ua.com.radiokot.money.transfers.view.TransfersNavigator
 import ua.com.radiokot.money.transfers.view.transferCounterpartySelectionSheet
 import ua.com.radiokot.money.transfers.view.transferSheet
 import ua.com.radiokot.money.uikit.ScaleIndication
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 class HomeActivity : MoneyAppActivity(
     requiresSession = true,
@@ -127,18 +137,20 @@ class HomeActivity : MoneyAppActivity(
     override fun onCreateAllowed(savedInstanceState: Bundle?) {
 
         enableEdgeToEdge(
-            navigationBarStyle = SystemBarStyle.light(
-                scrim = 0,
-                darkScrim = 0,
+            navigationBarStyle = SystemBarStyle.auto(
+                lightScrim = android.graphics.Color.TRANSPARENT,
+                darkScrim = android.graphics.Color.TRANSPARENT,
             ),
         )
 
         setContent {
-            UserSessionScope {
-                HomeScreen(
-                    viewModel = viewModel,
-                    goToAuth = ::goToAuth,
-                )
+            MoneyTheme {
+                UserSessionScope {
+                    HomeScreen(
+                        viewModel = viewModel,
+                        goToAuth = ::goToAuth,
+                    )
+                }
             }
         }
     }
@@ -167,10 +179,25 @@ private fun HomeScreen(
                     .add(WindowInsets.statusBars)
             )
     ) {
+        TopBar(
+            hasNotice = viewModel.hasMoreNotice.collectAsState(),
+            onProfileClicked = {
+                if (navController.currentDestination?.route == PreferencesScreenRoute) {
+                    navController.navigateUp()
+                } else {
+                    navController.navigate(PreferencesScreenRoute) {
+                        launchSingleTop = true
+                    }
+                }
+            },
+        )
+
         NavHost(
             navController = navController,
             startDestination = AccountsScreenRoute,
-            enterTransition = { fadeIn(tween(150)) },
+            enterTransition = {
+                fadeIn(tween(200)) + scaleIn(initialScale = 0.98f, animationSpec = tween(200))
+            },
             exitTransition = { fadeOut(tween(150)) },
             modifier = Modifier
                 .weight(1f)
@@ -263,6 +290,11 @@ private fun HomeScreen(
             activityScreen(
                 homeViewModel = viewModel,
                 onProceedToEditingTransfer = transfersNavigator::proceedToTransfer,
+            )
+
+            overviewScreen(
+                homeViewModel = viewModel,
+                onProceedToCategories = { navController.navigateToTab(CategoriesScreenRoute) },
             )
 
             preferencesScreen(
@@ -369,10 +401,7 @@ private fun HomeScreen(
         CompositionLocalProvider(
             LocalIndication provides remember(::ScaleIndication),
         ) {
-            BottomNavigation(
-                navController = navController,
-                hasMoreNotice = viewModel.hasMoreNotice.collectAsState(),
-            )
+            BottomNavigation(navController = navController)
         }
     }
 
@@ -385,12 +414,11 @@ private fun HomeScreen(
 @Composable
 private fun BottomNavigation(
     navController: NavController,
-    hasMoreNotice: State<Boolean>,
 ) = Row(
     horizontalArrangement = Arrangement.SpaceAround,
     modifier = Modifier
         .fillMaxWidth()
-        .background(Color(0xfff0edf1))
+        .background(MoneyTheme.colors.bottomBar)
         // Do not use safeDrawingPadding() here
         // to avoid jumping behind bottom sheets
         // with soft keyboard open.
@@ -414,70 +442,84 @@ private fun BottomNavigation(
             .collect(this::value::set)
     }
 
-    BottomNavigationEntry(
-        text = "Accounts",
-        icon = "👛",
-        isCurrent = lastVisitedBottomRoute == AccountsScreenRoute,
-        modifier = Modifier
-            .weight(1f)
-            .clickable(
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(AccountsScreenRoute)
-                },
-            )
-    )
+    listOf(
+        Triple("Accounts", R.drawable.ic_tabler_wallet, AccountsScreenRoute),
+        Triple("Categories", R.drawable.ic_tabler_chart_donut, CategoriesScreenRoute),
+        Triple("Transactions", R.drawable.ic_tabler_list_details, ActivityScreenRoute),
+        Triple("Overview", R.drawable.ic_tabler_chart_bar, OverviewScreenRoute),
+    ).forEach { (text, icon, route) ->
+        BottomNavigationEntry(
+            text = text,
+            icon = icon,
+            isCurrent = lastVisitedBottomRoute == route
+                    || (LocalInspectionMode.current && route == AccountsScreenRoute),
+            modifier = Modifier
+                .weight(1f)
+                .clickable(
+                    onClick = { navController.navigateToTab(route) },
+                )
+        )
+    }
+}
 
-    BottomNavigationEntry(
-        text = "Categories",
-        icon = "📊",
-        isCurrent = lastVisitedBottomRoute == CategoriesScreenRoute,
-        modifier = Modifier
-            .weight(1f)
-            .clickable(
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(CategoriesScreenRoute)
-                }
-            )
-    )
+/**
+ * Bottom tabs replace each other; the preferences screen, opened from the profile icon,
+ * sits above a tab and is closed when switching tabs.
+ */
+private fun NavController.navigateToTab(route: String) {
+    if (currentDestination?.route == PreferencesScreenRoute) {
+        popBackStack()
+    }
+    popBackStack()
+    navigate(route)
+}
 
-    BottomNavigationEntry(
-        text = "Activity",
-        icon = "📜",
-        isCurrent = lastVisitedBottomRoute == ActivityScreenRoute,
+@Composable
+private fun TopBar(
+    hasNotice: State<Boolean>,
+    onProfileClicked: () -> Unit,
+) = Row(
+    verticalAlignment = Alignment.CenterVertically,
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(
+            horizontal = 10.dp,
+            vertical = 2.dp,
+        )
+) {
+    Box(
         modifier = Modifier
-            .weight(1f)
-            .clickable(
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(ActivityScreenRoute)
-                },
-            )
-    )
+            .clip(CircleShape)
+            .clickable(onClick = onProfileClicked)
+            .padding(6.dp)
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_tabler_user_circle),
+            contentDescription = "Profile and settings",
+            tint = MoneyTheme.colors.onBackground,
+            modifier = Modifier
+                .size(28.dp)
+        )
 
-    BottomNavigationEntry(
-        text = "More",
-        icon = "⚙️",
-        isCurrent = lastVisitedBottomRoute == PreferencesScreenRoute
-                || LocalInspectionMode.current,
-        hasNotice = hasMoreNotice.value,
-        modifier = Modifier
-            .weight(1f)
-            .clickable(
-                onClick = {
-                    navController.popBackStack()
-                    navController.navigate(PreferencesScreenRoute)
-                },
+        if (hasNotice.value) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(8.dp)
+                    .background(
+                        color = MoneyTheme.colors.notice,
+                        shape = CircleShape,
+                    )
             )
-    )
+        }
+    }
 }
 
 @Composable
 private fun BottomNavigationEntry(
     modifier: Modifier = Modifier,
     text: String,
-    icon: String,
+    @DrawableRes icon: Int,
     isCurrent: Boolean,
     hasNotice: Boolean = false,
 ) = Column(
@@ -521,7 +563,7 @@ private fun BottomNavigationEntry(
             Box(
                 modifier = Modifier
                     .background(
-                        color = Color(0xFFD8CCE1),
+                        color = MoneyTheme.colors.bottomBarIndicator,
                         shape = RoundedCornerShape(
                             percent = 50,
                         ),
@@ -529,17 +571,17 @@ private fun BottomNavigationEntry(
             )
         }
 
-        Text(
-            text = icon,
-            style = TextStyle(
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-            ),
+        val noticeColor = MoneyTheme.colors.notice
+
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = text,
+            tint = MoneyTheme.colors.onBackground,
             modifier = Modifier
-                .fillMaxWidth(0.65f)
                 .padding(
                     vertical = 4.dp,
                 )
+                .size(22.dp)
                 .run {
                     if (!hasNotice) {
                         return@run this
@@ -550,15 +592,15 @@ private fun BottomNavigationEntry(
                     with(LocalDensity.current) {
                         noticeCircleRadiusPx = 4.dp.toPx()
                         noticeCircleOffset = Offset(
-                            x = 18.dp.toPx(),
-                            y = (-8).dp.toPx(),
+                            x = 12.dp.toPx(),
+                            y = (-10).dp.toPx(),
                         )
                     }
 
                     then(Modifier.drawWithContent {
                         drawContent()
                         drawCircle(
-                            color = Color.Red,
+                            color = noticeColor,
                             radius = noticeCircleRadiusPx,
                             center = center + noticeCircleOffset
                         )
@@ -585,7 +627,7 @@ private val bottomNavigationRoutes: Set<String> = setOf(
     AccountsScreenRoute,
     CategoriesScreenRoute,
     ActivityScreenRoute,
-    PreferencesScreenRoute,
+    OverviewScreenRoute,
 )
 
 @Preview(
@@ -596,5 +638,4 @@ private fun BottomNavigation2Preview(
 
 ) = BottomNavigation(
     navController = rememberNavController(),
-    hasMoreNotice = true.let(::mutableStateOf),
 )

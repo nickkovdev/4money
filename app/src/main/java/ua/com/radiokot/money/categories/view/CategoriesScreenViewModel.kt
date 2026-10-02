@@ -34,11 +34,15 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import ua.com.radiokot.money.categories.data.CategoriesWithAmountAndTotal
 import ua.com.radiokot.money.categories.data.Category
+import ua.com.radiokot.money.categories.data.CategoryWithAmount
+import ua.com.radiokot.money.colors.data.ItemColorScheme
+import ua.com.radiokot.money.uikit.chart.DonutSegment
+import ua.com.radiokot.money.uikit.chart.computeDonutSegments
+import java.math.BigInteger
 import ua.com.radiokot.money.categories.logic.GetCategoriesWithAmountsAndTotalUseCase
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.eventSharedFlow
@@ -59,19 +63,61 @@ class CategoriesScreenViewModel(
     private val _events: MutableSharedFlow<Event> = eventSharedFlow()
     val events = _events.asSharedFlow()
 
-    private val categoriesWithAmountAndTotalSharedFlow: SharedFlow<CategoriesWithAmountAndTotal> =
-        combine(
-            isIncome,
-            historyStatsPeriod,
-            transform = ::Pair,
-        )
-            .flatMapLatest { (isIncome, period) ->
-                getCategoriesWithAmountAndTotalUseCase(
-                    isIncome = isIncome,
-                    period = period,
+    /**
+     * Expense (first) and income (second) data for the current period,
+     * so the ring center can show both totals and switching the mode is instant.
+     */
+    private val bothModesSharedFlow: SharedFlow<Pair<CategoriesWithAmountAndTotal, CategoriesWithAmountAndTotal>> =
+        historyStatsPeriod
+            .flatMapLatest { period ->
+                combine(
+                    getCategoriesWithAmountAndTotalUseCase(
+                        isIncome = false,
+                        period = period,
+                    ),
+                    getCategoriesWithAmountAndTotalUseCase(
+                        isIncome = true,
+                        period = period,
+                    ),
+                    transform = ::Pair,
                 )
             }
-            .shareIn(viewModelScope, SharingStarted.Lazily)
+            .shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
+
+    private val categoriesWithAmountAndTotalSharedFlow: SharedFlow<CategoriesWithAmountAndTotal> =
+        combine(
+            bothModesSharedFlow,
+            isIncome,
+        ) { (expense, income), isIncome ->
+            if (isIncome)
+                income
+            else
+                expense
+        }
+            .shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
+
+    val expenseTotalAmount: StateFlow<ViewAmount?> =
+        bothModesSharedFlow
+            .map { it.first.totalInPrimaryCurrency?.let(::ViewAmount) }
+            .stateIn(viewModelScope, SharingStarted.Lazily, null)
+
+    val incomeTotalAmount: StateFlow<ViewAmount?> =
+        bothModesSharedFlow
+            .map { it.second.totalInPrimaryCurrency?.let(::ViewAmount) }
+            .stateIn(viewModelScope, SharingStarted.Lazily, null)
+
+    val ringSegments: StateFlow<List<DonutSegment<ItemColorScheme>>> =
+        categoriesWithAmountAndTotalSharedFlow
+            .map { data ->
+                computeDonutSegments(
+                    data.categories
+                        .filterNot { it.category.isArchived }
+                        .sortedBy(CategoryWithAmount::category)
+                        .map { it.category.colorScheme to (it.amountInPrimaryCurrency ?: BigInteger.ZERO) }
+                )
+            }
+            .flowOn(Dispatchers.Default)
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val categoryItemList: StateFlow<List<ViewCategoryListItem>> =
         categoriesWithAmountAndTotalSharedFlow
@@ -83,12 +129,6 @@ class CategoriesScreenViewModel(
             }
             .flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    val totalAmount: StateFlow<ViewAmount?> =
-        categoriesWithAmountAndTotalSharedFlow
-            .mapNotNull { it.totalInPrimaryCurrency }
-            .mapNotNull(::ViewAmount)
-            .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     fun onTitleClicked() {
         val newIsIncome = !isIncome.value

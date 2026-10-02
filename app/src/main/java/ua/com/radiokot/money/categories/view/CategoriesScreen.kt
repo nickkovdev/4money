@@ -19,30 +19,34 @@
 
 package ua.com.radiokot.money.categories.view
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.composeunstyled.Text
+import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.currency.view.ViewAmount
-import ua.com.radiokot.money.currency.view.ViewAmountFormat
+import ua.com.radiokot.money.currency.view.AnimatedAmountText
+import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.history.view.PeriodBar
+import ua.com.radiokot.money.transfers.history.view.PeriodSlideContainer
+import ua.com.radiokot.money.transfers.history.view.periodSwipe
 import ua.com.radiokot.money.transfers.history.view.ViewHistoryPeriod
+import ua.com.radiokot.money.uikit.chart.DonutSegment
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun CategoriesScreenRoot(
@@ -51,7 +55,10 @@ fun CategoriesScreenRoot(
 ) = CategoriesScreen(
     isIncome = viewModel.isIncome.collectAsState(),
     period = viewModel.viewHistoryStatsPeriod.collectAsState(),
-    totalAmount = viewModel.totalAmount.collectAsState(),
+    historyPeriod = viewModel.historyStatsPeriod.collectAsState(),
+    expenseTotal = viewModel.expenseTotalAmount.collectAsState(),
+    incomeTotal = viewModel.incomeTotalAmount.collectAsState(),
+    ringSegments = viewModel.ringSegments.collectAsState(),
     categoryItemList = viewModel.categoryItemList.collectAsState(),
     onTitleClicked = remember { viewModel::onTitleClicked },
     onCategoryItemClicked = remember { viewModel::onCategoryItemClicked },
@@ -70,7 +77,10 @@ private fun CategoriesScreen(
     modifier: Modifier = Modifier,
     isIncome: State<Boolean>,
     period: State<ViewHistoryPeriod>,
-    totalAmount: State<ViewAmount?>,
+    historyPeriod: State<HistoryPeriod>,
+    expenseTotal: State<ViewAmount?>,
+    incomeTotal: State<ViewAmount?>,
+    ringSegments: State<List<DonutSegment<ItemColorScheme>>>,
     categoryItemList: State<List<ViewCategoryListItem>>,
     onTitleClicked: () -> Unit,
     onCategoryItemClicked: (ViewCategoryListItem) -> Unit,
@@ -83,6 +93,12 @@ private fun CategoriesScreen(
     onAddClicked: () -> Unit,
 ) = Column(
     modifier = modifier
+        .periodSwipe(
+            isPreviousEnabled = isPreviousPeriodButtonEnabled,
+            isNextEnabled = isNextPeriodButtonEnabled,
+            onPrevious = onPreviousPeriodClicked,
+            onNext = onNextPeriodClicked,
+        )
         .padding(
             vertical = 16.dp,
         )
@@ -101,67 +117,69 @@ private fun CategoriesScreen(
             )
     )
 
-    Spacer(modifier = Modifier.height(12.dp))
+    Spacer(modifier = Modifier.height(8.dp))
 
-    BasicText(
-        text =
-            if (isIncome.value)
-                "Incomes"
-            else
-                "Expenses",
-        style = TextStyle(
-            textAlign = TextAlign.Center,
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                onClick = onTitleClicked,
-            )
-    )
-
-    val locale = LocalConfiguration.current.locales.get(0)
-    val amountFormat = remember(locale) {
-        ViewAmountFormat(locale)
-    }
-    val totalAmountText: AnnotatedString by remember {
-        derivedStateOf {
-            if (totalAmount.value != null)
-                amountFormat(
-                    amount = totalAmount.value!!,
-                    customColor =
-                        if (isIncome.value)
-                            Color(0xff50af99)
-                        else
-                            Color(0xffd85e8c)
-                )
-            else
-                AnnotatedString("")
-        }
-    }
-
-    BasicText(
-        text = totalAmountText,
-        style = TextStyle(
-            textAlign = TextAlign.Center,
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                onClick = onTitleClicked,
-            )
-            .padding(
-                vertical = 6.dp,
-            )
-    )
-
-    CategoryGrid(
-        itemList = categoryItemList,
-        onItemClicked = onCategoryItemClicked,
-        onItemLongClicked = onCategoryItemLongClicked,
-        isAddShown = true,
-        onAddClicked = onAddClicked,
+    PeriodSlideContainer(
+        period = historyPeriod.value,
         modifier = Modifier
             .fillMaxWidth()
             .weight(1f)
+    ) {
+        CategoryRingGrid(
+            itemList = categoryItemList,
+            ringSegments = ringSegments,
+            onItemClicked = onCategoryItemClicked,
+            onItemLongClicked = onCategoryItemLongClicked,
+            onAddClicked = onAddClicked,
+            onRingClicked = onTitleClicked,
+            ringCenter = {
+                RingCenter(
+                    isIncome = isIncome,
+                    expenseTotal = expenseTotal,
+                    incomeTotal = incomeTotal,
+                )
+            },
+            modifier = Modifier
+                .fillMaxSize()
+        )
+    }
+}
+
+@Composable
+private fun RingCenter(
+    isIncome: State<Boolean>,
+    expenseTotal: State<ViewAmount?>,
+    incomeTotal: State<ViewAmount?>,
+) = Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+) {
+    val colors = MoneyTheme.colors
+    Text(
+        text =
+            if (isIncome.value)
+                "Income"
+            else
+                "Expenses",
+        style = TextStyle(
+            fontSize = 13.sp,
+            color = colors.onBackgroundSecondary,
+        ),
     )
+
+    listOf(
+        Triple(expenseTotal.value, colors.expense, !isIncome.value),
+        Triple(incomeTotal.value, colors.income, isIncome.value),
+    ).forEach { (amount, color, isCurrent) ->
+        if (amount != null) {
+            AnimatedAmountText(
+                amount = amount,
+                customColor = color,
+                style = TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontSize = if (isCurrent) 18.sp else 13.sp,
+                    fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Normal,
+                ),
+            )
+        }
+    }
 }

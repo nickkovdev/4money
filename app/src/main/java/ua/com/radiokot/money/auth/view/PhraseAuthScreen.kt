@@ -53,8 +53,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -62,6 +64,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 private fun PhraseAuthScreen(
@@ -123,6 +126,8 @@ private fun PhraseAuthScreen(
     BasicTextField(
         value = phrase.value,
         onValueChange = onPhraseChanged,
+        textStyle = TextStyle(color = MoneyTheme.colors.onBackground),
+        cursorBrush = SolidColor(MoneyTheme.colors.onBackground),
         singleLine = false,
         minLines = 3,
         keyboardOptions = KeyboardOptions(
@@ -142,7 +147,7 @@ private fun PhraseAuthScreen(
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = Color.DarkGray,
+                color = MoneyTheme.colors.outline,
             )
             .padding(12.dp)
     )

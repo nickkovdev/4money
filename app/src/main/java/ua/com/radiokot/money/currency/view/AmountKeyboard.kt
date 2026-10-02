@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.currency.view
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,7 +30,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,15 +44,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
+import com.composeunstyled.Icon
 import com.composeunstyled.Text
 import kotlinx.coroutines.launch
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemColorScheme
+import ua.com.radiokot.money.colors.view.itemAccentColor
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.ScaleIndication
 import java.math.BigInteger
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun AmountKeyboard(
@@ -61,17 +67,30 @@ fun AmountKeyboard(
     colorScheme: ItemColorScheme,
     mainAction: AmountKeyboardMainAction = AmountKeyboardMainAction.Done,
     onMainActionClicked: ((AmountKeyboardMainAction) -> Unit)? = null,
+    onCurrencyClicked: (() -> Unit)? = null,
+    onDateClicked: (() -> Unit)? = null,
 ) = BoxWithConstraints(
     modifier = modifier,
 ) {
-
     val buttonGap = 8.dp
     val buttonWidth = (maxWidth - buttonGap * 4) / 5
     val buttonHeight = (maxHeight - buttonGap * 3) / 4
-    val actionBackground = Modifier.background(Color(0xfff3f0f6))
+    val colors = MoneyTheme.colors
+    val actionBackground = Modifier.background(colors.surfaceVariant)
+    val keySize = Modifier.size(width = buttonWidth, height = buttonHeight)
+    val confirmBackground =
+        if (colors.isDark)
+            itemAccentColor(colorScheme)
+        else
+            Color(colorScheme.primary)
+    val confirmContentColor =
+        if (colors.isDark)
+            colors.background
+        else
+            Color(colorScheme.onPrimary)
 
     val hapticFeedback = LocalHapticFeedback.current
-    val onButtonClicked = remember(inputState) {
+    val onSymbolClicked = remember(inputState) {
         { symbol: Char ->
             hapticFeedback.performHapticFeedback(
                 HapticFeedbackType.KeyboardTap
@@ -86,226 +105,106 @@ fun AmountKeyboard(
             coroutineScope.launch {
                 inputState.animateClear()
             }
+            Unit
         }
     }
 
     CompositionLocalProvider(
         LocalIndication provides remember(::ScaleIndication),
     ) {
-
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
         ) {
             Column(
-                verticalArrangement = Arrangement.SpaceBetween,
+                verticalArrangement = Arrangement.spacedBy(buttonGap),
                 modifier = Modifier
-                    .fillMaxHeight()
                     .graphicsLayer()
-                    .weight(4f)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Button(
-                        symbol = AmountInputState.Operator.Divide.symbol,
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
+                listOf(
+                    listOf(AmountInputState.Operator.Divide.symbol, '7', '8', '9'),
+                    listOf(AmountInputState.Operator.Multiply.symbol, '4', '5', '6'),
+                    listOf(AmountInputState.Operator.Minus.symbol, '1', '2', '3'),
+                ).forEach { rowSymbols ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(buttonGap),
+                    ) {
+                        rowSymbols.forEachIndexed { index, symbol ->
+                            KeyButton(
+                                text = symbol.toString(),
+                                onClick = { onSymbolClicked(symbol) },
+                                modifier = keySize
+                                    .then(if (index == 0) actionBackground else Modifier)
                             )
-                            .then(actionBackground)
-                    )
-                    Button(
-                        symbol = '7',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                    )
-                    Button(
-                        symbol = '8',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                    )
-                    Button(
-                        symbol = '9',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                    )
+                        }
+                    }
                 }
+
                 Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    horizontalArrangement = Arrangement.spacedBy(buttonGap),
                 ) {
-                    Button(
-                        symbol = AmountInputState.Operator.Multiply.symbol,
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                            .then(actionBackground)
+                    KeyButton(
+                        text = AmountInputState.Operator.Plus.symbol.toString(),
+                        onClick = { onSymbolClicked(AmountInputState.Operator.Plus.symbol) },
+                        modifier = keySize.then(actionBackground)
                     )
-                    Button(
-                        symbol = '4',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
+                    KeyButton(
+                        text = inputState.currency.symbol,
+                        contentDescription = "Switch currency",
+                        fontSize = 20.sp,
+                        isEnabled = onCurrencyClicked != null,
+                        onClick = { onCurrencyClicked?.invoke() },
+                        modifier = keySize.then(actionBackground)
                     )
-                    Button(
-                        symbol = '5',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
+                    KeyButton(
+                        text = "0",
+                        onClick = { onSymbolClicked('0') },
+                        modifier = keySize
                     )
-                    Button(
-                        symbol = '6',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Button(
-                        symbol = AmountInputState.Operator.Minus.symbol,
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                            .then(actionBackground)
-                    )
-                    Button(
-                        symbol = '1',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                    )
-                    Button(
-                        symbol = '2',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                    )
-                    Button(
-                        symbol = '3',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Button(
-                        symbol = AmountInputState.Operator.Plus.symbol,
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
-                            .then(actionBackground)
-                    )
-                    Button(
-                        symbol = '0',
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth * 2 + buttonGap,
-                                height = buttonHeight,
-                            )
-                    )
-                    Button(
-                        symbol = inputState.decimalSeparator,
-                        onClicked = onButtonClicked,
-                        modifier = Modifier
-                            .size(
-                                width = buttonWidth,
-                                height = buttonHeight,
-                            )
+                    KeyButton(
+                        text = inputState.decimalSeparator.toString(),
+                        onClick = { onSymbolClicked(inputState.decimalSeparator) },
+                        modifier = keySize
                     )
                 }
             }
 
             Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(1f)
+                verticalArrangement = Arrangement.spacedBy(buttonGap),
             ) {
-                Button(
-                    symbol = '⌫',
-                    onClicked = onButtonClicked,
-                    onLongClicked = {
-                        animateClear()
-                    },
-                    modifier = Modifier
-                        .size(
-                            width = buttonWidth,
-                            height = buttonHeight,
-                        )
-                        .then(actionBackground)
+                KeyButton(
+                    icon = R.drawable.ic_tabler_backspace,
+                    contentDescription = "Erase",
+                    onClick = { onSymbolClicked('⌫') },
+                    onLongClick = animateClear,
+                    modifier = keySize.then(actionBackground)
                 )
-                Button(
-                    symbol =
+                KeyButton(
+                    icon = R.drawable.ic_tabler_calendar,
+                    contentDescription = "Date",
+                    isEnabled = onDateClicked != null,
+                    onClick = { onDateClicked?.invoke() },
+                    modifier = keySize.then(actionBackground)
+                )
+                KeyButton(
+                    text =
                         if (inputState.isEvaluationNeeded)
-                            '='
+                            "="
                         else
-                            when (mainAction) {
-
-                                AmountKeyboardMainAction.Done ->
-                                    '✓'
-
-                                AmountKeyboardMainAction.Next ->
-                                    '❭'
-                            },
-                    onClicked = {
+                            null,
+                    icon =
+                        if (inputState.isEvaluationNeeded)
+                            null
+                        else when (mainAction) {
+                            AmountKeyboardMainAction.Done -> R.drawable.ic_tabler_check
+                            AmountKeyboardMainAction.Next -> R.drawable.ic_tabler_chevron_right
+                        },
+                    contentDescription = "Confirm",
+                    contentColor = confirmContentColor,
+                    onClick = {
                         if (inputState.isEvaluationNeeded) {
-                            onButtonClicked('=')
+                            onSymbolClicked('=')
                         } else {
                             hapticFeedback.performHapticFeedback(
                                 HapticFeedbackType.Confirm
@@ -313,15 +212,12 @@ fun AmountKeyboard(
                             onMainActionClicked?.invoke(mainAction)
                         }
                     },
-                    textColor = Color(colorScheme.onPrimary),
                     modifier = Modifier
                         .size(
                             width = buttonWidth,
-                            height = buttonHeight * 3 + buttonGap * 2,
+                            height = buttonHeight * 2 + buttonGap,
                         )
-                        .background(
-                            color = Color(colorScheme.primary),
-                        )
+                        .background(confirmBackground)
                 )
             }
         }
@@ -329,14 +225,24 @@ fun AmountKeyboard(
 }
 
 @Composable
-private fun Button(
+private fun KeyButton(
     modifier: Modifier = Modifier,
-    symbol: Char,
-    textColor: Color = Color.Unspecified,
-    onClicked: (Char) -> Unit,
-    onLongClicked: ((Char) -> Unit)? = null,
+    text: String? = null,
+    @DrawableRes icon: Int? = null,
+    contentDescription: String? = text,
+    contentColor: Color = Color.Unspecified,
+    fontSize: TextUnit = 28.sp,
+    isEnabled: Boolean = true,
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(12.dp)
+    val colors = MoneyTheme.colors
+    val resolvedContentColor = when {
+        !isEnabled -> colors.outlineDisabled
+        contentColor != Color.Unspecified -> contentColor
+        else -> colors.onBackground
+    }
 
     Box(
         contentAlignment = Alignment.Center,
@@ -344,27 +250,39 @@ private fun Button(
             .clip(shape)
             .then(modifier)
             .then(
-                if (onLongClicked != null)
+                if (onLongClick != null)
                     Modifier.combinedClickable(
-                        onClick = { onClicked(symbol) },
-                        onLongClick = { onLongClicked(symbol) },
+                        enabled = isEnabled,
+                        onClick = onClick,
+                        onLongClick = onLongClick,
                     )
                 else
                     Modifier.clickable(
-                        onClick = { onClicked(symbol) },
+                        enabled = isEnabled,
+                        onClick = onClick,
                     )
             )
             .border(
                 width = 1.dp,
-                color = Color.DarkGray,
+                color = colors.outline,
                 shape = shape,
             )
     ) {
-        Text(
-            text = symbol.toString(),
-            fontSize = 28.sp,
-            color = textColor,
-        )
+        if (icon != null) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = contentDescription,
+                tint = resolvedContentColor,
+                modifier = Modifier.size(26.dp),
+            )
+        }
+        if (text != null) {
+            Text(
+                text = text,
+                fontSize = fontSize,
+                color = resolvedContentColor,
+            )
+        }
     }
 }
 

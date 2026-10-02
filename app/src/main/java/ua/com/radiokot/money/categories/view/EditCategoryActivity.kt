@@ -39,6 +39,7 @@ import ua.com.radiokot.money.colors.view.itemLogoScreen
 import ua.com.radiokot.money.currency.view.CurrencySelectionScreenRoute
 import ua.com.radiokot.money.currency.view.currencySelectionScreen
 import ua.com.radiokot.money.rememberMoneyAppNavController
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 class EditCategoryActivity : MoneyAppActivity(
     requiresUnlocking = true,
@@ -50,13 +51,15 @@ class EditCategoryActivity : MoneyAppActivity(
         enableEdgeToEdge()
 
         setContent {
-            UserSessionScope {
-                Content(
-                    route = intent
-                        .getStringExtra(EXTRA_ROUTE_JSON)!!
-                        .let(Json::decodeFromString),
-                    finishActivity = ::finish,
-                )
+            MoneyTheme {
+                UserSessionScope {
+                    Content(
+                        route = intent
+                            .getStringExtra(EXTRA_ROUTE_JSON)!!
+                            .let(Json::decodeFromString),
+                        finishActivity = ::finish,
+                    )
+                }
             }
         }
     }

@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.composeunstyled.Text
 import kotlinx.coroutines.launch
 import ua.com.radiokot.money.accounts.view.AccountList
 import ua.com.radiokot.money.accounts.view.ViewAccountListItem
@@ -95,7 +95,7 @@ fun TransferCounterpartySelector(
     ) {
         if (Page.Income in pages) {
             val pageIndex = pages.indexOf(Page.Income)
-            BasicText(
+            Text(
                 text = "Income",
                 style = TextStyle(
                     textAlign = TextAlign.Center,
@@ -119,7 +119,7 @@ fun TransferCounterpartySelector(
 
         if (Page.Expense in pages) {
             val pageIndex = pages.indexOf(Page.Expense)
-            BasicText(
+            Text(
                 text = "Expense",
                 style = TextStyle(
                     textAlign = TextAlign.Center,
@@ -143,7 +143,7 @@ fun TransferCounterpartySelector(
 
         if (Page.Account in pages) {
             val pageIndex = pages.indexOf(Page.Account)
-            BasicText(
+            Text(
                 text =
                     if (isForSource == false)
                         "To account"
