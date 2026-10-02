@@ -19,16 +19,9 @@
 
 package ua.com.radiokot.money.accounts.view
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,40 +29,36 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
-import com.composeunstyled.RelativeAlignment
 import com.composeunstyled.Text
-import com.composeunstyled.Tooltip
-import com.composeunstyled.TooltipPanel
 import kotlinx.coroutines.launch
-import ua.com.radiokot.money.currency.view.ViewAmount
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.currency.view.AnimatedAmountText
+import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
-import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.home.view.HomeProfileButton
+import ua.com.radiokot.money.uikit.IconTile
+import ua.com.radiokot.money.uikit.ListDivider
+import ua.com.radiokot.money.uikit.ListGroup
+import ua.com.radiokot.money.uikit.ListRow
+import ua.com.radiokot.money.uikit.MoneyIconButton
+import ua.com.radiokot.money.uikit.MoneyIconButtonStyle
+import ua.com.radiokot.money.uikit.RowChevron
+import ua.com.radiokot.money.uikit.SectionHeader
+import ua.com.radiokot.money.uikit.SegmentedControl
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -106,7 +95,6 @@ private fun AccountsScreen(
 ) = Column(
     modifier = modifier
 ) {
-
     val pages: List<Page> = remember {
         listOf(
             Page.All,
@@ -124,80 +112,38 @@ private fun AccountsScreen(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                horizontal = 22.dp,
-                vertical = 16.dp,
+                horizontal = MoneySpacing.screen,
+                vertical = 12.dp,
             )
     ) {
-        TextButton(
-            text = "💨",
-            padding = PaddingValues(6.dp),
-            modifier = Modifier
-                .drawWithContent {
-                    // Keep this button only for space.
-                }
-        )
+        HomeProfileButton()
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
                 .weight(1f)
         ) {
-            if (Page.All in pages) {
-                val pageIndex = pages.indexOf(Page.All)
-                Text(
-                    text = "Accounts",
-                    style = TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        textDecoration =
-                            if (pagerState.currentPage == pageIndex)
-                                TextDecoration.Underline
-                            else
-                                null,
-                    ),
-                    modifier = Modifier
-                        .clickable {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(
-                                    page = pageIndex,
-                                )
-                            }
-                        }
-                )
-            }
-
-            if (Page.Total in pages) {
-                val pageIndex = pages.indexOf(Page.Total)
-                Text(
-                    text = "Total",
-                    style = TextStyle(
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        textDecoration =
-                            if (pagerState.currentPage == pageIndex)
-                                TextDecoration.Underline
-                            else
-                                null,
-                    ),
-                    modifier = Modifier
-                        .clickable {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(
-                                    page = pageIndex,
-                                )
-                            }
-                        }
-                )
-            }
+            SegmentedControl(
+                options = pages.map { page ->
+                    when (page) {
+                        Page.All -> "Accounts"
+                        Page.Total -> "Total"
+                    }
+                },
+                selectedIndex = pagerState.currentPage,
+                onSelected = { index ->
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                },
+            )
         }
 
-        TextButton(
-            text = "➕",
-            padding = PaddingValues(6.dp),
-            modifier = Modifier
-                .clickable(
-                    onClick = onAddClicked,
-                )
+        MoneyIconButton(
+            icon = R.drawable.ic_tabler_plus,
+            contentDescription = "Add account",
+            style = MoneyIconButtonStyle.Filled,
+            onClick = onAddClicked,
         )
     }
 
@@ -211,30 +157,47 @@ private fun AccountsScreen(
     ) { pageIndex ->
         when (pages[pageIndex]) {
             Page.All ->
-                MovableAccountList(
-                    modifier = Modifier
-                        .padding(
-                            horizontal = 16.dp,
+                Column {
+                    TotalBalanceHeader(
+                        totalAmount = totalAmount,
+                        modifier = Modifier
+                            .padding(
+                                horizontal = MoneySpacing.screen + 4.dp,
+                            )
+                            .padding(
+                                top = 4.dp,
+                                bottom = 12.dp,
+                            )
+                    )
+
+                    MovableAccountList(
+                        contentPadding = PaddingValues(
+                            start = MoneySpacing.screen,
+                            end = MoneySpacing.screen,
+                            top = 4.dp,
+                            bottom = 24.dp,
                         ),
-                    itemList = accountItemList,
-                    onAccountItemClicked = onAccountItemClicked,
-                    onAccountItemMoved = onAccountItemMoved,
-                    bottomContent =
-                        if (isArchiveVisible.value) {
-                            {
-                                item {
-                                    BottomArchiveLink(
-                                        modifier = Modifier
-                                            .clickable(
-                                                onClick = onArchiveClicked,
-                                            )
-                                    )
+                        itemList = accountItemList,
+                        onAccountItemClicked = onAccountItemClicked,
+                        onAccountItemMoved = onAccountItemMoved,
+                        bottomContent =
+                            if (isArchiveVisible.value) {
+                                {
+                                    item(key = "archive") {
+                                        ArchiveLink(
+                                            onClick = onArchiveClicked,
+                                            modifier = Modifier
+                                                .padding(
+                                                    top = 20.dp,
+                                                )
+                                        )
+                                    }
                                 }
+                            } else {
+                                null
                             }
-                        } else {
-                            null
-                        }
-                )
+                    )
+                }
 
             Page.Total ->
                 TotalPage(
@@ -246,26 +209,49 @@ private fun AccountsScreen(
 }
 
 @Composable
-private fun BottomArchiveLink(
+private fun TotalBalanceHeader(
     modifier: Modifier = Modifier,
-) = Row(
-    modifier = modifier
-        .padding(
-            vertical = 8.dp,
-        )
-        .fillMaxWidth()
+    totalAmount: State<ViewAmount?>,
 ) {
-    Text(
-        text = "Archive",
-        fontSize = 16.sp,
-        fontWeight = FontWeight(500),
-        modifier = Modifier
-            .weight(1f),
-    )
+    val amount = totalAmount.value
+        ?: return
 
-    Text(
-        text = "▶️",
-        fontSize = 16.sp,
+    Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = modifier,
+    ) {
+        Text(
+            text = "Total balance",
+            style = MoneyTheme.typography.labelRegular,
+            color = MoneyTheme.colors.ink2,
+        )
+
+        AnimatedAmountText(
+            amount = amount,
+            customColor = balanceColor(amount.value),
+            style = MoneyTheme.typography.display,
+        )
+    }
+}
+
+@Composable
+private fun ArchiveLink(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) = ListGroup(
+    modifier = modifier,
+) {
+    ListRow(
+        title = "Archived accounts",
+        leading = {
+            IconTile(
+                icon = R.drawable.ic_tabler_archive,
+                tint = MoneyTheme.colors.ink2,
+                background = MoneyTheme.colors.surface2,
+            )
+        },
+        trailing = { RowChevron() },
+        onClick = onClick,
     )
 }
 
@@ -276,146 +262,64 @@ private fun TotalPage(
     totalAmount: State<ViewAmount?>,
 ) = Column(
     modifier = modifier
+        .fillMaxSize()
+        .verticalScroll(rememberScrollState())
         .padding(
-            horizontal = 16.dp,
+            horizontal = MoneySpacing.screen,
+        )
+        .padding(
+            top = 4.dp,
+            bottom = 24.dp,
         )
 ) {
     val amountFormat = rememberViewAmountFormat()
 
-    Row {
-        val textStyle = remember {
-            TextStyle(
-                fontSize = 18.sp,
+    TotalBalanceHeader(
+        totalAmount = totalAmount,
+        modifier = Modifier
+            .padding(
+                horizontal = 4.dp,
             )
-        }
-        val tooltipAnimationSpec = remember {
-            tween<Float>(300)
-        }
-        val tooltipShape = remember {
-            RoundedCornerShape(4.dp)
-        }
-        val tooltipColor = MoneyTheme.colors.tooltip
+            .padding(
+                bottom = 12.dp,
+            )
+    )
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .width(IntrinsicSize.Max)
-        ) {
-            amountPerCurrencyList.value.forEach { (amount, _) ->
-                key(amount.currency) {
-                    Text(
-                        text = amount.currency.symbol,
-                        style = textStyle,
-                        modifier = Modifier
-                            .padding(
-                                vertical = 4.dp,
-                            )
-                    )
-                }
-            }
-        }
+    SectionHeader(
+        title = "By currency",
+    )
 
-        Column(
-            horizontalAlignment = Alignment.End,
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            amountPerCurrencyList.value.forEach { (amount, amountInPrimaryCurrency) ->
-                key(amount.currency, amountInPrimaryCurrency) {
-                    Tooltip(
-                        enabled = amountInPrimaryCurrency != null,
-                        longPressShowDurationMillis = 2500,
-                        placement = RelativeAlignment.CenterStart,
-                        panel = {
-                            if (amountInPrimaryCurrency != null) {
-                                TooltipPanel(
-                                    enter = fadeIn(tooltipAnimationSpec),
-                                    exit = fadeOut(tooltipAnimationSpec),
-                                    arrow = {
-                                        Canvas(
-                                            modifier = Modifier
-                                                .size(
-                                                    width = 6.dp,
-                                                    height = 12.dp,
-                                                )
-                                        ) {
-                                            val trianglePath = Path().apply {
-                                                lineTo(size.width, size.height / 2f)
-                                                lineTo(0f, size.height)
-                                                close()
-                                            }
-                                            drawPath(
-                                                path = trianglePath,
-                                                color = tooltipColor,
-                                            )
-                                        }
-                                    },
-                                    content = {
-                                        Text(
-                                            text = amountFormat(
-                                                amount = amountInPrimaryCurrency,
-                                                customColor = MoneyTheme.colors.onTooltip,
-                                            ),
-                                            modifier = Modifier
-                                                .background(
-                                                    color = tooltipColor,
-                                                    shape = tooltipShape,
-                                                )
-                                                .padding(8.dp)
-                                        )
-                                    },
-                                    modifier = Modifier
-                                        .zIndex(10f)
-                                        .padding(
-                                            horizontal = 4.dp,
-                                        )
-                                )
-                            }
-                        },
-                        anchor = {
-                            Text(
-                                text = amountFormat(amount),
-                                style = textStyle,
-                                modifier = Modifier
-                                    .padding(
-                                        vertical = 4.dp,
-                                    )
-                            )
-                        }
-                    )
+    ListGroup {
+        val list = amountPerCurrencyList.value
+        list.forEachIndexed { index, (amount, amountInPrimaryCurrency) ->
+            key(amount.currency) {
+                if (index > 0) {
+                    ListDivider()
                 }
+
+                ListRow(
+                    title = amount.currency.symbol,
+                    subtitle =
+                        if (amountInPrimaryCurrency != null)
+                            "≈ " + amountFormat(amountInPrimaryCurrency).text
+                        else
+                            null,
+                    trailing = {
+                        Text(
+                            text = amountFormat(
+                                amount = amount,
+                                customColor = balanceColor(amount.value),
+                            ),
+                            style = MoneyTheme.typography.bodyStrong,
+                            maxLines = 1,
+                        )
+                    },
+                )
             }
         }
     }
 
-    val isTotalAmountVisible by remember {
-        derivedStateOf {
-            totalAmount.value != null
-        }
-    }
-
-    if (isTotalAmountVisible) {
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(MoneyTheme.colors.divider)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        AnimatedAmountText(
-            amount = totalAmount.value!!,
-            style = TextStyle(
-                fontSize = 22.sp,
-                textAlign = TextAlign.Center,
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-    }
+    Spacer(modifier = Modifier.height(12.dp))
 }
 
 private enum class Page {

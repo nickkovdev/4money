@@ -58,7 +58,10 @@ import ua.com.radiokot.money.colors.view.itemAccentColor
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.ScaleIndication
 import java.math.BigInteger
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun AmountKeyboard(
@@ -76,18 +79,9 @@ fun AmountKeyboard(
     val buttonWidth = (maxWidth - buttonGap * 4) / 5
     val buttonHeight = (maxHeight - buttonGap * 3) / 4
     val colors = MoneyTheme.colors
-    val actionBackground = Modifier.background(colors.surfaceVariant)
     val keySize = Modifier.size(width = buttonWidth, height = buttonHeight)
-    val confirmBackground =
-        if (colors.isDark)
-            itemAccentColor(colorScheme)
-        else
-            Color(colorScheme.primary)
-    val confirmContentColor =
-        if (colors.isDark)
-            colors.background
-        else
-            Color(colorScheme.onPrimary)
+    val confirmBackground = itemAccentColor(colorScheme)
+    val confirmContentColor = colors.background
 
     val hapticFeedback = LocalHapticFeedback.current
     val onSymbolClicked = remember(inputState) {
@@ -133,9 +127,9 @@ fun AmountKeyboard(
                         rowSymbols.forEachIndexed { index, symbol ->
                             KeyButton(
                                 text = symbol.toString(),
+                                isOperator = index == 0,
                                 onClick = { onSymbolClicked(symbol) },
                                 modifier = keySize
-                                    .then(if (index == 0) actionBackground else Modifier)
                             )
                         }
                     }
@@ -146,22 +140,36 @@ fun AmountKeyboard(
                 ) {
                     KeyButton(
                         text = AmountInputState.Operator.Plus.symbol.toString(),
+                        isOperator = true,
                         onClick = { onSymbolClicked(AmountInputState.Operator.Plus.symbol) },
-                        modifier = keySize.then(actionBackground)
-                    )
-                    KeyButton(
-                        text = inputState.currency.symbol,
-                        contentDescription = "Switch currency",
-                        fontSize = 20.sp,
-                        isEnabled = onCurrencyClicked != null,
-                        onClick = { onCurrencyClicked?.invoke() },
-                        modifier = keySize.then(actionBackground)
-                    )
-                    KeyButton(
-                        text = "0",
-                        onClick = { onSymbolClicked('0') },
                         modifier = keySize
                     )
+                    if (onCurrencyClicked != null) {
+                        KeyButton(
+                            text = inputState.currency.symbol,
+                            contentDescription = "Switch currency",
+                            fontSize = 20.sp,
+                            isOperator = true,
+                            onClick = onCurrencyClicked,
+                            modifier = keySize
+                        )
+                        KeyButton(
+                            text = "0",
+                            onClick = { onSymbolClicked('0') },
+                            modifier = keySize
+                        )
+                    } else {
+                        // No currency to switch: zero takes the slot.
+                        KeyButton(
+                            text = "0",
+                            onClick = { onSymbolClicked('0') },
+                            modifier = Modifier
+                                .size(
+                                    width = buttonWidth * 2 + buttonGap,
+                                    height = buttonHeight,
+                                )
+                        )
+                    }
                     KeyButton(
                         text = inputState.decimalSeparator.toString(),
                         onClick = { onSymbolClicked(inputState.decimalSeparator) },
@@ -178,14 +186,16 @@ fun AmountKeyboard(
                     contentDescription = "Erase",
                     onClick = { onSymbolClicked('⌫') },
                     onLongClick = animateClear,
-                    modifier = keySize.then(actionBackground)
+                    isOperator = true,
+                    modifier = keySize
                 )
                 KeyButton(
                     icon = R.drawable.ic_tabler_calendar,
                     contentDescription = "Date",
                     isEnabled = onDateClicked != null,
                     onClick = { onDateClicked?.invoke() },
-                    modifier = keySize.then(actionBackground)
+                    isOperator = true,
+                    modifier = keySize
                 )
                 KeyButton(
                     text =
@@ -202,6 +212,7 @@ fun AmountKeyboard(
                         },
                     contentDescription = "Confirm",
                     contentColor = confirmContentColor,
+                    background = confirmBackground,
                     onClick = {
                         if (inputState.isEvaluationNeeded) {
                             onSymbolClicked('=')
@@ -217,38 +228,48 @@ fun AmountKeyboard(
                             width = buttonWidth,
                             height = buttonHeight * 2 + buttonGap,
                         )
-                        .background(confirmBackground)
                 )
             }
         }
     }
 }
 
+/**
+ * A filled key: digits on the surface, operators raised with the accent glyph.
+ */
 @Composable
 private fun KeyButton(
     modifier: Modifier = Modifier,
     text: String? = null,
     @DrawableRes icon: Int? = null,
     contentDescription: String? = text,
+    isOperator: Boolean = false,
     contentColor: Color = Color.Unspecified,
-    fontSize: TextUnit = 28.sp,
+    background: Color = Color.Unspecified,
+    fontSize: TextUnit = 24.sp,
     isEnabled: Boolean = true,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
 ) {
-    val shape = RoundedCornerShape(12.dp)
     val colors = MoneyTheme.colors
+    val resolvedBackground = when {
+        background != Color.Unspecified -> background
+        isOperator -> colors.surface2
+        else -> colors.surface
+    }
     val resolvedContentColor = when {
-        !isEnabled -> colors.outlineDisabled
         contentColor != Color.Unspecified -> contentColor
-        else -> colors.onBackground
+        isOperator -> colors.accent
+        else -> colors.ink
     }
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .clip(shape)
+            .alpha(if (isEnabled) 1f else 0.4f)
+            .clip(MoneyShapes.key)
             .then(modifier)
+            .background(resolvedBackground)
             .then(
                 if (onLongClick != null)
                     Modifier.combinedClickable(
@@ -262,24 +283,21 @@ private fun KeyButton(
                         onClick = onClick,
                     )
             )
-            .border(
-                width = 1.dp,
-                color = colors.outline,
-                shape = shape,
-            )
     ) {
         if (icon != null) {
             Icon(
                 painter = painterResource(icon),
                 contentDescription = contentDescription,
                 tint = resolvedContentColor,
-                modifier = Modifier.size(26.dp),
+                modifier = Modifier.size(24.dp),
             )
         }
         if (text != null) {
             Text(
                 text = text,
+                style = MoneyTheme.typography.title,
                 fontSize = fontSize,
+                fontWeight = FontWeight.Medium,
                 color = resolvedContentColor,
             )
         }

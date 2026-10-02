@@ -64,8 +64,16 @@ import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberAmountInputState
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
-import ua.com.radiokot.money.uikit.TextButton
 import java.math.BigInteger
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.colors.data.ItemIcon
+import ua.com.radiokot.money.colors.view.ItemLogo
+import ua.com.radiokot.money.uikit.ActionTile
+import ua.com.radiokot.money.uikit.SheetHandle
+import ua.com.radiokot.money.uikit.theme.MidnightMoneyColors
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.text.AnnotatedString
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -77,6 +85,7 @@ fun AccountActionSheet(
         title = viewModel.title,
         balance = viewModel.balance,
         colorScheme = viewModel.colorScheme,
+        icon = viewModel.icon,
         mode = viewModel.mode.collectAsState(),
         balanceInputValue = viewModel.balanceInputValue.collectAsState(),
         onBalanceClicked = remember { viewModel::onBalanceClicked },
@@ -98,6 +107,7 @@ private fun AccountActionSheet(
     title: String,
     balance: ViewAmount,
     colorScheme: ItemColorScheme,
+    icon: ItemIcon?,
     mode: State<ViewAccountActionSheetMode>,
     balanceInputValue: State<BigInteger>,
     onBalanceClicked: () -> Unit,
@@ -111,7 +121,7 @@ private fun AccountActionSheet(
     onUnarchiveClicked: () -> Unit,
 ) = BoxWithConstraints(
     modifier = modifier
-        .background(MoneyTheme.colors.actionSheet)
+        .background(MoneyTheme.colors.background)
         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
 ) {
 
@@ -119,59 +129,79 @@ private fun AccountActionSheet(
         if (maxHeight < 400.dp)
             maxHeight
         else
-            maxHeight * 0.8f
+            maxHeight * 0.85f
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(
                 max = maxSheetHeightDp,
             )
             .verticalScroll(rememberScrollState())
+            .padding(
+                horizontal = 16.dp,
+            )
     ) {
         val amountFormat = rememberViewAmountFormat()
+        val isBalanceMode = mode.value == ViewAccountActionSheetMode.Balance
 
-        Column(
+        SheetHandle()
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = 4.dp,
+                    end = 4.dp,
+                    top = 8.dp,
+                    bottom = 20.dp,
+                )
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Text(
-                text = title,
-                style = TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
+            ItemLogo(
+                title = title,
+                colorScheme = colorScheme,
+                icon = icon,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = 16.dp,
-                    )
+                    .size(52.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = amountFormat(balance),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontSize = 24.sp,
-                ),
+            Column(
+                verticalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = 16.dp,
-                    )
-                    .clickable(
-                        onClick = onBalanceClicked,
-                    )
-            )
+                    .weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    style = MoneyTheme.typography.title,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text =
+                        if (isBalanceMode)
+                            AnnotatedString("Current balance " + amountFormat(balance).text)
+                        else
+                            amountFormat(
+                                amount = balance,
+                                customColor = balanceColor(balance.value),
+                            ),
+                    style =
+                        if (isBalanceMode)
+                            MoneyTheme.typography.caption
+                        else
+                            MoneyTheme.typography.bodyStrong,
+                    color =
+                        if (isBalanceMode)
+                            MoneyTheme.colors.ink2
+                        else
+                            androidx.compose.ui.graphics.Color.Unspecified,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
 
         when (mode.value) {
@@ -200,19 +230,14 @@ private fun AccountActionSheet(
                     balanceInputValue = balanceInputValue,
                     onNewBalanceInputValueParsed = onNewBalanceInputValueParsed,
                     onBalanceInputSubmit = onBalanceInputSubmit,
-                    keyboardHeight = maxSheetHeightDp / 2.5f,
+                    keyboardHeight = MoneySpacing.keypadKeyHeight * 4 + 24.dp,
                 )
         }
     }
 }
 
 @Composable
-@Preview(
-    apiLevel = 34,
-    heightDp = 2000,
-)
-private fun AccountActionSheetPreview(
-) = Column {
+private fun AccountActionSheetPreviewContent() = Column {
     ViewAccountActionSheetMode.entries.forEach { mode ->
         Text(
             text = mode.name + ": ",
@@ -230,6 +255,7 @@ private fun AccountActionSheetPreview(
             ),
             colorScheme = HardcodedItemColorSchemeRepository()
                 .getItemColorSchemes()[20],
+            icon = null,
             mode = mode.let(::mutableStateOf),
             balanceInputValue = BigInteger("9856").let(::mutableStateOf),
             onBalanceClicked = {},
@@ -246,6 +272,15 @@ private fun AccountActionSheetPreview(
 }
 
 @Composable
+@Preview(
+    apiLevel = 34,
+    heightDp = 2000,
+)
+private fun AccountActionSheetPreview() = MoneyTheme(colors = MidnightMoneyColors) {
+    AccountActionSheetPreviewContent()
+}
+
+@Composable
 private fun DefaultActionsModeContent(
     onBalanceClicked: () -> Unit,
     onTransferClicked: () -> Unit,
@@ -254,76 +289,75 @@ private fun DefaultActionsModeContent(
     onActivityClicked: () -> Unit,
     onEditClicked: () -> Unit,
 ) = Column(
-    verticalArrangement = Arrangement.spacedBy(16.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp),
     modifier = Modifier
         .padding(
-            horizontal = 16.dp,
+            bottom = 12.dp,
         )
 ) {
+    val colors = MoneyTheme.colors
+
     Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        TextButton(
-            text = "✏️ Edit",
+        ActionTile(
+            icon = R.drawable.ic_tabler_arrow_up_right,
+            label = "Expense",
+            tint = colors.expense,
+            tileBackground = colors.expenseTint,
+            onClick = onExpenseClicked,
             modifier = Modifier
                 .weight(1f)
-                .clickable(
-                    onClick = onEditClicked,
-                )
         )
 
-        TextButton(
-            text = "⚖️ Balance",
+        ActionTile(
+            icon = R.drawable.ic_tabler_arrow_down_left,
+            label = "Income",
+            tint = colors.income,
+            tileBackground = colors.incomeTint,
+            onClick = onIncomeClicked,
             modifier = Modifier
                 .weight(1f)
-                .clickable(
-                    onClick = onBalanceClicked,
-                )
         )
 
-        TextButton(
-            text = "📃 Activity",
+        ActionTile(
+            icon = R.drawable.ic_tabler_arrows_exchange,
+            label = "Transfer",
+            tint = colors.ink,
+            tileBackground = colors.surface2,
+            onClick = onTransferClicked,
             modifier = Modifier
                 .weight(1f)
-                .clickable(
-                    onClick = onActivityClicked,
-                )
         )
     }
 
     Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        TextButton(
-            text = "📩 Income",
+        ActionTile(
+            icon = R.drawable.ic_tabler_list_details,
+            label = "Activity",
+            onClick = onActivityClicked,
             modifier = Modifier
                 .weight(1f)
-                .clickable(
-                    onClick = onIncomeClicked,
-                )
         )
 
-        TextButton(
-            text = "📨 Expense",
+        ActionTile(
+            icon = R.drawable.ic_tabler_scale,
+            label = "Balance",
+            onClick = onBalanceClicked,
             modifier = Modifier
                 .weight(1f)
-                .clickable(
-                    onClick = onExpenseClicked,
-                )
         )
 
-        TextButton(
-            text = "↔️ Transfer",
-            isEnabled = true,
+        ActionTile(
+            icon = R.drawable.ic_tabler_pencil,
+            label = "Edit",
+            onClick = onEditClicked,
             modifier = Modifier
                 .weight(1f)
-                .clickable(
-                    onClick = onTransferClicked,
-                )
         )
     }
-
-    Spacer(modifier = Modifier.height(24.dp))
 }
 
 @Composable
@@ -331,45 +365,36 @@ private fun ArchivedActionsModeContent(
     onBalanceClicked: () -> Unit,
     onEditClicked: () -> Unit,
     onUnarchiveClicked: () -> Unit,
-) = Column(
-    verticalArrangement = Arrangement.spacedBy(16.dp),
+) = Row(
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
     modifier = Modifier
         .padding(
-            horizontal = 16.dp,
+            bottom = 12.dp,
         )
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        TextButton(
-            text = "✏️ Edit",
-            modifier = Modifier
-                .weight(1f)
-                .clickable(
-                    onClick = onEditClicked,
-                )
-        )
+    ActionTile(
+        icon = R.drawable.ic_tabler_arrow_back_up,
+        label = "Restore",
+        onClick = onUnarchiveClicked,
+        modifier = Modifier
+            .weight(1f)
+    )
 
-        TextButton(
-            text = "⚖️ Balance",
-            modifier = Modifier
-                .weight(1f)
-                .clickable(
-                    onClick = onBalanceClicked,
-                )
-        )
+    ActionTile(
+        icon = R.drawable.ic_tabler_scale,
+        label = "Balance",
+        onClick = onBalanceClicked,
+        modifier = Modifier
+            .weight(1f)
+    )
 
-        TextButton(
-            text = "⤴️ Restore",
-            modifier = Modifier
-                .weight(1f)
-                .clickable(
-                    onClick = onUnarchiveClicked,
-                )
-        )
-    }
-
-    Spacer(modifier = Modifier.height(24.dp))
+    ActionTile(
+        icon = R.drawable.ic_tabler_pencil,
+        label = "Edit",
+        onClick = onEditClicked,
+        modifier = Modifier
+            .weight(1f)
+    )
 }
 
 @Composable
@@ -383,9 +408,7 @@ private fun BalanceModeContent(
 ) = Column(
     modifier = Modifier
         .padding(
-            start = 16.dp,
-            end = 16.dp,
-            bottom = 24.dp,
+            bottom = 12.dp,
         )
 ) {
 
@@ -402,12 +425,14 @@ private fun BalanceModeContent(
 
     Text(
         text = "New balance",
+        style = MoneyTheme.typography.labelRegular,
+        color = MoneyTheme.colors.ink2,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
     )
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(4.dp))
 
     AnimatedAmountInputText(
         amountInputState = balanceInputState,
@@ -415,7 +440,7 @@ private fun BalanceModeContent(
             .fillMaxWidth()
     )
 
-    Spacer(modifier = Modifier.height(24.dp))
+    Spacer(modifier = Modifier.height(20.dp))
 
     AmountKeyboard(
         inputState = balanceInputState,

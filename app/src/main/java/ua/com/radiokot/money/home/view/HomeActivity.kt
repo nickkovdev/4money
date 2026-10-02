@@ -26,7 +26,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -180,19 +180,25 @@ private fun HomeScreen(
                     .add(WindowInsets.statusBars)
             )
     ) {
-        TopBar(
-            hasNotice = viewModel.hasMoreNotice.collectAsState(),
-            onProfileClicked = {
-                if (navController.currentDestination?.route == PreferencesScreenRoute) {
-                    navController.navigateUp()
-                } else {
-                    navController.navigate(PreferencesScreenRoute) {
-                        launchSingleTop = true
-                    }
+        val hasNotice by viewModel.hasMoreNotice.collectAsState()
+        val onProfileClicked: () -> Unit = {
+            if (navController.currentDestination?.route == PreferencesScreenRoute) {
+                navController.navigateUp()
+            } else {
+                navController.navigate(PreferencesScreenRoute) {
+                    launchSingleTop = true
                 }
-            },
-        )
+            }
+        }
 
+        CompositionLocalProvider(
+            LocalHomeProfileButton provides {
+                ProfileButton(
+                    hasNotice = hasNotice,
+                    onClick = onProfileClicked,
+                )
+            },
+        ) {
         NavHost(
             navController = navController,
             startDestination = AccountsScreenRoute,
@@ -201,6 +207,7 @@ private fun HomeScreen(
             },
             exitTransition = { fadeOut(tween(150)) },
             modifier = Modifier
+                .fillMaxWidth()
                 .weight(1f)
                 .displayCutoutPadding()
         ) {
@@ -399,6 +406,8 @@ private fun HomeScreen(
             )
         }
 
+        }
+
         CompositionLocalProvider(
             LocalIndication provides remember(::ScaleIndication),
         ) {
@@ -419,34 +428,39 @@ private fun BottomNavigation(
     horizontalArrangement = Arrangement.SpaceAround,
     modifier = Modifier
         .fillMaxWidth()
-        .background(MoneyTheme.colors.bottomBar)
+        .background(MoneyTheme.colors.surface)
         // Do not use safeDrawingPadding() here
         // to avoid jumping behind bottom sheets
         // with soft keyboard open.
         .displayCutoutPadding()
         .navigationBarsPadding()
         .padding(
-            vertical = 8.dp,
+            top = 10.dp,
+            bottom = 8.dp,
         )
 ) {
     // Specifically track the visited route within the bottom navigation routes
     // so the current entry doesn't loose indication when a bottom sheet appears.
-    val lastVisitedBottomRoute: String? by produceState(null) {
+    // Settings sit above the tabs, no tab is current there.
+    val lastVisitedBottomRoute: String? by produceState<String?>(null) {
         navController
             .currentBackStackEntryFlow
-            .mapNotNull { entry ->
-                entry
-                    .destination
-                    .route
-                    .takeIf(bottomNavigationRoutes::contains)
+            .collect { entry ->
+                val route = entry.destination.route
+                when {
+                    route == PreferencesScreenRoute ->
+                        value = null
+
+                    route in bottomNavigationRoutes ->
+                        value = route
+                }
             }
-            .collect(this::value::set)
     }
 
     listOf(
         Triple("Accounts", R.drawable.ic_tabler_wallet, AccountsScreenRoute),
         Triple("Categories", R.drawable.ic_tabler_chart_donut, CategoriesScreenRoute),
-        Triple("Transactions", R.drawable.ic_tabler_list_details, ActivityScreenRoute),
+        Triple("History", R.drawable.ic_tabler_list_details, ActivityScreenRoute),
         Triple("Overview", R.drawable.ic_tabler_chart_bar, OverviewScreenRoute),
     ).forEach { (text, icon, route) ->
         BottomNavigationEntry(
@@ -457,6 +471,8 @@ private fun BottomNavigation(
             modifier = Modifier
                 .weight(1f)
                 .clickable(
+                    interactionSource = null,
+                    indication = null,
                     onClick = { navController.navigateToTab(route) },
                 )
         )
@@ -476,149 +492,86 @@ private fun NavController.navigateToTab(route: String) {
 }
 
 @Composable
-private fun TopBar(
-    hasNotice: State<Boolean>,
-    onProfileClicked: () -> Unit,
-) = Row(
-    verticalAlignment = Alignment.CenterVertically,
-    modifier = Modifier
-        .fillMaxWidth()
-        .padding(
-            horizontal = 10.dp,
-            vertical = 2.dp,
-        )
-) {
-    Box(
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable(onClick = onProfileClicked)
-            .padding(6.dp)
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_tabler_user_circle),
-            contentDescription = "Profile and settings",
-            tint = MoneyTheme.colors.onBackground,
-            modifier = Modifier
-                .size(28.dp)
-        )
-
-        if (hasNotice.value) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(8.dp)
-                    .background(
-                        color = MoneyTheme.colors.notice,
-                        shape = CircleShape,
-                    )
-            )
-        }
-    }
-}
-
-@Composable
 private fun BottomNavigationEntry(
     modifier: Modifier = Modifier,
     text: String,
     @DrawableRes icon: Int,
     isCurrent: Boolean,
-    hasNotice: Boolean = false,
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
-    modifier = Modifier
-        .then(modifier)
-        .width(IntrinsicSize.Max)
+    verticalArrangement = Arrangement.spacedBy(4.dp),
+    modifier = modifier,
 ) {
+    val colors = MoneyTheme.colors
+    val pillColor by animateColorAsState(
+        targetValue =
+            if (isCurrent)
+                colors.accentTint
+            else
+                Color.Transparent,
+        label = "tab-pill",
+    )
+    val contentColor by animateColorAsState(
+        targetValue =
+            if (isCurrent)
+                colors.accent
+            else
+                colors.ink3,
+        label = "tab-content",
+    )
+    val pillScaleX by animateFloatAsState(
+        targetValue =
+            if (isCurrent)
+                1f
+            else
+                0.6f,
+        animationSpec = spring(
+            stiffness = Spring.StiffnessMediumLow,
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+        ),
+        label = "tab-pill-scale",
+    )
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
+            .size(
+                width = 56.dp,
+                height = 32.dp,
+            )
     ) {
-        val indicationScaleX = animateFloatAsState(
-            targetValue =
-                if (isCurrent)
-                    1f
-                else
-                    0.5f,
-            animationSpec = spring(
-                stiffness = Spring.StiffnessMediumLow,
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-            )
-        )
-        this@Column.AnimatedVisibility(
-            visible = isCurrent,
-            enter = fadeIn(initialAlpha = 0.5f),
-            exit = fadeOut(),
+        Box(
             modifier = Modifier
-                .fillMaxWidth(0.65f)
-                .fillMaxHeight()
+                .matchParentSize()
                 .graphicsLayer {
-                    scaleX =
-                        if (isCurrent)
-                            indicationScaleX.value
-                        else
-                            1f
+                    scaleX = pillScaleX
                 }
-        ) {
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = MoneyTheme.colors.bottomBarIndicator,
-                        shape = RoundedCornerShape(
-                            percent = 50,
-                        ),
-                    )
-            )
-        }
-
-        val noticeColor = MoneyTheme.colors.notice
+                .background(
+                    color = pillColor,
+                    shape = RoundedCornerShape(percent = 50),
+                )
+        )
 
         Icon(
             painter = painterResource(icon),
             contentDescription = text,
-            tint = MoneyTheme.colors.onBackground,
+            tint = contentColor,
             modifier = Modifier
-                .padding(
-                    vertical = 4.dp,
-                )
                 .size(22.dp)
-                .run {
-                    if (!hasNotice) {
-                        return@run this
-                    }
-
-                    val noticeCircleRadiusPx: Float
-                    val noticeCircleOffset: Offset
-                    with(LocalDensity.current) {
-                        noticeCircleRadiusPx = 4.dp.toPx()
-                        noticeCircleOffset = Offset(
-                            x = 12.dp.toPx(),
-                            y = (-10).dp.toPx(),
-                        )
-                    }
-
-                    then(Modifier.drawWithContent {
-                        drawContent()
-                        drawCircle(
-                            color = noticeColor,
-                            radius = noticeCircleRadiusPx,
-                            center = center + noticeCircleOffset
-                        )
-                    })
-                }
         )
     }
 
-    Spacer(modifier = Modifier.height(2.dp))
-
     Text(
         text = text,
-        style = TextStyle(
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.SemiBold,
-        ),
+        style = MoneyTheme.typography.small,
+        fontWeight =
+            if (isCurrent)
+                FontWeight.Bold
+            else
+                FontWeight.Medium,
+        color = contentColor,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
         modifier = Modifier
             .fillMaxWidth()
     )

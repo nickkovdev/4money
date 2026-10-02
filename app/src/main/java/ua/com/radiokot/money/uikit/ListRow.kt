@@ -32,6 +32,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +69,77 @@ fun ListGroup(
         .background(MoneyTheme.colors.surface),
     content = content,
 )
+
+/**
+ * Where a row sits in a visual group built from flat lazy list items.
+ */
+enum class GroupPosition {
+    Single,
+    First,
+    Middle,
+    Last,
+    ;
+
+    val isFirst: Boolean
+        get() = this == Single || this == First
+
+    companion object {
+        /**
+         * @param isGroupMember whether the item at the given index belongs to a group,
+         * groups are runs of members separated by non-members (headers).
+         */
+        fun of(
+            index: Int,
+            size: Int,
+            isGroupMember: (index: Int) -> Boolean,
+        ): GroupPosition {
+            val hasPrevious = index > 0 && isGroupMember(index - 1)
+            val hasNext = index < size - 1 && isGroupMember(index + 1)
+            return when {
+                !hasPrevious && !hasNext -> Single
+                !hasPrevious -> First
+                !hasNext -> Last
+                else -> Middle
+            }
+        }
+    }
+}
+
+private val groupCorner = 20.dp
+
+/**
+ * Paints a flat lazy item as a part of a rounded surface group,
+ * with a hairline on top of non-first items.
+ */
+@Composable
+fun Modifier.listGroupItem(
+    position: GroupPosition,
+    dividerStartInset: Dp = 0.dp,
+): Modifier {
+    val colors = MoneyTheme.colors
+    val shape = when (position) {
+        GroupPosition.Single -> RoundedCornerShape(groupCorner)
+        GroupPosition.First -> RoundedCornerShape(topStart = groupCorner, topEnd = groupCorner)
+        GroupPosition.Middle -> RectangleShape
+        GroupPosition.Last -> RoundedCornerShape(bottomStart = groupCorner, bottomEnd = groupCorner)
+    }
+    return this
+        .clip(shape)
+        .background(colors.surface)
+        .then(
+            if (!position.isFirst)
+                Modifier.drawBehind {
+                    val inset = dividerStartInset.toPx()
+                    drawRect(
+                        color = colors.line,
+                        topLeft = Offset(inset, 0f),
+                        size = Size(size.width - inset, 1.dp.toPx()),
+                    )
+                }
+            else
+                Modifier
+        )
+}
 
 /**
  * A hairline between rows of a [ListGroup].
