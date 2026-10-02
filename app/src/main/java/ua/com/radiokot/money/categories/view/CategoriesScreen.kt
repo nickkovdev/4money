@@ -21,6 +21,7 @@ package ua.com.radiokot.money.categories.view
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -39,7 +40,10 @@ import com.composeunstyled.Text
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.history.view.PeriodBar
+import ua.com.radiokot.money.transfers.history.view.PeriodSlideContainer
+import ua.com.radiokot.money.transfers.history.view.periodSwipe
 import ua.com.radiokot.money.transfers.history.view.ViewHistoryPeriod
 import ua.com.radiokot.money.uikit.chart.DonutSegment
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
@@ -51,6 +55,7 @@ fun CategoriesScreenRoot(
 ) = CategoriesScreen(
     isIncome = viewModel.isIncome.collectAsState(),
     period = viewModel.viewHistoryStatsPeriod.collectAsState(),
+    historyPeriod = viewModel.historyStatsPeriod.collectAsState(),
     expenseTotal = viewModel.expenseTotalAmount.collectAsState(),
     incomeTotal = viewModel.incomeTotalAmount.collectAsState(),
     ringSegments = viewModel.ringSegments.collectAsState(),
@@ -72,6 +77,7 @@ private fun CategoriesScreen(
     modifier: Modifier = Modifier,
     isIncome: State<Boolean>,
     period: State<ViewHistoryPeriod>,
+    historyPeriod: State<HistoryPeriod>,
     expenseTotal: State<ViewAmount?>,
     incomeTotal: State<ViewAmount?>,
     ringSegments: State<List<DonutSegment<ItemColorScheme>>>,
@@ -87,6 +93,12 @@ private fun CategoriesScreen(
     onAddClicked: () -> Unit,
 ) = Column(
     modifier = modifier
+        .periodSwipe(
+            isPreviousEnabled = isPreviousPeriodButtonEnabled,
+            isNextEnabled = isNextPeriodButtonEnabled,
+            onPrevious = onPreviousPeriodClicked,
+            onNext = onNextPeriodClicked,
+        )
         .padding(
             vertical = 16.dp,
         )
@@ -107,24 +119,30 @@ private fun CategoriesScreen(
 
     Spacer(modifier = Modifier.height(8.dp))
 
-    CategoryRingGrid(
-        itemList = categoryItemList,
-        ringSegments = ringSegments,
-        onItemClicked = onCategoryItemClicked,
-        onItemLongClicked = onCategoryItemLongClicked,
-        onAddClicked = onAddClicked,
-        onRingClicked = onTitleClicked,
-        ringCenter = {
-            RingCenter(
-                isIncome = isIncome,
-                expenseTotal = expenseTotal,
-                incomeTotal = incomeTotal,
-            )
-        },
+    PeriodSlideContainer(
+        period = historyPeriod.value,
         modifier = Modifier
             .fillMaxWidth()
             .weight(1f)
-    )
+    ) {
+        CategoryRingGrid(
+            itemList = categoryItemList,
+            ringSegments = ringSegments,
+            onItemClicked = onCategoryItemClicked,
+            onItemLongClicked = onCategoryItemLongClicked,
+            onAddClicked = onAddClicked,
+            onRingClicked = onTitleClicked,
+            ringCenter = {
+                RingCenter(
+                    isIncome = isIncome,
+                    expenseTotal = expenseTotal,
+                    incomeTotal = incomeTotal,
+                )
+            },
+            modifier = Modifier
+                .fillMaxSize()
+        )
+    }
 }
 
 @Composable

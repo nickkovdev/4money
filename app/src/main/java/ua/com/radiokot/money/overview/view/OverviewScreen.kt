@@ -52,7 +52,10 @@ import ua.com.radiokot.money.colors.data.ItemColorSchemeAccents
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.history.view.PeriodBar
+import ua.com.radiokot.money.transfers.history.view.PeriodSlideContainer
+import ua.com.radiokot.money.transfers.history.view.periodSwipe
 import ua.com.radiokot.money.transfers.history.view.ViewHistoryPeriod
 import ua.com.radiokot.money.uikit.chart.StackedBarChart
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
@@ -64,6 +67,7 @@ fun OverviewScreenRoot(
 ) = OverviewScreen(
     state = viewModel.state.collectAsState(),
     period = viewModel.viewHistoryStatsPeriod.collectAsState(),
+    historyPeriod = viewModel.historyStatsPeriod.collectAsState(),
     isPreviousPeriodButtonEnabled = viewModel.isPreviousHistoryStatsPeriodButtonEnabled.collectAsState(),
     onPreviousPeriodClicked = remember { viewModel::onPreviousHistoryStatsPeriodClicked },
     isNextPeriodButtonEnabled = viewModel.isNextHistoryStatsPeriodButtonEnabled.collectAsState(),
@@ -79,6 +83,7 @@ private fun OverviewScreen(
     modifier: Modifier = Modifier,
     state: State<OverviewScreenState>,
     period: State<ViewHistoryPeriod>,
+    historyPeriod: State<HistoryPeriod>,
     isPreviousPeriodButtonEnabled: State<Boolean>,
     onPreviousPeriodClicked: () -> Unit,
     isNextPeriodButtonEnabled: State<Boolean>,
@@ -88,6 +93,12 @@ private fun OverviewScreen(
     onMoreCategoriesClicked: () -> Unit,
 ) = Column(
     modifier = modifier
+        .periodSwipe(
+            isPreviousEnabled = isPreviousPeriodButtonEnabled,
+            isNextEnabled = isNextPeriodButtonEnabled,
+            onPrevious = onPreviousPeriodClicked,
+            onNext = onNextPeriodClicked,
+        )
         .verticalScroll(rememberScrollState())
         .padding(
             horizontal = 16.dp,
@@ -108,23 +119,25 @@ private fun OverviewScreen(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    when (val currentState = state.value) {
-        OverviewScreenState.Loading ->
-            Unit
+    PeriodSlideContainer(period = historyPeriod.value) {
+        when (val currentState = state.value) {
+            OverviewScreenState.Loading ->
+                Unit
 
-        OverviewScreenState.NoPrimaryCurrency ->
-            Text(
-                text = "Set an existing primary currency in More to see the overview",
-                color = MoneyTheme.colors.onBackgroundSecondary,
-            )
+            OverviewScreenState.NoPrimaryCurrency ->
+                Text(
+                    text = "Set an existing primary currency in More to see the overview",
+                    color = MoneyTheme.colors.onBackgroundSecondary,
+                )
 
-        is OverviewScreenState.Loaded ->
-            OverviewContent(
-                overview = currentState.overview,
-                onExpensesCardClicked = onExpensesCardClicked,
-                onIncomeCardClicked = onIncomeCardClicked,
-                onMoreCategoriesClicked = onMoreCategoriesClicked,
-            )
+            is OverviewScreenState.Loaded ->
+                OverviewContent(
+                    overview = currentState.overview,
+                    onExpensesCardClicked = onExpensesCardClicked,
+                    onIncomeCardClicked = onIncomeCardClicked,
+                    onMoreCategoriesClicked = onMoreCategoriesClicked,
+                )
+        }
     }
 }
 
