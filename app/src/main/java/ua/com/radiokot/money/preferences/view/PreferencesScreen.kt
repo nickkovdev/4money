@@ -44,6 +44,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -83,11 +85,11 @@ private fun PreferencesScreen(
             text = "Sorry, there is a data upload error 🥺\u2060👉🏻\u2060👈🏻\n\n" +
                     "Some of the changes you made have been reverted. " +
                     "The app will be fixed soon, then the reverted changes will be applied.",
-            color = Color.White,
+            color = MoneyTheme.colors.onWarning,
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = Color(0xFFfc9a47),
+                    color = MoneyTheme.colors.warning,
                     shape = RoundedCornerShape(
                         size = 8.dp,
                     )
@@ -169,6 +171,8 @@ private fun PreferencesScreen(
     BasicTextField(
         value = primaryCurrencyCode.value,
         onValueChange = onPrimaryCurrencyCodeChanged,
+        textStyle = TextStyle(color = MoneyTheme.colors.onBackground),
+        cursorBrush = SolidColor(MoneyTheme.colors.onBackground),
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
@@ -179,7 +183,7 @@ private fun PreferencesScreen(
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = Color.DarkGray,
+                color = MoneyTheme.colors.outline,
             )
             .padding(12.dp)
     )

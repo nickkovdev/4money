@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ua.com.radiokot.money.accounts.view.ViewAccountListItem
 import ua.com.radiokot.money.categories.view.ViewCategoryListItem
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 private fun TransferCounterpartySelectionSheet(
@@ -45,7 +46,7 @@ private fun TransferCounterpartySelectionSheet(
     onCategoryItemClicked: (ViewCategoryListItem) -> Unit,
 ) = BoxWithConstraints(
     modifier = modifier
-        .background(Color.White)
+        .background(MoneyTheme.colors.surface)
 ) {
     val maxSheetHeightDp =
         if (maxHeight < 400.dp)

@@ -69,6 +69,7 @@ import kotlinx.coroutines.launch
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun AccountsScreenRoot(
@@ -292,9 +293,7 @@ private fun TotalPage(
         val tooltipShape = remember {
             RoundedCornerShape(4.dp)
         }
-        val tooltipColor = remember {
-            Color(0xBE000000)
-        }
+        val tooltipColor = MoneyTheme.colors.tooltip
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -354,7 +353,7 @@ private fun TotalPage(
                                         Text(
                                             text = amountFormat(
                                                 amount = amountInPrimaryCurrency,
-                                                customColor = Color.White,
+                                                customColor = MoneyTheme.colors.onTooltip,
                                             ),
                                             modifier = Modifier
                                                 .background(
@@ -401,7 +400,7 @@ private fun TotalPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(Color.Gray)
+                .background(MoneyTheme.colors.divider)
         )
 
         Spacer(modifier = Modifier.height(8.dp))

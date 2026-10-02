@@ -60,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -86,6 +87,7 @@ import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberAmountInputState
 import ua.com.radiokot.money.uikit.TextButton
 import java.math.BigInteger
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun TransferSheetRoot(
@@ -140,7 +142,7 @@ private fun TransferSheet(
     onSwapCounterpartiesClicked: () -> Unit,
 ) = BoxWithConstraints(
     modifier = modifier
-        .background(Color.White)
+        .background(MoneyTheme.colors.surface)
         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
 ) {
 
@@ -239,7 +241,7 @@ private fun TransferSheet(
                     text = "🔄",
                     padding = PaddingValues(6.dp),
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(MoneyTheme.colors.surface)
                         .clickable(
                             onClick = onSwapCounterpartiesClicked,
                         )
@@ -409,7 +411,7 @@ private fun TransferSheet(
                     text = "Add a note",
                     style = TextStyle(
                         fontStyle = FontStyle.Italic,
-                        color = Color.Gray,
+                        color = MoneyTheme.colors.onBackgroundSecondary,
                     ),
                     modifier = Modifier
                         .onSizeChanged { (width, _) ->
@@ -425,9 +427,11 @@ private fun TransferSheet(
                 value = memo.value,
                 onValueChange = onMemoUpdated,
                 textStyle = TextStyle(
+                    color = MoneyTheme.colors.onBackground,
                     fontStyle = FontStyle.Italic,
                     textAlign = TextAlign.Center,
                 ),
+                cursorBrush = SolidColor(MoneyTheme.colors.onBackground),
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences,
                     keyboardType = KeyboardType.Text,

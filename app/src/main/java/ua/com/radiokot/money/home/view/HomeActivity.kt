@@ -387,7 +387,7 @@ private fun BottomNavigation(
     horizontalArrangement = Arrangement.SpaceAround,
     modifier = Modifier
         .fillMaxWidth()
-        .background(Color(0xfff0edf1))
+        .background(MoneyTheme.colors.bottomBar)
         // Do not use safeDrawingPadding() here
         // to avoid jumping behind bottom sheets
         // with soft keyboard open.
@@ -518,13 +518,15 @@ private fun BottomNavigationEntry(
             Box(
                 modifier = Modifier
                     .background(
-                        color = Color(0xFFD8CCE1),
+                        color = MoneyTheme.colors.bottomBarIndicator,
                         shape = RoundedCornerShape(
                             percent = 50,
                         ),
                     )
             )
         }
+
+        val noticeColor = MoneyTheme.colors.notice
 
         Text(
             text = icon,
@@ -555,7 +557,7 @@ private fun BottomNavigationEntry(
                     then(Modifier.drawWithContent {
                         drawContent()
                         drawCircle(
-                            color = Color.Red,
+                            color = noticeColor,
                             radius = noticeCircleRadiusPx,
                             center = center + noticeCircleOffset
                         )
