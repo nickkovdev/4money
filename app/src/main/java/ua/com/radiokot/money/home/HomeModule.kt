@@ -47,6 +47,7 @@ val homeModule = module {
         viewModel {
             HomeViewModel(
                 syncErrorRepository = get(),
+                inboxRepository = get(),
             )
         } bind HomeViewModel::class
     }

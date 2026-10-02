@@ -103,6 +103,7 @@ import ua.com.radiokot.money.categories.view.EditCategoryActivity
 import ua.com.radiokot.money.categories.view.EditCategoryScreenRoute
 import ua.com.radiokot.money.categories.view.categoriesScreen
 import ua.com.radiokot.money.categories.view.categoryActionSheet
+import ua.com.radiokot.money.inbox.view.InboxActivity
 import ua.com.radiokot.money.lock.view.SetUpPasscodeActivity
 import ua.com.radiokot.money.preferences.view.PreferencesScreenRoute
 import ua.com.radiokot.money.preferences.view.preferencesScreen
@@ -271,6 +272,11 @@ private fun HomeScreen(
                     )
                 },
                 onSignedOut = goToAuth,
+                onProceedToInbox = {
+                    context.startActivity(
+                        Intent(context, InboxActivity::class.java)
+                    )
+                },
             )
 
             accountActionSheet(

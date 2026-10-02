@@ -36,6 +36,7 @@ import ua.com.radiokot.money.auth.data.UserSession
 import ua.com.radiokot.money.auth.logic.SignOutUseCase
 import ua.com.radiokot.money.currency.data.CurrencyPreferences
 import ua.com.radiokot.money.eventSharedFlow
+import ua.com.radiokot.money.inbox.data.InboxRepository
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.lock.logic.AppLock
 import ua.com.radiokot.money.lock.logic.DisableAppLockUseCase
@@ -45,6 +46,7 @@ class PreferencesScreenViewModel(
     private val currencyPreferences: CurrencyPreferences,
     session: UserSession,
     syncErrorRepository: SyncErrorRepository,
+    inboxRepository: InboxRepository,
     private val signOutUseCase: SignOutUseCase,
     appLock: AppLock,
     private val disableAppLockUseCase: DisableAppLockUseCase,
@@ -78,6 +80,27 @@ class PreferencesScreenViewModel(
 
     val isAppLockEnabled: StateFlow<Boolean> =
         appLock.isEnabled
+
+    private val _isNotificationAccessGranted: MutableStateFlow<Boolean> =
+        MutableStateFlow(false)
+    val isNotificationAccessGranted = _isNotificationAccessGranted.asStateFlow()
+
+    val pendingInboxCount: StateFlow<Long> =
+        inboxRepository
+            .getPendingCountFlow()
+            .stateIn(viewModelScope, SharingStarted.Eagerly, 0L)
+
+    fun onNotificationAccessChecked(isGranted: Boolean) {
+        _isNotificationAccessGranted.value = isGranted
+    }
+
+    fun onNotificationAccessClicked() {
+        _events.tryEmit(Event.ProceedToNotificationAccessSettings)
+    }
+
+    fun onInboxClicked() {
+        _events.tryEmit(Event.ProceedToInbox)
+    }
 
     fun onPrimaryCurrencyCodeChanged(newValue: String) {
         _primaryCurrencyCodeValue.value = newValue
@@ -164,6 +187,8 @@ class PreferencesScreenViewModel(
 
         object ProceedToPasscodeSetup : Event
         object SignedOut : Event
+        object ProceedToNotificationAccessSettings : Event
+        object ProceedToInbox : Event
 
         /**
          * Pass the confirmation to [onSignOutConfirmed].

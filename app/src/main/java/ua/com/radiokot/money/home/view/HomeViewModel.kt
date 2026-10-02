@@ -25,9 +25,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import ua.com.radiokot.money.inbox.data.InboxRepository
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.map
 import ua.com.radiokot.money.syncerrors.data.SyncErrorRepository
@@ -40,6 +42,7 @@ import ua.com.radiokot.money.transfers.view.ViewTransferCounterparty
 
 class HomeViewModel(
     syncErrorRepository: SyncErrorRepository,
+    inboxRepository: InboxRepository,
 ) : ViewModel(),
     HistoryStatsPeriodViewModel,
     ActivityFilterViewModelDelegate {
@@ -78,9 +81,12 @@ class HomeViewModel(
             }
 
     val hasMoreNotice: StateFlow<Boolean> =
-        syncErrorRepository
-            .getErrorCountFlow()
-            .map { it > 0 }
+        combine(
+            syncErrorRepository.getErrorCountFlow(),
+            inboxRepository.getPendingCountFlow(),
+        ) { syncErrorCount, pendingInboxCount ->
+            syncErrorCount > 0 || pendingInboxCount > 0
+        }
             .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     override fun onNextHistoryStatsPeriodClicked() {

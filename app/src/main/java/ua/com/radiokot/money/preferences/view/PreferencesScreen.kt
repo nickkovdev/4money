@@ -64,6 +64,10 @@ private fun PreferencesScreen(
     userId: State<String>,
     onSignOutClicked: () -> Unit,
     isSyncErrorsNoticeVisible: State<Boolean>,
+    isNotificationAccessGranted: State<Boolean>,
+    onNotificationAccessClicked: () -> Unit,
+    pendingInboxCount: State<Long>,
+    onInboxClicked: () -> Unit,
 ) = Column(
     modifier = modifier
         .verticalScroll(
@@ -90,6 +94,52 @@ private fun PreferencesScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
     }
+
+    Text(
+        text = "Bank notifications",
+        fontSize = 16.sp,
+        fontWeight = FontWeight(500),
+    )
+
+    Spacer(modifier = Modifier.height(18.dp))
+
+    Text(
+        text =
+            if (isNotificationAccessGranted.value)
+                "SEB card payments are recorded from notifications."
+            else
+                "Allow notification access so SEB card payments become expenses automatically.",
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    if (!isNotificationAccessGranted.value) {
+        TextButton(
+            text = "Allow notification access",
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = onNotificationAccessClicked,
+                )
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    TextButton(
+        text =
+            if (pendingInboxCount.value > 0)
+                "Inbox · ${pendingInboxCount.value} to categorize"
+            else
+                "Inbox",
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                onClick = onInboxClicked,
+            )
+    )
+
+    Spacer(modifier = Modifier.height(40.dp))
 
     Text(
         text = "Currency",
@@ -212,6 +262,10 @@ fun PreferencesScreen(
     isSyncErrorsNoticeVisible = viewModel.isSyncErrorsNoticeVisible.collectAsState(),
     isAppLockEnabled = viewModel.isAppLockEnabled.collectAsState(),
     onAppLockClicked = remember { viewModel::onAppLockClicked },
+    isNotificationAccessGranted = viewModel.isNotificationAccessGranted.collectAsState(),
+    onNotificationAccessClicked = remember { viewModel::onNotificationAccessClicked },
+    pendingInboxCount = viewModel.pendingInboxCount.collectAsState(),
+    onInboxClicked = remember { viewModel::onInboxClicked },
 )
 
 @Preview(
@@ -229,4 +283,8 @@ private fun PreferencesScreenPreview(
     userId = "uid".let(::mutableStateOf),
     onSignOutClicked = {},
     isSyncErrorsNoticeVisible = true.let(::mutableStateOf),
+    isNotificationAccessGranted = false.let(::mutableStateOf),
+    onNotificationAccessClicked = {},
+    pendingInboxCount = 2L.let(::mutableStateOf),
+    onInboxClicked = {},
 )

@@ -20,26 +20,38 @@
 package ua.com.radiokot.money.preferences.view
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import androidx.activity.compose.LocalActivity
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import org.koin.compose.viewmodel.koinViewModel
+import ua.com.radiokot.money.inbox.listener.NotificationAccess
 
 const val PreferencesScreenRoute = "preferences"
 
 fun NavGraphBuilder.preferencesScreen(
     onProceedToPasscodeSetup: () -> Unit,
     onSignedOut: () -> Unit,
+    onProceedToInbox: () -> Unit,
 ) = composable(PreferencesScreenRoute) {
 
     val activity: Activity? = LocalActivity.current
+    val context = LocalContext.current
     val viewModel = koinViewModel<PreferencesScreenViewModel>()
+
+    // The user may come back from the system settings.
+    LifecycleResumeEffect(viewModel) {
+        viewModel.onNotificationAccessChecked(NotificationAccess.isGranted(context))
+        onPauseOrDispose { }
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -49,6 +61,16 @@ fun NavGraphBuilder.preferencesScreen(
 
                 PreferencesScreenViewModel.Event.SignedOut ->
                     onSignedOut()
+
+                PreferencesScreenViewModel.Event.ProceedToNotificationAccessSettings ->
+                    try {
+                        context.startActivity(NotificationAccess.getSettingsIntent(context))
+                    } catch (_: ActivityNotFoundException) {
+                        context.startActivity(NotificationAccess.getFallbackSettingsIntent())
+                    }
+
+                PreferencesScreenViewModel.Event.ProceedToInbox ->
+                    onProceedToInbox()
 
                 PreferencesScreenViewModel.Event.ProceedToSignOutConfirmation -> {
                     checkNotNull(activity) {
