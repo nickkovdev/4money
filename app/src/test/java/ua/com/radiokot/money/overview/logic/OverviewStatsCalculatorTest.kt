@@ -172,4 +172,24 @@ class OverviewStatsCalculatorTest {
         Assert.assertEquals(33, OverviewStatsCalculator.percentOf(bi(1), bi(3)))
         Assert.assertEquals(67, OverviewStatsCalculator.percentOf(bi(2), bi(3)))
     }
+
+    @Test
+    fun `categories lists every positive category ranked, top is its head`() {
+        val d = LocalDate(2026, 10, 1)
+        val stats = OverviewStatsCalculator.calculate(
+            amountsByCategoryId = mapOf(
+                "a" to mapOf(d to BigInteger.valueOf(10)),
+                "b" to mapOf(d to BigInteger.valueOf(40)),
+                "c" to mapOf(d to BigInteger.valueOf(30)),
+                "d" to mapOf(d to BigInteger.valueOf(20)),
+                "z" to mapOf(d to BigInteger.ZERO),
+            ),
+            firstDay = d,
+            lastDay = d,
+            today = d,
+        )
+        Assert.assertEquals(listOf("b", "c", "d", "a"), stats.categories.map { it.categoryId })
+        Assert.assertEquals(listOf(40, 30, 20, 10), stats.categories.map { it.percent })
+        Assert.assertEquals(stats.categories.take(3), stats.topCategories)
+    }
 }
