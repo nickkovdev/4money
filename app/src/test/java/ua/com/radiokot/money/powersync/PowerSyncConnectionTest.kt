@@ -1,18 +1,23 @@
 package ua.com.radiokot.money.powersync
 
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import ua.com.radiokot.money.powersync.PowerSyncConnection.Holder
 import java.util.Collections
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -35,6 +40,8 @@ class PowerSyncConnectionTest {
         @Volatile
         var failNextConnect = false
 
+        val lastSyncedAt = MutableStateFlow<Instant?>(null)
+
         override suspend fun connect() {
             calls += "connect"
             if (failNextConnect) {
@@ -54,16 +61,28 @@ class PowerSyncConnectionTest {
             uploadsIdle.await()
         }
 
-        override suspend fun awaitSyncedAndUploaded(since: Instant) =
-            awaitCancellation()
+        override suspend fun awaitSyncedAndUploaded(since: Instant) {
+            lastSyncedAt.first { it != null && it >= since }
+        }
     }
+
+    private class FakeClock(
+        @Volatile
+        var now: Instant,
+    ) : Clock {
+        override fun now(): Instant = now
+    }
+
+    private val t0 = Instant.parse("2026-10-02T10:00:00Z")
 
     private fun connection(
         control: FakeControl,
         idleDisconnectTimeout: Duration = 30.seconds,
+        clock: Clock = Clock.System,
     ) = PowerSyncConnection(
         control = control,
         idleDisconnectTimeout = idleDisconnectTimeout,
+        clock = clock,
     )
 
     private suspend fun eventually(condition: () -> Boolean) =
@@ -253,5 +272,85 @@ class PowerSyncConnectionTest {
         settle()
         assertFalse(control.isOpen)
         assertEquals(listOf("connect", "disconnect"), control.calls.toList())
+    }
+
+    @Test
+    fun connectedAtIsSetOnConnectAndClearedOnDisconnect() = runBlocking {
+        val control = FakeControl()
+        val clock = FakeClock(t0)
+        val connection = connection(control, clock = clock)
+
+        connection.connect(Holder.VISIBLE_APP)
+        eventually { connection.isConnected }
+        assertEquals(t0, connection.connectedAt.value)
+
+        connection.disconnectWhenIdle(Holder.VISIBLE_APP)
+        eventually { !connection.isConnected }
+        assertNull(connection.connectedAt.value)
+        connection.close()
+    }
+
+    @Test
+    fun workerReturnsAtOnceIfTheOpenStreamHasSyncedSinceOpening() = runBlocking {
+        val control = FakeControl()
+        val clock = FakeClock(t0)
+        val connection = connection(control, clock = clock)
+
+        connection.connect(Holder.VISIBLE_APP)
+        eventually { connection.isConnected }
+        control.lastSyncedAt.value = t0 + 1.seconds
+
+        // The idle stream gets no new checkpoints.
+        clock.now = t0 + 10.minutes
+        connection.connect(Holder.BACKGROUND_WORKER)
+        withTimeout(1.seconds) {
+            connection.awaitSyncedAndUploaded(since = clock.now - 2.seconds)
+        }
+        connection.disconnectWhenIdle(Holder.BACKGROUND_WORKER)
+
+        assertEquals(listOf("connect"), control.calls.toList())
+        connection.close()
+    }
+
+    @Test
+    fun workerReturnsAtOnceIfTheOpenStreamSyncedWithinTheTruncationMargin() = runBlocking {
+        val control = FakeControl()
+        val clock = FakeClock(t0 + 700.milliseconds)
+        val connection = connection(control, clock = clock)
+
+        connection.connect(Holder.VISIBLE_APP)
+        eventually { connection.isConnected }
+        // Synced right after opening, but truncated to seconds.
+        control.lastSyncedAt.value = t0
+
+        clock.now = t0 + 10.minutes
+        connection.connect(Holder.BACKGROUND_WORKER)
+        withTimeout(1.seconds) {
+            connection.awaitSyncedAndUploaded(since = clock.now - 2.seconds)
+        }
+        connection.close()
+    }
+
+    @Test
+    fun workerWaitsForTheFirstSyncOfAFreshlyOpenedStream() = runBlocking {
+        val control = FakeControl()
+        val clock = FakeClock(t0 + 10.minutes)
+        val connection = connection(control, clock = clock)
+        // Synced in an earlier run.
+        control.lastSyncedAt.value = t0
+
+        connection.connect(Holder.BACKGROUND_WORKER)
+        val wait = async {
+            connection.awaitSyncedAndUploaded(since = clock.now - 2.seconds)
+        }
+        eventually { connection.isConnected }
+        settle()
+        assertFalse(wait.isCompleted)
+
+        control.lastSyncedAt.value = t0 + 10.minutes + 1.seconds
+        withTimeout(1.seconds) {
+            wait.await()
+        }
+        connection.close()
     }
 }
