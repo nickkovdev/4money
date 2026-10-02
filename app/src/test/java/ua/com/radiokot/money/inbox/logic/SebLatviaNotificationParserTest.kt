@@ -1,4 +1,4 @@
-package ua.com.radiokot.money.inbox.logic
+﻿package ua.com.radiokot.money.inbox.logic
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
@@ -46,11 +46,11 @@ class SebLatviaNotificationParserTest {
         )
         assertEquals(
             BigDecimal("1234.56"),
-            parsePayment("Jūs samaksājāt 1 234,56 EUR par 03/10/2026 18:40 karte...0000 SHOP .").amount,
+            parsePayment("Jūs samaksājāt 1\u00A0234,56\u00A0EUR par 03/10/2026 18:40 karte...0000 SHOP .").amount,
         )
         assertEquals(
             BigDecimal("1234.56"),
-            parsePayment("Jūs samaksājāt 1 234,56 EUR par 03/10/2026 18:40 karte...0000 SHOP .").amount,
+            parsePayment("Jūs samaksājāt 1\u202F234,56\u202FEUR par 03/10/2026 18:40 karte...0000 SHOP .").amount,
         )
     }
 
@@ -62,7 +62,7 @@ class SebLatviaNotificationParserTest {
 
     @Test
     fun ellipsisCharacterAndNoTrailingDot() {
-        val payment = parsePayment("Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte…0000 DEEPSEERWEA")
+        val payment = parsePayment("Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte\u20260000 DEEPSEERWEA")
         assertEquals("0000", payment.cardLast4)
         assertEquals("DEEPSEERWEA", payment.payee)
     }
