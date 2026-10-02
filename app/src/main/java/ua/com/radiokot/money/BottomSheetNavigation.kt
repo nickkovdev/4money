@@ -75,6 +75,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
@@ -233,6 +234,7 @@ fun MoneyAppModalBottomSheetHost(
         }
 
         Scrim(
+            scrimColor = MoneyTheme.colors.scrim,
             enter = fadeIn(scrimFadeAnimationSpec),
             exit = fadeOut(scrimFadeAnimationSpec),
         )
@@ -265,12 +267,7 @@ fun MoneyAppModalBottomSheetHost(
             ) { shownBackStackEntry ->
                 Box(
                     modifier = Modifier
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 24.dp,
-                                topEnd = 24.dp,
-                            )
-                        )
+                        .clip(MoneyShapes.sheet)
                 ) {
                     shownBackStackEntry.LocalOwnersProvider(saveableStateHolder) {
                         (shownBackStackEntry.destination as BottomSheetNavigator.Destination)

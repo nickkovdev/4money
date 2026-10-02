@@ -32,6 +32,7 @@ import ua.com.radiokot.money.accounts.data.AccountRepository
 import ua.com.radiokot.money.accounts.logic.UnarchiveAccountUseCase
 import ua.com.radiokot.money.accounts.logic.UpdateAccountBalanceUseCase
 import ua.com.radiokot.money.colors.data.ItemColorScheme
+import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.eventSharedFlow
 import ua.com.radiokot.money.lazyLogger
@@ -64,6 +65,9 @@ class AccountActionSheetViewModel(
 
     val colorScheme: ItemColorScheme =
         account.colorScheme
+
+    val icon: ItemIcon? =
+        account.icon
 
     private val _mode: MutableStateFlow<ViewAccountActionSheetMode> =
         MutableStateFlow(

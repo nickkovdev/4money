@@ -33,7 +33,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -66,7 +66,13 @@ import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.animateAmountValueAsState
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.uikit.GroupPosition
+import ua.com.radiokot.money.uikit.ListRowTileDividerInset
+import ua.com.radiokot.money.uikit.SectionHeader
 import ua.com.radiokot.money.uikit.ViewAmountPreviewParameterProvider
+import ua.com.radiokot.money.uikit.listGroupItem
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import java.math.BigInteger
 
 @Composable
@@ -81,20 +87,19 @@ fun AccountList(
     contentPadding = contentPadding,
     modifier = modifier,
 ) {
-    items(
-        items = itemList.value,
-        key = ViewAccountListItem::key,
-        contentType = ViewAccountListItem::type,
-    ) { item ->
+    val items = itemList.value
+    itemsIndexed(
+        items = items,
+        key = { _, item -> item.key },
+        contentType = { _, item -> item.type },
+    ) { index, item ->
         when (item) {
             is ViewAccountListItem.Header -> {
                 HeaderItem(
                     title = item.title,
                     amount = item.amount,
+                    isFirst = index == 0,
                     modifier = Modifier
-                        .padding(
-                            vertical = 8.dp,
-                        )
                         .fillMaxWidth()
                 )
             }
@@ -103,13 +108,14 @@ fun AccountList(
                 AccountItem(
                     item = item,
                     modifier = Modifier
+                        .listGroupItem(
+                            position = accountGroupPosition(items, index),
+                            dividerStartInset = ListRowTileDividerInset,
+                        )
                         .clickable(
                             onClick = {
                                 onAccountItemClicked(item)
                             },
-                        )
-                        .padding(
-                            vertical = 8.dp,
                         )
                         .fillMaxWidth()
                 )
@@ -117,6 +123,15 @@ fun AccountList(
         }
     }
 }
+
+private fun accountGroupPosition(
+    items: List<ViewAccountListItem>,
+    index: Int,
+): GroupPosition = GroupPosition.of(
+    index = index,
+    size = items.size,
+    isGroupMember = { items[it] is ViewAccountListItem.Account },
+)
 
 @Composable
 fun MovableAccountList(
@@ -184,20 +199,19 @@ fun MovableAccountList(
         state = listState,
         modifier = modifier,
     ) {
-        items(
-            items = currentItemList.value,
-            key = ViewAccountListItem::key,
-            contentType = ViewAccountListItem::type,
-        ) { item ->
+        val items = currentItemList.value
+        itemsIndexed(
+            items = items,
+            key = { _, item -> item.key },
+            contentType = { _, item -> item.type },
+        ) { index, item ->
             when (item) {
                 is ViewAccountListItem.Header -> {
                     HeaderItem(
                         title = item.title,
                         amount = item.amount,
+                        isFirst = index == 0,
                         modifier = Modifier
-                            .padding(
-                                vertical = 8.dp,
-                            )
                             .fillMaxWidth()
                     )
                 }
@@ -206,16 +220,30 @@ fun MovableAccountList(
                     ReorderableItem(
                         state = reorderableState,
                         key = item.key,
-                        modifier = Modifier
-                            .clickable(
-                                onClick = {
-                                    onAccountItemClicked(item)
-                                },
-                            )
                     ) { isDragging ->
                         AccountItem(
                             item = item,
                             modifier = Modifier
+                                .graphicsLayer {
+                                    alpha =
+                                        if (isDragging)
+                                            0.8f
+                                        else
+                                            1f
+                                }
+                                .listGroupItem(
+                                    position =
+                                        if (isDragging)
+                                            GroupPosition.Single
+                                        else
+                                            accountGroupPosition(items, index),
+                                    dividerStartInset = ListRowTileDividerInset,
+                                )
+                                .clickable(
+                                    onClick = {
+                                        onAccountItemClicked(item)
+                                    },
+                                )
                                 .longPressDraggableHandle(
                                     onDragStarted = {
                                         movableItemList.clear()
@@ -235,17 +263,6 @@ fun MovableAccountList(
                                             skipOriginalListUpdates = 0
                                         }
                                     },
-                                )
-                                .graphicsLayer {
-                                    alpha =
-                                        if (isDragging)
-                                            0.7f
-                                        else
-                                            1f
-                                }
-                                .padding(
-                                    top = 8.dp,
-                                    bottom = 12.dp,
                                 )
                                 .fillMaxWidth()
                         )
@@ -344,43 +361,34 @@ private fun HeaderItem(
     modifier: Modifier = Modifier,
     title: String,
     amount: ViewAmount?,
+    isFirst: Boolean = false,
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight(500)
-            ),
-            modifier = Modifier
-                .weight(1f),
+    val amountFormat = rememberViewAmountFormat()
+    val animatedAmount = amount?.let {
+        animateAmountValueAsState(
+            targetAmount = amount
         )
+    }
 
-        if (amount != null) {
-            val amountFormat = rememberViewAmountFormat()
-            val animatedAmount = animateAmountValueAsState(
-                targetAmount = amount
-            )
-
-            Text(
-                text = amountFormat(
+    SectionHeader(
+        title = title,
+        trailing =
+            if (amount != null && animatedAmount != null)
+                amountFormat(
                     value = animatedAmount.value,
                     currency = amount.currency,
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = TextStyle(
-                    fontSize = 18.sp,
-                ),
+                ).text
+            else
+                null,
+        modifier = modifier
+            .padding(
+                top =
+                    if (isFirst)
+                        0.dp
+                    else
+                        12.dp,
             )
-        }
-    }
+    )
 }
 
 @Composable
@@ -401,62 +409,62 @@ private fun AccountItem(
     modifier: Modifier = Modifier,
     item: ViewAccountListItem.Account,
 ) = Row(
-    modifier = modifier,
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(14.dp),
+    modifier = modifier
+        .padding(
+            horizontal = MoneySpacing.rowHorizontal,
+            vertical = 12.dp,
+        ),
 ) {
-
     ItemLogo(
         title = item.title,
         colorScheme = item.colorScheme,
         icon = item.icon,
         modifier = Modifier
-            .size(38.dp)
+            .size(MoneySpacing.itemTile)
     )
 
-    Spacer(modifier = Modifier.width(12.dp))
-
-    Column(
+    Text(
+        text = item.title,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        style = MoneyTheme.typography.bodyStrong,
         modifier = Modifier
-            .heightIn(
-                min = 38.dp,
-            )
-    ) {
-        Text(
-            text = item.title,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = TextStyle(
-                fontSize = 14.sp,
-            )
+            .weight(1f)
+    )
+
+    if (!item.isIncognito) {
+        val amountFormat = rememberViewAmountFormat()
+        val animatedAmount = animateAmountValueAsState(
+            targetAmount = item.balance,
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        if (!item.isIncognito) {
-            val amountFormat = rememberViewAmountFormat()
-            val animatedAmount = animateAmountValueAsState(
-                targetAmount = item.balance,
-            )
-
-            Text(
-                text = amountFormat(
-                    value = animatedAmount.value,
-                    currency = item.balance.currency,
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = TextStyle(
-                    fontSize = 16.sp,
-                ),
-            )
-        } else {
-            Text(
-                text = item.balance.currency.symbol,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = TextStyle(
-                    fontSize = 16.sp,
-                ),
-            )
-        }
+        Text(
+            text = amountFormat(
+                value = animatedAmount.value,
+                currency = item.balance.currency,
+                customColor = balanceColor(animatedAmount.value),
+            ),
+            maxLines = 1,
+            style = MoneyTheme.typography.bodyStrong,
+        )
+    } else {
+        Text(
+            text = item.balance.currency.symbol,
+            maxLines = 1,
+            style = MoneyTheme.typography.bodyStrong,
+            color = MoneyTheme.colors.ink2,
+        )
     }
 }
+
+/**
+ * Balances are neutral, only a debt stands out.
+ */
+@Composable
+fun balanceColor(value: BigInteger) =
+    if (value.signum() < 0)
+        MoneyTheme.colors.expense
+    else
+        MoneyTheme.colors.ink
