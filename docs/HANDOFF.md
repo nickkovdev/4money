@@ -20,8 +20,9 @@ personal category names or other personal data. `app/local.properties`, `local.p
 |---|---|---|
 | A | Backend: `money` schema in a shared self-hosted Supabase + self-hosted PowerSync | live |
 | B | 1Money history import (SQLite backup → SQL) | done, data is on the server |
-| C/D | SEB Latvia bank notification listener → payee rules → auto expense or Inbox | merged, **not yet verified on device** |
-| E | 1Money-style UI: dark theme, Tabler icons, Categories ring, Overview tab, period swipe, animations, swipe-to-edit/delete, redesigned transfer sheet | merged, **not yet verified on device** |
+| C/D | SEB Latvia bank notification listener → payee rules → auto expense / income or Inbox | merged, **verified on device** 2026-10-02 (card, account and incoming payments; rules learned; no `sync_errors`) |
+| E | 1Money-style UI: dark theme, Tabler icons, Categories ring, Overview tab, period swipe, animations, swipe-to-edit/delete, redesigned transfer sheet | merged, in use; being replaced by F |
+| F | Full redesign (themes Midnight/Paper/Ember/Aurora, new components), Inbox swipe cards, payee rules by amount, "ask in the notification" | branch `feature/redesign`, **not verified on device, needs a migration first**: see `docs/redesign/PROGRESS.md` |
 
 Key places:
 - Server schema/RPCs: `supabase/migrations/` (applied in order: `20261001000000_money_schema.sql`,
@@ -84,6 +85,12 @@ Key places:
    Debug application id: `ua.com.radiokot.money.debug`. Launch: `adb shell monkey -p ua.com.radiokot.money.debug -c android.intent.category.LAUNCHER 1`.
    Sign in with "Just authenticate" (uses `authTempCredential`).
 
+Second machine (owner's laptop, set up 2026-10-02): JDK = Zulu 22 (`C:/Program Files/Zulu/zulu-22`,
+works with Gradle 9.6), SDK in `C:/Users/KOVNIK/dev/android-sdk`, the PC's `debug.keystore` copied, so
+builds from both machines install over each other. Local-only files there (never commit): `schema.sql`
+(the original author's schema, excluded via `.git/info/exclude`) and `docs/letter-to-oleg.md` (a draft
+letter to him, same). Copy them over manually if the PC needs them.
+
 Device notes: Samsung S25+ (Android, no root). Be careful with UI automation over adb — `KEYCODE_BACK`
 can leave the app and screenshots then capture the owner's home screen; prefer asking the owner to tap.
 Reading a specific notification: `adb shell dumpsys notification --noredact` and grep for the package,
@@ -91,7 +98,12 @@ never dump everything into a chat.
 
 ## Next steps (in order)
 
-1. **On-device verification** of E and C/D:
+0. **Redesign (current work).** Continue from `docs/redesign/PROGRESS.md` (state, install order,
+   next steps, open decisions) and `docs/redesign/BRIEF.md` (requirements). Mockups (private, owner's
+   claude.ai): https://claude.ai/artifact/KEA2TwZvtvC6U6qHwGgCzo. Before installing the branch head the
+   migration `20261004000000_money_payee_rule_ranges.sql` must be applied (owner's OK), see PROGRESS.md.
+
+1. **On-device verification** (C/D done; E is superseded by F, so check the remaining items on F):
    - Theme light/dark/system incl. dialogs and date picker; avatars; bottom bar; profile icon → settings.
    - Categories ring (shares, centre totals, tap toggles); Overview (bars, toggle, "More…").
    - Swipes: horizontal on empty space = month; vertical fling must scroll; row left-swipe = edit/delete,
