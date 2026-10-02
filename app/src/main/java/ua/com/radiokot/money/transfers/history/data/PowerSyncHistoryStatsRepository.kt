@@ -201,6 +201,29 @@ class PowerSyncHistoryStatsRepository(
                 TotalIncomeAndExpense(income to expense)
             }
             .flowOn(Dispatchers.Default)
+
+    override fun getCategoryTransferCountFlow(
+        categoryId: String,
+        isIncome: Boolean,
+        period: HistoryPeriod,
+    ): Flow<Int> =
+        database
+            .watch(
+                sql =
+                    if (isIncome)
+                        SELECT_FOR_INCOME_CATEGORY
+                    else
+                        SELECT_FOR_EXPENSE_CATEGORY,
+                parameters = listOf(
+                    categoryId,
+                    categoryId,
+                    period.startInclusive.toDbDayString(),
+                    period.endExclusive.toDbDayString(),
+                ),
+                mapper = { _ -> Unit },
+            )
+            .map { rows -> rows.size }
+            .flowOn(Dispatchers.Default)
 }
 
 private const val TRANSFER_SELECTED_COUNTERPARTY_ID = "transferCounterpartyId"

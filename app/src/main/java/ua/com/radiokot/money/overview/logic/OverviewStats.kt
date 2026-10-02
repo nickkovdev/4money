@@ -39,6 +39,10 @@ data class OverviewStats(
      * Number of categories with a positive total.
      */
     val categoryCount: Int,
+    /**
+     * Every category with a positive total, ranked like [topCategories] (which is its head).
+     */
+    val categories: List<OverviewCategoryShare>,
 )
 
 data class OverviewDay(
