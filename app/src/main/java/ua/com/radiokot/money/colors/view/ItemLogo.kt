@@ -60,14 +60,7 @@ fun ItemLogo(
     shape: Shape = RoundedCornerShape(12.dp),
 ) {
     val isDark = MoneyTheme.colors.isDark
-    val (backgroundColor, foregroundColor) = remember(colorScheme, isDark) {
-        if (isDark) {
-            val darkColors = ItemColorSchemeAccents.darkLogoColors(colorScheme)
-            Color(darkColors.background) to Color(darkColors.foreground)
-        } else {
-            Color(colorScheme.primary) to Color(colorScheme.onPrimary)
-        }
-    }
+    val (backgroundColor, foregroundColor) = itemLogoColors(colorScheme)
 
     BoxWithConstraints(
         contentAlignment = Alignment.Center,
@@ -117,6 +110,23 @@ fun ItemLogo(
                 fontSize = fontSizeSp,
             )
         )
+    }
+}
+
+/**
+ * The background and foreground colors of the item logo
+ * for the current theme: pastel in light, dark tint with saturated foreground in dark.
+ */
+@Composable
+fun itemLogoColors(colorScheme: ItemColorScheme): Pair<Color, Color> {
+    val isDark = MoneyTheme.colors.isDark
+    return remember(colorScheme, isDark) {
+        if (isDark) {
+            val darkColors = ItemColorSchemeAccents.darkLogoColors(colorScheme)
+            Color(darkColors.background) to Color(darkColors.foreground)
+        } else {
+            Color(colorScheme.primary) to Color(colorScheme.onPrimary)
+        }
     }
 }
 

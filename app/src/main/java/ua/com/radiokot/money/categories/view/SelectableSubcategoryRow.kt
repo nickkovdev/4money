@@ -24,7 +24,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -36,19 +40,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.composeunstyled.Icon
 import com.composeunstyled.Text
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemColorScheme
+import ua.com.radiokot.money.colors.data.ItemColorSchemeAccents
+import ua.com.radiokot.money.colors.data.ItemIcon
+import ua.com.radiokot.money.colors.view.itemAccentColor
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun SelectableSubcategoryRow(
     modifier: Modifier = Modifier,
     itemList: State<List<ViewSelectableSubcategoryListItem>>,
     colorScheme: ItemColorScheme,
+    icon: ItemIcon? = null,
     onItemClicked: (ViewSelectableSubcategoryListItem) -> Unit,
 ) {
     val rowState = rememberLazyListState()
@@ -104,6 +115,7 @@ fun SelectableSubcategoryRow(
             SelectableSubcategoryListItem(
                 item = item,
                 colorScheme = colorScheme,
+                icon = icon,
                 modifier = Modifier
                     .clickable(
                         onClick = {
@@ -136,43 +148,50 @@ private fun SelectableSubcategoryListItem(
     modifier: Modifier = Modifier,
     item: ViewSelectableSubcategoryListItem,
     colorScheme: ItemColorScheme,
+    icon: ItemIcon?,
 ) {
-    val primaryColor = remember(colorScheme) {
-        Color(colorScheme.primary)
+    val isDark = MoneyTheme.colors.isDark
+    val accentColor = itemAccentColor(colorScheme)
+    val onAccentColor = remember(colorScheme, isDark) {
+        Color(ItemColorSchemeAccents.onAccent(colorScheme, isDark))
     }
-    val onPrimaryColor = remember(colorScheme) {
-        Color(colorScheme.onPrimary)
-    }
-    val shape = RoundedCornerShape(
-        percent = 50,
-    )
+    val contentColor =
+        if (item.isSelected)
+            onAccentColor
+        else
+            accentColor
+    val shape = RoundedCornerShape(percent = 50)
 
-    Text(
-        text = item.title,
-        style = TextStyle(
-            color =
-                if (item.isSelected)
-                    onPrimaryColor
-                else
-                    primaryColor
-        ),
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .clip(shape)
             .run {
                 if (item.isSelected)
-                    background(
-                        color = primaryColor,
-                        shape = shape,
-                    )
+                    background(color = accentColor, shape = shape)
                 else
-                    border(
-                        width = 1.dp,
-                        color = primaryColor,
-                        shape = shape,
-                    )
+                    border(width = 1.dp, color = accentColor, shape = shape)
             }
             .padding(
                 horizontal = 12.dp,
                 vertical = 6.dp,
             )
-    )
+    ) {
+        if (icon != null) {
+            Icon(
+                painter = painterResource(icon.resId),
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+        }
+
+        Text(
+            text = item.title,
+            color = contentColor,
+            singleLine = true,
+            maxLines = 1,
+        )
+    }
 }
