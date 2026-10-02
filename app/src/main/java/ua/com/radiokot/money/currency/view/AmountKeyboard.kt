@@ -53,6 +53,7 @@ import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.uikit.ScaleIndication
 import java.math.BigInteger
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun AmountKeyboard(
@@ -68,7 +69,7 @@ fun AmountKeyboard(
     val buttonGap = 8.dp
     val buttonWidth = (maxWidth - buttonGap * 4) / 5
     val buttonHeight = (maxHeight - buttonGap * 3) / 4
-    val actionBackground = Modifier.background(Color(0xfff3f0f6))
+    val actionBackground = Modifier.background(MoneyTheme.colors.surfaceVariant)
 
     val hapticFeedback = LocalHapticFeedback.current
     val onButtonClicked = remember(inputState) {
@@ -356,7 +357,7 @@ private fun Button(
             )
             .border(
                 width = 1.dp,
-                color = Color.DarkGray,
+                color = MoneyTheme.colors.outline,
                 shape = shape,
             )
     ) {

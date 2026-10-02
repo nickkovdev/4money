@@ -64,6 +64,7 @@ import ua.com.radiokot.money.transfers.history.view.ViewHistoryPeriod
 import ua.com.radiokot.money.transfers.view.ViewDate
 import ua.com.radiokot.money.uikit.TextButton
 import java.math.BigInteger
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun CategoryActionSheetRoot(
@@ -100,7 +101,7 @@ private fun CategoryActionSheet(
     onUnarchiveClicked: () -> Unit,
 ) = Column(
     modifier = modifier
-        .background(Color(0xFFF9FBE7))
+        .background(MoneyTheme.colors.actionSheet)
         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
 ) {
 

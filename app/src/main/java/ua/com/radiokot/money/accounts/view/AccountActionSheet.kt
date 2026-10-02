@@ -66,6 +66,7 @@ import ua.com.radiokot.money.currency.view.rememberAmountInputState
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.uikit.TextButton
 import java.math.BigInteger
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun AccountActionSheet(
@@ -110,7 +111,7 @@ private fun AccountActionSheet(
     onUnarchiveClicked: () -> Unit,
 ) = BoxWithConstraints(
     modifier = modifier
-        .background(Color(0xFFF9FBE7))
+        .background(MoneyTheme.colors.actionSheet)
         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
 ) {
 

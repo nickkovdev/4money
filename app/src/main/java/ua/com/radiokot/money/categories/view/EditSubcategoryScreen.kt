@@ -50,6 +50,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -58,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 private fun EditSubcategoryScreen(
@@ -142,6 +145,8 @@ private fun EditSubcategoryScreen(
     BasicTextField(
         value = title.value,
         onValueChange = onTitleChanged,
+        textStyle = TextStyle(color = MoneyTheme.colors.onBackground),
+        cursorBrush = SolidColor(MoneyTheme.colors.onBackground),
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
@@ -152,7 +157,7 @@ private fun EditSubcategoryScreen(
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = Color.DarkGray,
+                color = MoneyTheme.colors.outline,
             )
             .padding(12.dp)
             .focusRequester(focusRequester)

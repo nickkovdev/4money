@@ -51,7 +51,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -68,6 +70,7 @@ import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.uikit.RedToggleSwitch
 import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 private fun EditCategoryScreen(
@@ -198,9 +201,9 @@ private fun EditCategoryScreen(
                         width = 1.dp,
                         color =
                             if (isCurrencyChangeEnabled)
-                                Color.DarkGray
+                                MoneyTheme.colors.outline
                             else
-                                Color.Gray,
+                                MoneyTheme.colors.onBackgroundSecondary,
                     )
                     .clickable(
                         enabled = isCurrencyChangeEnabled,
@@ -214,7 +217,7 @@ private fun EditCategoryScreen(
                         if (isCurrencyChangeEnabled)
                             Color.Unspecified
                         else
-                            Color.Gray,
+                            MoneyTheme.colors.onBackgroundSecondary,
                     modifier = Modifier
                         .weight(1f)
                 )
@@ -255,7 +258,7 @@ private fun EditCategoryScreen(
                         if (isSubcategoryEditEnabled.value)
                             Color.Unspecified
                         else
-                            Color.Gray,
+                            MoneyTheme.colors.onBackgroundSecondary,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -285,7 +288,7 @@ private fun EditCategoryScreen(
                     if (isSubcategoryEditEnabled.value)
                         Color.Unspecified
                     else
-                        Color.Gray,
+                        MoneyTheme.colors.onBackgroundSecondary,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(
@@ -373,6 +376,8 @@ private fun LogoAndTitleRow(
         BasicTextField(
             value = title.value,
             onValueChange = onTitleChanged,
+            textStyle = TextStyle(color = MoneyTheme.colors.onBackground),
+            cursorBrush = SolidColor(MoneyTheme.colors.onBackground),
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
@@ -383,7 +388,7 @@ private fun LogoAndTitleRow(
                 .fillMaxWidth()
                 .border(
                     width = 1.dp,
-                    color = Color.DarkGray,
+                    color = MoneyTheme.colors.outline,
                 )
                 .padding(12.dp)
         )
