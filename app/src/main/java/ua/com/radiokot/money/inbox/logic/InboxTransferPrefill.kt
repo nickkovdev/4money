@@ -21,6 +21,7 @@ package ua.com.radiokot.money.inbox.logic
 
 import ua.com.radiokot.money.accounts.data.Account
 import ua.com.radiokot.money.categories.data.Category
+import ua.com.radiokot.money.categories.data.Subcategory
 import ua.com.radiokot.money.inbox.data.InboxItem
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
@@ -46,6 +47,7 @@ object InboxTransferPrefill {
         item: InboxItem,
         account: Account,
         category: Category,
+        subcategory: Subcategory? = null,
     ): TransferSheetRoute {
         val isInAccountCurrency = item.currencyCode != null
                 && item.currencyCode.equals(account.currency.code, ignoreCase = true)
@@ -71,7 +73,7 @@ object InboxTransferPrefill {
                 ).joinToString(" · ")
 
         val accountId = TransferCounterpartyId.Account(account.id)
-        val categoryId = TransferCounterparty.Category(category).id
+        val categoryId = TransferCounterparty.Category(category, subcategory).id
         val isIncoming = item.direction == InboxItem.Direction.Incoming
 
         return TransferSheetRoute(

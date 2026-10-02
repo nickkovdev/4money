@@ -29,55 +29,41 @@ import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.view.TransferSheetRoute
 
 @Serializable
-object InboxScreenRoute
+object InboxCardsScreenRoute
 
 /**
  * @param viewModel activity-level instance, as it also receives selection results
  */
-fun NavGraphBuilder.inboxScreen(
-    viewModel: InboxScreenViewModel,
+fun NavGraphBuilder.inboxCardsScreen(
+    viewModel: InboxCardsViewModel,
     onProceedToCategorySelection: (accountId: TransferCounterpartyId.Account, isIncome: Boolean) -> Unit,
-    onProceedToAccountSelection: () -> Unit,
     onProceedToTransfer: (TransferSheetRoute) -> Unit,
     onProceedToRules: () -> Unit,
-    onProceedToCards: () -> Unit,
     onClose: () -> Unit,
-) = composable<InboxScreenRoute> {
+) = composable<InboxCardsScreenRoute> {
 
     val context = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                is InboxScreenViewModel.Event.ProceedToCategorySelection ->
+                is InboxCardsViewModel.Event.ProceedToCategorySelection ->
                     onProceedToCategorySelection(event.accountId, event.isIncome)
 
-                InboxScreenViewModel.Event.ProceedToAccountSelection ->
-                    onProceedToAccountSelection()
-
-                is InboxScreenViewModel.Event.ProceedToTransfer ->
+                is InboxCardsViewModel.Event.ProceedToTransfer ->
                     onProceedToTransfer(event.route)
 
-                InboxScreenViewModel.Event.ProceedToRules ->
-                    onProceedToRules()
-
-                InboxScreenViewModel.Event.Close ->
-                    onClose()
-
-                is InboxScreenViewModel.Event.ShowUndoError ->
+                is InboxCardsViewModel.Event.ShowError ->
                     Toast
-                        .makeText(
-                            context,
-                            "Failed to undo: ${event.technicalReason}",
-                            Toast.LENGTH_LONG,
-                        )
+                        .makeText(context, event.text, Toast.LENGTH_LONG)
                         .show()
             }
         }
     }
 
-    InboxScreen(
+    InboxCardsScreen(
         viewModel = viewModel,
-        onSortAsCardsClicked = onProceedToCards,
+        onRulesClicked = onProceedToRules,
+        onCloseClicked = onClose,
     )
 }
