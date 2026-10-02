@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.currency.view.ViewAmount
-import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.currency.view.AnimatedAmountText
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.history.view.PeriodBar
 import ua.com.radiokot.money.transfers.history.view.PeriodSlideContainer
@@ -154,8 +154,6 @@ private fun RingCenter(
     horizontalAlignment = Alignment.CenterHorizontally,
 ) {
     val colors = MoneyTheme.colors
-    val amountFormat = rememberViewAmountFormat()
-
     Text(
         text =
             if (isIncome.value)
@@ -173,12 +171,9 @@ private fun RingCenter(
         Triple(incomeTotal.value, colors.income, isIncome.value),
     ).forEach { (amount, color, isCurrent) ->
         if (amount != null) {
-            Text(
-                text = amountFormat(
-                    amount = amount,
-                    customColor = color,
-                ),
-                maxLines = 1,
+            AnimatedAmountText(
+                amount = amount,
+                customColor = color,
                 style = TextStyle(
                     textAlign = TextAlign.Center,
                     fontSize = if (isCurrent) 18.sp else 13.sp,

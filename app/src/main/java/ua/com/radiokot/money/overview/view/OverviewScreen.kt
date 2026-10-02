@@ -51,7 +51,7 @@ import com.composeunstyled.Text
 import ua.com.radiokot.money.colors.data.ItemColorSchemeAccents
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.ViewAmount
-import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.currency.view.AnimatedAmountText
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.history.view.PeriodBar
 import ua.com.radiokot.money.transfers.history.view.PeriodSlideContainer
@@ -149,15 +149,14 @@ private fun OverviewContent(
     onMoreCategoriesClicked: () -> Unit,
 ) = Column {
     val colors = MoneyTheme.colors
-    val amountFormat = rememberViewAmountFormat()
 
     Text(
         text = "Balance",
         color = colors.onBackgroundSecondary,
         fontSize = 13.sp,
     )
-    Text(
-        text = amountFormat(overview.balance),
+    AnimatedAmountText(
+        amount = overview.balance,
         style = TextStyle(
             fontSize = 26.sp,
             fontWeight = FontWeight.SemiBold,
@@ -263,11 +262,9 @@ private fun OverviewContent(
                     color = colors.onBackgroundSecondary,
                     modifier = Modifier.padding(horizontal = 8.dp),
                 )
-                Text(
-                    text = amountFormat(
-                        amount = category.amount,
-                        customColor = Color.Unspecified,
-                    ),
+                AnimatedAmountText(
+                    amount = category.amount,
+                    customColor = Color.Unspecified,
                 )
             }
         }
@@ -294,7 +291,6 @@ private fun TotalCard(
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(12.dp)
-    val amountFormat = rememberViewAmountFormat()
 
     Column(
         modifier = modifier
@@ -312,9 +308,9 @@ private fun TotalCard(
             color = MoneyTheme.colors.onBackgroundSecondary,
             fontSize = 13.sp,
         )
-        Text(
-            text = amountFormat(amount = amount, customColor = color),
-            maxLines = 1,
+        AnimatedAmountText(
+            amount = amount,
+            customColor = color,
             style = TextStyle(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -329,16 +325,13 @@ private fun StatColumn(
     amount: ViewAmount,
     modifier: Modifier = Modifier,
 ) = Column(modifier = modifier) {
-    val amountFormat = rememberViewAmountFormat()
-
     Text(
         text = title,
         color = MoneyTheme.colors.onBackgroundSecondary,
         fontSize = 12.sp,
     )
-    Text(
-        text = amountFormat(amount = amount, customColor = Color.Unspecified),
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
+    AnimatedAmountText(
+        amount = amount,
+        customColor = Color.Unspecified,
     )
 }
