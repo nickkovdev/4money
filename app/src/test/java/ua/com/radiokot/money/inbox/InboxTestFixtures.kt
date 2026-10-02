@@ -190,6 +190,7 @@ class RecordingTransferFundsUseCase : TransferFundsUseCase {
     )
 
     val calls = mutableListOf<Call>()
+    var failWith: Throwable? = null
 
     override suspend fun invoke(
         sourceId: TransferCounterpartyId,
@@ -201,6 +202,6 @@ class RecordingTransferFundsUseCase : TransferFundsUseCase {
         transferId: String,
     ): Result<Unit> {
         calls += Call(sourceId, sourceAmount, destinationId, destinationAmount, memo, dateTime, transferId)
-        return Result.success(Unit)
+        return failWith?.let(Result.Companion::failure) ?: Result.success(Unit)
     }
 }

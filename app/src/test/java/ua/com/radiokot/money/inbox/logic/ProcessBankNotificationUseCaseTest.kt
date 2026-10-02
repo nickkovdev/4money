@@ -145,6 +145,26 @@ class ProcessBankNotificationUseCaseTest {
     }
 
     @Test
+    fun failedTransferLeavesOnePendingItemAndRepostIsDuplicate() = runBlocking {
+        val processor = useCase()
+        transfers.failWith = IllegalStateException("boom")
+
+        val result = processor(eurPayment)
+
+        assertTrue(result.isFailure)
+        val item = inbox.items.value.single()
+        assertEquals(InboxItem.Status.Pending, item.status)
+        assertNull(item.transferId)
+
+        transfers.failWith = null
+        val repost = processor(eurPayment.copy(postTimeMillis = postTime + 5_000)).getOrThrow()
+
+        assertEquals(Outcome.Duplicate, repost)
+        assertEquals(1, inbox.items.value.size)
+        assertEquals(1, transfers.calls.size)
+    }
+
+    @Test
     fun otherPackagesAreIgnored() = runBlocking {
         val wallet = eurPayment.copy(packageName = "com.google.android.apps.walletnfcrel")
 
