@@ -47,6 +47,9 @@ import ua.com.radiokot.money.transfers.history.view.periodSwipe
 import ua.com.radiokot.money.transfers.history.view.ViewHistoryPeriod
 import ua.com.radiokot.money.uikit.chart.DonutSegment
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import ua.com.radiokot.money.uikit.SegmentedControl
+import ua.com.radiokot.money.home.view.HomeTabHeader
+import androidx.compose.foundation.layout.Arrangement
 
 @Composable
 fun CategoriesScreenRoot(
@@ -99,25 +102,15 @@ private fun CategoriesScreen(
             onPrevious = onPreviousPeriodClicked,
             onNext = onNextPeriodClicked,
         )
-        .padding(
-            vertical = 16.dp,
-        )
 ) {
-    PeriodBar(
+    HomeTabHeader(
         period = period,
         onPeriodClicked = onPeriodClicked,
-        isNextButtonEnabled = isNextPeriodButtonEnabled,
+        isNextPeriodButtonEnabled = isNextPeriodButtonEnabled,
         onNextPeriodClicked = onNextPeriodClicked,
-        isPreviousButtonEnabled = isPreviousPeriodButtonEnabled,
+        isPreviousPeriodButtonEnabled = isPreviousPeriodButtonEnabled,
         onPreviousPeriodClicked = onPreviousPeriodClicked,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = 22.dp,
-            )
     )
-
-    Spacer(modifier = Modifier.height(8.dp))
 
     PeriodSlideContainer(
         period = historyPeriod.value,
@@ -132,6 +125,21 @@ private fun CategoriesScreen(
             onItemLongClicked = onCategoryItemLongClicked,
             onAddClicked = onAddClicked,
             onRingClicked = onTitleClicked,
+            modeSwitch = {
+                SegmentedControl(
+                    options = listOf("Expenses", "Income"),
+                    selectedIndex =
+                        if (isIncome.value)
+                            1
+                        else
+                            0,
+                    onSelected = { index ->
+                        if ((index == 1) != isIncome.value) {
+                            onTitleClicked()
+                        }
+                    },
+                )
+            },
             ringCenter = {
                 RingCenter(
                     isIncome = isIncome,
@@ -152,34 +160,48 @@ private fun RingCenter(
     incomeTotal: State<ViewAmount?>,
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.spacedBy(2.dp),
 ) {
     val colors = MoneyTheme.colors
+    val (current, other) =
+        if (isIncome.value)
+            incomeTotal.value to expenseTotal.value
+        else
+            expenseTotal.value to incomeTotal.value
+
     Text(
         text =
             if (isIncome.value)
                 "Income"
             else
                 "Expenses",
-        style = TextStyle(
-            fontSize = 13.sp,
-            color = colors.onBackgroundSecondary,
-        ),
+        style = MoneyTheme.typography.caption,
+        color = colors.ink2,
     )
 
-    listOf(
-        Triple(expenseTotal.value, colors.expense, !isIncome.value),
-        Triple(incomeTotal.value, colors.income, isIncome.value),
-    ).forEach { (amount, color, isCurrent) ->
-        if (amount != null) {
-            AnimatedAmountText(
-                amount = amount,
-                customColor = color,
-                style = TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontSize = if (isCurrent) 18.sp else 13.sp,
-                    fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Normal,
-                ),
-            )
-        }
+    if (current != null) {
+        AnimatedAmountText(
+            amount = current,
+            customColor = colors.ink,
+            style = MoneyTheme.typography.headline.copy(
+                textAlign = TextAlign.Center,
+                fontFeatureSettings = "tnum",
+            ),
+        )
+    }
+
+    if (other != null) {
+        AnimatedAmountText(
+            amount = other,
+            customColor =
+                if (isIncome.value)
+                    colors.expense
+                else
+                    colors.income,
+            style = MoneyTheme.typography.caption.copy(
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium,
+            ),
+        )
     }
 }

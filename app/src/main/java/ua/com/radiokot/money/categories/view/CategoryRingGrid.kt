@@ -24,13 +24,12 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
@@ -48,7 +47,10 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemColorSchemeAccents
 import ua.com.radiokot.money.uikit.chart.DonutRing
 import ua.com.radiokot.money.uikit.chart.DonutSegment
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+
+const val CATEGORY_RING_GRID_COLUMNS = 4
 
 private sealed interface RingGridCell {
     val key: Any
@@ -62,6 +64,10 @@ private sealed interface RingGridCell {
     }
 }
 
+/**
+ * The ring on top, the expense/income switch under it,
+ * then the categories in 4 even columns, so any number of them lines up.
+ */
 @Composable
 fun CategoryRingGrid(
     modifier: Modifier = Modifier,
@@ -71,17 +77,18 @@ fun CategoryRingGrid(
     onItemLongClicked: (ViewCategoryListItem) -> Unit,
     onAddClicked: () -> Unit,
     onRingClicked: () -> Unit,
+    modeSwitch: @Composable () -> Unit,
     ringCenter: @Composable BoxScope.() -> Unit,
 ) {
-    val spaceBy = 6.dp
-    val layout = remember {
+    val rowGap = 14.dp
+    val columnGap = 6.dp
+    val rows = remember {
         derivedStateOf {
-            layoutAroundRing(
-                itemList.value
-                    .fastFilter(ViewCategoryListItem::isNotArchived)
-                    .map<ViewCategoryListItem, RingGridCell>(RingGridCell::Category)
-                        + RingGridCell.Add
-            )
+            (itemList.value
+                .fastFilter(ViewCategoryListItem::isNotArchived)
+                .map<ViewCategoryListItem, RingGridCell>(RingGridCell::Category)
+                    + RingGridCell.Add)
+                .chunked(CATEGORY_RING_GRID_COLUMNS)
         }
     }
     val archivedRows = remember {
@@ -125,7 +132,7 @@ fun CategoryRingGrid(
 
     @Composable
     fun CellRow(cells: List<RingGridCell>) = Row(
-        horizontalArrangement = Arrangement.spacedBy(spaceBy),
+        horizontalArrangement = Arrangement.spacedBy(columnGap),
         modifier = Modifier.fillMaxWidth(),
     ) {
         cells.forEach { cell ->
@@ -139,53 +146,53 @@ fun CategoryRingGrid(
     }
 
     LazyColumn(
-        contentPadding = PaddingValues(spaceBy),
-        verticalArrangement = Arrangement.spacedBy(spaceBy),
+        contentPadding = PaddingValues(
+            start = MoneySpacing.screen - columnGap,
+            end = MoneySpacing.screen - columnGap,
+            top = 4.dp,
+            bottom = 32.dp,
+        ),
+        verticalArrangement = Arrangement.spacedBy(rowGap),
         modifier = modifier,
     ) {
-        item(key = "top") {
-            CellRow(layout.value.topRow)
-        }
-
         item(key = "ring") {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(spaceBy),
-                modifier = Modifier.fillMaxWidth(),
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(spaceBy),
-                    modifier = Modifier.weight(1f),
-                ) {
-                    layout.value.ringLeft.forEach { Cell(it, Modifier.fillMaxWidth()) }
-                }
-
                 DonutRing(
                     segments = coloredSegments,
-                    trackColor = MoneyTheme.colors.chartOther,
+                    trackColor = MoneyTheme.colors.surface,
+                    strokeWidth = 18.dp,
                     content = ringCenter,
                     modifier = Modifier
-                        .weight(2f)
-                        .aspectRatio(1f)
+                        .size(200.dp)
                         .clip(CircleShape)
                         .clickable(onClick = onRingClicked)
-                        .padding(4.dp),
+                        .padding(2.dp),
                 )
+            }
+        }
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(spaceBy),
-                    modifier = Modifier.weight(1f),
-                ) {
-                    layout.value.ringRight.forEach { Cell(it, Modifier.fillMaxWidth()) }
-                }
+        item(key = "mode") {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        bottom = 4.dp,
+                    )
+            ) {
+                modeSwitch()
             }
         }
 
         items(
-            count = layout.value.rows.size,
+            count = rows.value.size,
             key = { index -> "row-$index" },
         ) { index ->
-            CellRow(layout.value.rows[index])
+            CellRow(rows.value[index])
         }
 
         if (archivedRows.value.isNotEmpty()) {

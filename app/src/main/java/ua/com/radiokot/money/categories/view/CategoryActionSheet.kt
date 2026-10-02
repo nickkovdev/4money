@@ -62,8 +62,18 @@ import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.transfers.history.view.ViewHistoryPeriod
 import ua.com.radiokot.money.transfers.view.ViewDate
-import ua.com.radiokot.money.uikit.TextButton
 import java.math.BigInteger
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.colors.view.ItemLogo
+import ua.com.radiokot.money.colors.view.itemAccentColor
+import ua.com.radiokot.money.uikit.ActionTile
+import ua.com.radiokot.money.uikit.ListDivider
+import ua.com.radiokot.money.uikit.ListGroup
+import ua.com.radiokot.money.uikit.SheetHandle
+import ua.com.radiokot.money.uikit.theme.MidnightMoneyColors
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
+import androidx.compose.ui.text.style.TextOverflow
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -101,9 +111,16 @@ private fun CategoryActionSheet(
     onUnarchiveClicked: () -> Unit,
 ) = Column(
     modifier = modifier
-        .background(MoneyTheme.colors.actionSheet)
+        .background(MoneyTheme.colors.background)
         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+        .padding(
+            horizontal = 16.dp,
+        )
+        .padding(
+            bottom = 12.dp,
+        )
 ) {
+    SheetHandle()
 
     Header(
         statsPeriod = statsPeriod,
@@ -117,39 +134,35 @@ private fun CategoryActionSheet(
     )
 
     Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .padding(
-                horizontal = 16.dp,
-                vertical = 32.dp,
+                top = 16.dp,
             )
     ) {
-        TextButton(
-            text = "✏️ Edit",
+        ActionTile(
+            icon = R.drawable.ic_tabler_list_details,
+            label = "Activity",
+            onClick = onActivityClicked,
             modifier = Modifier
                 .weight(1f)
-                .clickable(
-                    onClick = onEditClicked,
-                )
         )
 
-        TextButton(
-            text = "📃 Activity",
+        ActionTile(
+            icon = R.drawable.ic_tabler_pencil,
+            label = "Edit",
+            onClick = onEditClicked,
             modifier = Modifier
                 .weight(1f)
-                .clickable(
-                    onClick = onActivityClicked,
-                )
         )
 
         if (isUnarchiveVisible.value) {
-            TextButton(
-                text = "⤴️ Restore",
+            ActionTile(
+                icon = R.drawable.ic_tabler_arrow_back_up,
+                label = "Restore",
+                onClick = onUnarchiveClicked,
                 modifier = Modifier
                     .weight(1f)
-                    .clickable(
-                        onClick = onUnarchiveClicked,
-                    )
             )
         }
     }
@@ -166,104 +179,133 @@ private fun Header(
     icon: State<ItemIcon?>,
 ) = Column(
     modifier = modifier
-        .background(Color(colorScheme.value.primary))
-        .padding(
-            horizontal = 16.dp,
-            vertical = 24.dp,
-        )
 ) {
-    val textColor by remember {
-        derivedStateOf {
-            Color(colorScheme.value.onPrimary)
-        }
-    }
+    val amountFormat = rememberViewAmountFormat()
+    val accent = itemAccentColor(colorScheme.value)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        modifier = Modifier
+            .padding(
+                start = 4.dp,
+                end = 4.dp,
+                top = 8.dp,
+                bottom = 16.dp,
+            )
     ) {
-        val icon = icon.value
-        if (icon != null) {
-            Icon(
-                painter = painterResource(icon.resId),
-                contentDescription = "icon",
-                tint = Color(colorScheme.value.onPrimary),
-                modifier = Modifier
-                    .padding(
-                        end = 8.dp,
-                    )
-                    .size(22.dp)
+        ItemLogo(
+            title = title.value,
+            colorScheme = colorScheme.value,
+            icon = icon.value,
+            modifier = Modifier
+                .size(52.dp)
+        )
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            Text(
+                text = title.value,
+                style = MoneyTheme.typography.title,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            Text(
+                text = statsPeriod.getText(),
+                style = MoneyTheme.typography.caption,
+                color = MoneyTheme.colors.ink3,
             )
         }
 
         Text(
-            text = title.value,
-            fontSize = 24.sp,
-            color = textColor,
-            modifier = Modifier
-                .weight(1f)
-        )
-    }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    val amountFormat = rememberViewAmountFormat()
-
-    Row {
-        Text(
-            text = statsPeriod.getText(),
-            color = textColor,
-            fontSize = 18.sp,
-        )
-
-        Text(
             text = amountFormat(
                 amount = statsAmount.value,
-                customColor = textColor,
+                customColor = MoneyTheme.colors.ink,
             ),
-            textAlign = TextAlign.End,
-            fontSize = 18.sp,
-            modifier = Modifier
-                .weight(1f)
+            style = MoneyTheme.typography.title,
+            maxLines = 1,
         )
     }
 
-    if (subcategoryAmounts.value.isNotEmpty()) {
-        Box(
-            modifier = Modifier
-                .padding(
-                    vertical = 8.dp,
-                )
-                .height(1.dp)
-                .fillMaxWidth()
-                .background(textColor)
-        )
+    val subcategories = subcategoryAmounts.value
+    if (subcategories.isNotEmpty()) {
+        val total = statsAmount.value.value
 
-        subcategoryAmounts.value.forEachIndexed { i, (title, amount) ->
-            key(i, title) {
-                Row(
-                    modifier = Modifier
-                        .padding(
-                            top =
-                                if (i != 0)
-                                    4.dp
-                                else
-                                    0.dp
-                        )
-                ) {
-                    Text(
-                        text = title ?: "Other",
-                        color = textColor,
-                    )
+        ListGroup {
+            subcategories.forEachIndexed { i, (title, amount) ->
+                key(i, title) {
+                    if (i != 0) {
+                        ListDivider()
+                    }
 
-                    Text(
-                        text = amountFormat(
-                            amount = amount,
-                            customColor = textColor,
-                        ),
-                        textAlign = TextAlign.End,
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier
-                            .weight(1f)
-                    )
+                            .padding(
+                                horizontal = MoneySpacing.rowHorizontal,
+                                vertical = 12.dp,
+                            )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = title ?: "Other",
+                                style = MoneyTheme.typography.body,
+                                color =
+                                    if (title == null)
+                                        MoneyTheme.colors.ink2
+                                    else
+                                        MoneyTheme.colors.ink,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .weight(1f)
+                            )
+
+                            Text(
+                                text = amountFormat(
+                                    amount = amount,
+                                    customColor = MoneyTheme.colors.ink,
+                                ),
+                                style = MoneyTheme.typography.bodyStrong,
+                                maxLines = 1,
+                            )
+                        }
+
+                        // Share of the category total.
+                        val share =
+                            if (total.signum() != 0)
+                                (amount.value.toDouble() / total.toDouble())
+                                    .toFloat()
+                                    .coerceIn(0f, 1f)
+                            else
+                                0f
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .background(
+                                    color = MoneyTheme.colors.surface2,
+                                    shape = MoneyShapes.pill,
+                                )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(share)
+                                    .height(4.dp)
+                                    .background(
+                                        color = accent,
+                                        shape = MoneyShapes.pill,
+                                    )
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -276,7 +318,7 @@ private fun Header(
 )
 private fun Preview(
 
-) {
+) = MoneyTheme(colors = MidnightMoneyColors) {
     CategoryActionSheet(
         statsPeriod = ViewHistoryPeriod.Day(
             day = ViewDate.today(),
