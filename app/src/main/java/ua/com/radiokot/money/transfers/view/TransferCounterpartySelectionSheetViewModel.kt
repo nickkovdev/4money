@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import ua.com.radiokot.money.accounts.data.Account
 import ua.com.radiokot.money.accounts.logic.GetVisibleAccountsUseCase
 import ua.com.radiokot.money.accounts.view.ViewAccountListItem
+import ua.com.radiokot.money.accounts.view.titleRes
 import ua.com.radiokot.money.categories.data.CategoryRepository
 import ua.com.radiokot.money.categories.data.CategoryWithAmount
 import ua.com.radiokot.money.categories.logic.GetCategoriesWithAmountUseCase
@@ -52,6 +53,7 @@ import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
+import ua.com.radiokot.money.uikit.ViewText
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TransferCounterpartySelectionSheetViewModel(
@@ -123,7 +125,7 @@ class TransferCounterpartySelectionSheetViewModel(
                                     buildList {
                                         add(
                                             ViewAccountListItem.Header(
-                                                title = type.name,
+                                                title = ViewText.Res(type.titleRes),
                                                 amount = null,
                                                 key = type.slug,
                                             )

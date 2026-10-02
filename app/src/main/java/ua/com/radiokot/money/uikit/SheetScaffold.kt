@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -135,7 +136,7 @@ fun SheetScaffold(
             if (onClose != null) {
                 MoneyIconButton(
                     icon = R.drawable.ic_tabler_x,
-                    contentDescription = "Close",
+                    contentDescription = stringResource(R.string.common_close),
                     onClick = onClose,
                     size = 40.dp,
                     iconSize = 20.dp,

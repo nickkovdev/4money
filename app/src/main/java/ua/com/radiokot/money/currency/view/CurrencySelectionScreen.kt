@@ -21,6 +21,8 @@ package ua.com.radiokot.money.currency.view
 
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.res.stringResource
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.GroupPosition
 import ua.com.radiokot.money.uikit.ListRow
 import ua.com.radiokot.money.uikit.MoneyButton
@@ -76,7 +78,7 @@ private fun CurrencySelectionScreen(
         )
 ) {
     ScreenTopBar(
-        title = "Currency",
+        title = stringResource(R.string.currency_title),
         onNavigationClicked = onCloseClicked,
     )
 
@@ -122,7 +124,7 @@ private fun CurrencySelectionScreen(
     }
 
     MoneyButton(
-        text = "Done",
+        text = stringResource(R.string.common_done),
         style = MoneyButtonStyle.Filled,
         onClick = onSaveClicked,
         modifier = Modifier

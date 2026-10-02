@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.MoneyIconButton
@@ -49,7 +50,7 @@ internal fun ProfileButton(
 ) = Box {
     MoneyIconButton(
         icon = R.drawable.ic_tabler_user_circle,
-        contentDescription = "Profile and settings",
+        contentDescription = stringResource(R.string.home_profile_and_settings),
         onClick = onClick,
         tint = MoneyTheme.colors.ink2,
     )

@@ -31,4 +31,79 @@
     <string name="inbox_range_from">от %1$s</string>
     <string name="inbox_range_over">больше %1$s</string>
     <string name="inbox_range_any">Любая сумма</string>
+
+    <!-- Home and privacy -->
+    <string name="home_tab_accounts">Счета</string>
+    <string name="home_tab_categories">Категории</string>
+    <string name="home_tab_history">История</string>
+    <string name="home_tab_overview">Обзор</string>
+    <string name="home_profile_and_settings">Профиль и настройки</string>
+    <string name="privacy_show_amounts">Показать суммы</string>
+    <string name="privacy_hide_amounts">Скрыть суммы</string>
+
+    <!-- Accounts -->
+    <string name="accounts_tab_accounts">Счета</string>
+    <string name="accounts_tab_total">Итого</string>
+    <string name="accounts_add">Добавить счёт</string>
+    <string name="accounts_total_balance">Общий баланс</string>
+    <string name="accounts_by_currency">По валютам</string>
+    <string name="accounts_archived">Архивные счета</string>
+    <string name="accounts_new">Новый счёт</string>
+    <string name="accounts_edit">Изменить счёт</string>
+    <string name="accounts_field_title">Название</string>
+    <string name="accounts_field_title_placeholder">Название счёта</string>
+    <string name="accounts_field_currency">Валюта</string>
+    <string name="accounts_currency_locked">Валюту существующего счёта нельзя изменить</string>
+    <string name="accounts_field_type">Тип</string>
+    <string name="accounts_field_archived">В архиве</string>
+    <string name="accounts_field_archived_hint">Скрыт из списков, история сохраняется</string>
+    <string name="accounts_type_title">Тип счёта</string>
+    <string name="accounts_type_regular">Обычный</string>
+    <string name="accounts_type_savings">Накопительный</string>
+    <string name="accounts_type_regular_hint">Наличные, банковские карты и т. д.</string>
+    <string name="accounts_type_savings_hint">Заначка, холодный кошелёк и т. д.</string>
+    <string name="accounts_current_balance">Текущий баланс: %1$s</string>
+    <string name="accounts_new_balance">Новый баланс</string>
+    <string name="accounts_action_expense">Расход</string>
+    <string name="accounts_action_income">Доход</string>
+    <string name="accounts_action_transfer">Перевод</string>
+    <string name="accounts_action_activity">История</string>
+    <string name="accounts_action_balance">Баланс</string>
+    <string name="accounts_action_restore">Восстановить</string>
+
+    <!-- Currency -->
+    <string name="currency_title">Валюта</string>
+    <string name="currency_keyboard_switch">Сменить валюту</string>
+    <string name="currency_keyboard_erase">Стереть</string>
+    <string name="currency_keyboard_date">Дата</string>
+    <string name="currency_keyboard_confirm">Подтвердить</string>
+
+    <!-- Colors and icons -->
+    <string name="colors_icon">Значок</string>
+    <string name="colors_icon_and_color">Значок и цвет</string>
+    <string name="colors_logo_account">Значок счёта</string>
+    <string name="colors_logo_category">Значок категории</string>
+    <string name="colors_tab_icon">Значок</string>
+    <string name="colors_tab_color">Цвет</string>
+    <string name="colors_group_letter">Буква</string>
+    <string name="colors_group_care">Уход</string>
+    <string name="colors_group_digital">Цифровое</string>
+    <string name="colors_group_finances">Финансы</string>
+    <string name="colors_group_food">Еда</string>
+    <string name="colors_group_health">Здоровье</string>
+    <string name="colors_group_hobbies">Хобби</string>
+    <string name="colors_group_home">Дом</string>
+    <string name="colors_group_leisure">Досуг</string>
+    <string name="colors_group_meal">Питание</string>
+    <string name="colors_group_misc">Разное</string>
+    <string name="colors_group_money">Деньги</string>
+    <string name="colors_group_other">Другое</string>
+    <string name="colors_group_people">Люди</string>
+    <string name="colors_group_services">Услуги</string>
+    <string name="colors_group_shop">Покупки</string>
+    <string name="colors_group_socializing">Общение</string>
+    <string name="colors_group_transport">Транспорт</string>
+    <string name="colors_group_travel">Путешествия</string>
+    <string name="colors_group_vehicle">Авто</string>
+    <string name="colors_group_work">Работа</string>
 </resources>

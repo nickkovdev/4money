@@ -21,7 +21,9 @@ package ua.com.radiokot.money.colors.view
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import com.composeunstyled.Text
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import androidx.compose.animation.AnimatedVisibility
@@ -175,11 +177,32 @@ fun ItemLogoIconPicker(
 /**
  * The first group is "no icon" (the letter), others are named by the icon name prefix.
  */
+@Composable
 private fun iconGroupLabel(groupName: String?): String =
     when (groupName) {
-        null -> "LETTER"
-        else -> groupName.uppercase()
-    }
+        null -> stringResource(R.string.colors_group_letter)
+        "care" -> stringResource(R.string.colors_group_care)
+        "digital" -> stringResource(R.string.colors_group_digital)
+        "finances" -> stringResource(R.string.colors_group_finances)
+        "food" -> stringResource(R.string.colors_group_food)
+        "health" -> stringResource(R.string.colors_group_health)
+        "hobbies" -> stringResource(R.string.colors_group_hobbies)
+        "home" -> stringResource(R.string.colors_group_home)
+        "leisure" -> stringResource(R.string.colors_group_leisure)
+        "meal" -> stringResource(R.string.colors_group_meal)
+        "misc" -> stringResource(R.string.colors_group_misc)
+        "money" -> stringResource(R.string.colors_group_money)
+        "other" -> stringResource(R.string.colors_group_other)
+        "people" -> stringResource(R.string.colors_group_people)
+        "services" -> stringResource(R.string.colors_group_services)
+        "shop" -> stringResource(R.string.colors_group_shop)
+        "socializing" -> stringResource(R.string.colors_group_socializing)
+        "transport" -> stringResource(R.string.colors_group_transport)
+        "travel" -> stringResource(R.string.colors_group_travel)
+        "vehicle" -> stringResource(R.string.colors_group_vehicle)
+        "work" -> stringResource(R.string.colors_group_work)
+        else -> groupName
+    }.uppercase()
 
 @Preview
 @Composable
