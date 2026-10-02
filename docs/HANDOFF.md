@@ -137,3 +137,11 @@ never dump everything into a chat.
 - Foreign-currency payments never auto-create an expense.
 - No 1Money assets copied (proprietary); icons are Tabler (MIT).
 - The full list of implementation rulings is in the branch commit history and the plans.
+
+## Installing builds over the network
+
+The phone is reachable over Tailscale (`100.103.111.20`). After it was paired once (Wireless debugging
+→ pair with code; the PC and the laptop are already paired), switch adbd to a fixed port while connected:
+`adb connect 100.103.111.20:<port from the Wireless debugging screen>` → `adb tcpip 5555` →
+`adb connect 100.103.111.20:5555`. From then on `adb -s 100.103.111.20:5555 install -r <apk>` works from
+anywhere on the tailnet. A phone reboot resets it: turn Wireless debugging on again and repeat.
