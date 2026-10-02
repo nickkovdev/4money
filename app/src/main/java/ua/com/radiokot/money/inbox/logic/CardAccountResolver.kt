@@ -19,6 +19,9 @@
 
 package ua.com.radiokot.money.inbox.logic
 
+import ua.com.radiokot.money.inbox.data.CardAccountPreferences
+import ua.com.radiokot.money.inbox.data.MostUsedAccountSource
+
 interface CardAccountResolver {
 
     /**
@@ -30,4 +33,18 @@ interface CardAccountResolver {
         cardLast4: String?,
         ruleAccountId: String?,
     ): String?
+}
+
+class DefaultCardAccountResolver(
+    private val cardAccountPreferences: CardAccountPreferences,
+    private val mostUsedAccountSource: MostUsedAccountSource,
+) : CardAccountResolver {
+
+    override suspend fun resolve(
+        cardLast4: String?,
+        ruleAccountId: String?,
+    ): String? =
+        cardLast4?.let(cardAccountPreferences::getAccountIdForCard)
+            ?: ruleAccountId
+            ?: mostUsedAccountSource.getMostUsedAccountId()
 }
