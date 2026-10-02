@@ -43,7 +43,14 @@ class ViewInboxItem(
         title = item.payee
             ?.let(PayeeNormalizer::displayName)
             ?: item.rawText.lineSequence().last().take(120),
-        amountText = item.originalAmountText().takeIf(String::isNotEmpty),
+        amountText = item.originalAmountText()
+            .takeIf(String::isNotEmpty)
+            ?.let { amountText ->
+                if (item.direction == InboxItem.Direction.Incoming)
+                    "+$amountText"
+                else
+                    amountText
+            },
         dateText = item.receivedAt.toString().replace('T', ' ').take(16),
         isForeignCurrency = accountCurrencyCode != null
                 && item.currencyCode != null

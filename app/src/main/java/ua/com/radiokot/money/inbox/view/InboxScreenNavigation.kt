@@ -36,7 +36,7 @@ object InboxScreenRoute
  */
 fun NavGraphBuilder.inboxScreen(
     viewModel: InboxScreenViewModel,
-    onProceedToCategorySelection: (accountId: TransferCounterpartyId.Account) -> Unit,
+    onProceedToCategorySelection: (accountId: TransferCounterpartyId.Account, isIncome: Boolean) -> Unit,
     onProceedToAccountSelection: () -> Unit,
     onProceedToTransfer: (TransferSheetRoute) -> Unit,
     onProceedToRules: () -> Unit,
@@ -49,7 +49,7 @@ fun NavGraphBuilder.inboxScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is InboxScreenViewModel.Event.ProceedToCategorySelection ->
-                    onProceedToCategorySelection(event.accountId)
+                    onProceedToCategorySelection(event.accountId, event.isIncome)
 
                 InboxScreenViewModel.Event.ProceedToAccountSelection ->
                     onProceedToAccountSelection()

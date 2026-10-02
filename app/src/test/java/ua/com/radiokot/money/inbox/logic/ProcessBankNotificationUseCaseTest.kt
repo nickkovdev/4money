@@ -184,4 +184,73 @@ class ProcessBankNotificationUseCaseTest {
         assertEquals(Outcome.Pending(itemId = "id-0", reason = PendingReason.CategoryMissing), outcome)
         assertTrue(transfers.calls.isEmpty())
     }
+
+    private val salary = IncomingBankNotification(
+        packageName = "se.seb.latvia",
+        postTimeMillis = postTime,
+        title = "Jauns darījums",
+        text = "EXAMPLE EMPLOYER samaksāja 1000,00 EUR par Darba alga. Konta bilance:",
+    )
+    private val salaryRule = rule.copy(
+        payeePattern = "example employer",
+        categoryId = "cat-salary",
+        id = "rule-salary",
+    )
+
+    @Test
+    fun incomingPaymentAutoRecordsIncome() = runBlocking {
+        val outcome = useCase(
+            rules = listOf(salaryRule),
+            categories = listOf(testCategory("cat-salary", isIncome = true)),
+        ).invoke(salary).getOrThrow()
+
+        val call = transfers.calls.single()
+        assertEquals(Outcome.AutoRecorded(itemId = "id-0", transferId = call.transferId, ruleId = "rule-salary"), outcome)
+        assertEquals(TransferCounterpartyId.Category("cat-salary", null), call.sourceId)
+        assertEquals(TransferCounterpartyId.Account("acc-main"), call.destinationId)
+        assertEquals(BigInteger("100000"), call.sourceAmount)
+        assertEquals(BigInteger("100000"), call.destinationAmount)
+        assertEquals("EXAMPLE EMPLOYER", call.memo)
+        assertEquals(InboxItem.Direction.Incoming, inbox.items.value.single().direction)
+    }
+
+    @Test
+    fun incomingPaymentIgnoresExpenseRuleOfSamePayee() = runBlocking {
+        val outcome = useCase(
+            rules = listOf(salaryRule.copy(categoryId = "cat-food")),
+        ).invoke(salary).getOrThrow()
+
+        assertEquals(Outcome.Pending(itemId = "id-0", reason = PendingReason.NoRule), outcome)
+        assertTrue(transfers.calls.isEmpty())
+        val item = inbox.items.value.single()
+        assertEquals(InboxItem.Direction.Incoming, item.direction)
+        assertEquals("EXAMPLE EMPLOYER", item.payee)
+        assertNull(item.cardLast4)
+    }
+
+    @Test
+    fun cardPaymentIsOutgoing() = runBlocking {
+        useCase(rules = emptyList()).invoke(eurPayment).getOrThrow()
+
+        assertEquals(InboxItem.Direction.Outgoing, inbox.items.value.single().direction)
+    }
+
+    @Test
+    fun identicalAccountPaymentsAtDifferentTimesAreNotDuplicates() = runBlocking {
+        val payment = IncomingBankNotification(
+            packageName = "se.seb.latvia",
+            postTimeMillis = postTime,
+            title = "Jauns darījums",
+            text = "Jūs samaksājāt 30,00 EUR EXAMPLE SIA par parking. Konta bilance:",
+        )
+        val useCase = useCase(rules = emptyList())
+
+        useCase(payment).getOrThrow()
+        val repost = useCase(payment).getOrThrow()
+        val nextMonth = useCase(payment.copy(postTimeMillis = postTime + 30L * 24 * 3600 * 1000)).getOrThrow()
+
+        assertEquals(Outcome.Duplicate, repost)
+        assertTrue(nextMonth is Outcome.Pending)
+        assertEquals(2, inbox.items.value.size)
+    }
 }

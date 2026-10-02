@@ -45,7 +45,7 @@ class CurrencyPreferencesOnPrefs(
 
     override val primaryCurrencyCode: MutableStateFlow<String> by lazy {
         val key = "primary_currency_code"
-        MutableStateFlow(sharedPreferences.getString(key, "USD")!!).apply {
+        MutableStateFlow(sharedPreferences.getString(key, "EUR")!!).apply {
             coroutineScope.launch {
                 drop(1).collect { newValue ->
                     sharedPreferences.edit {

@@ -68,6 +68,7 @@ class PowerSyncInboxRepository(
                 item.status.slug,
                 item.transferId,
                 item.dedupHash,
+                item.direction.slug,
             ),
         )
     }
@@ -155,6 +156,9 @@ class PowerSyncInboxRepository(
             status = InboxItem.Status.fromSlug(getString(DbSchema.INBOX_ITEM_STATUS).trim()),
             transferId = getStringOptional(DbSchema.INBOX_ITEM_TRANSFER_ID)?.trim(),
             dedupHash = getString(DbSchema.INBOX_ITEM_DEDUP_HASH),
+            direction = InboxItem.Direction.fromSlug(
+                getStringOptional(DbSchema.INBOX_ITEM_DIRECTION)?.trim()
+            ),
         )
     }
 }
@@ -175,12 +179,13 @@ private const val SELECT_ITEMS =
             "${DbSchema.INBOX_ITEM_ACCOUNT_ID}, " +
             "${DbSchema.INBOX_ITEM_STATUS}, " +
             "${DbSchema.INBOX_ITEM_TRANSFER_ID}, " +
-            "${DbSchema.INBOX_ITEM_DEDUP_HASH} " +
+            "${DbSchema.INBOX_ITEM_DEDUP_HASH}, " +
+            "${DbSchema.INBOX_ITEM_DIRECTION} " +
             "FROM ${DbSchema.INBOX_ITEMS_TABLE}"
 
 /**
  * Params: ID, received at, source package, raw text, amount, currency code,
- * payee, card last 4, account ID, status, transfer ID, dedup hash.
+ * payee, card last 4, account ID, status, transfer ID, dedup hash, direction.
  */
 private const val INSERT_ITEM =
     "INSERT INTO ${DbSchema.INBOX_ITEMS_TABLE} (" +
@@ -195,5 +200,6 @@ private const val INSERT_ITEM =
             "${DbSchema.INBOX_ITEM_ACCOUNT_ID}, " +
             "${DbSchema.INBOX_ITEM_STATUS}, " +
             "${DbSchema.INBOX_ITEM_TRANSFER_ID}, " +
-            "${DbSchema.INBOX_ITEM_DEDUP_HASH}" +
-            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "${DbSchema.INBOX_ITEM_DEDUP_HASH}, " +
+            "${DbSchema.INBOX_ITEM_DIRECTION}" +
+            ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"

@@ -28,7 +28,8 @@ import java.math.BigDecimal
  * @param receivedAt notification post time, local wall-clock
  * @param amount decimal amount as written by the bank, null if not parsed
  * @param accountId account resolved from the card hint at receive time
- * @param transferId the expense created from this item, if [status] is [Status.Done]
+ * @param transferId the transfer created from this item, if [status] is [Status.Done]
+ * @param direction whether the money left the account (an expense) or came to it (an income)
  */
 data class InboxItem(
     val id: String,
@@ -43,7 +44,23 @@ data class InboxItem(
     val status: Status,
     val transferId: String?,
     val dedupHash: String,
+    val direction: Direction = Direction.Outgoing,
 ) {
+    enum class Direction(val slug: String) {
+        Outgoing("outgoing"),
+        Incoming("incoming"),
+        ;
+
+        companion object {
+            /**
+             * Rows created before the direction was introduced are outgoing.
+             */
+            fun fromSlug(slug: String?): Direction =
+                entries.firstOrNull { it.slug == slug }
+                    ?: Outgoing
+        }
+    }
+
     enum class Status(val slug: String) {
         Pending("pending"),
         Done("done"),

@@ -37,7 +37,8 @@ fun InboxItem.originalAmountText(): String =
 object InboxTransferPrefill {
 
     /**
-     * @return the regular transfer sheet route for [item] paid from [account] to [category].
+     * @return the regular transfer sheet route for [item] paid from [account] to [category],
+     * or, for an incoming item, received from [category] to [account].
      * Amounts are prefilled only when the item is in the account currency;
      * a foreign amount is shown in the memo for the user to convert.
      */
@@ -49,11 +50,11 @@ object InboxTransferPrefill {
         val isInAccountCurrency = item.currencyCode != null
                 && item.currencyCode.equals(account.currency.code, ignoreCase = true)
 
-        val sourceAmount = item.amount
+        val accountAmount = item.amount
             ?.takeIf { isInAccountCurrency }
             ?.let { AutoExpenseResolver.toMinorUnits(it, account.currency.precision) }
 
-        val destinationAmount = sourceAmount
+        val categoryAmount = accountAmount
             ?.takeIf { category.currency == account.currency }
 
         val payee = item.payee
@@ -69,11 +70,15 @@ object InboxTransferPrefill {
                     item.originalAmountText(),
                 ).joinToString(" · ")
 
+        val accountId = TransferCounterpartyId.Account(account.id)
+        val categoryId = TransferCounterparty.Category(category).id
+        val isIncoming = item.direction == InboxItem.Direction.Incoming
+
         return TransferSheetRoute(
-            sourceId = TransferCounterpartyId.Account(account.id),
-            destinationId = TransferCounterparty.Category(category).id,
-            sourceAmount = sourceAmount,
-            destinationAmount = destinationAmount,
+            sourceId = if (isIncoming) categoryId else accountId,
+            destinationId = if (isIncoming) accountId else categoryId,
+            sourceAmount = if (isIncoming) categoryAmount else accountAmount,
+            destinationAmount = if (isIncoming) accountAmount else categoryAmount,
             memo = memo,
             dateTime = item.receivedAt,
             inboxItemId = item.id,

@@ -1,5 +1,6 @@
 package ua.com.radiokot.money.inbox.logic
 
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -14,7 +15,7 @@ import java.math.BigInteger
 
 class AutoExpenseResolverTest {
 
-    private val payment = ParsedBankNotification.CardPayment(
+    private val payment = ParsedBankNotification.Payment(
         amount = BigDecimal("2.12"),
         currencyCode = "EUR",
         cardLast4 = "0000",
@@ -40,8 +41,8 @@ class AutoExpenseResolverTest {
                 rule = rule,
                 account = eurAccount,
                 category = eurCategory,
-                sourceAmount = BigInteger("212"),
-                destinationAmount = BigInteger("212"),
+                accountAmount = BigInteger("212"),
+                categoryAmount = BigInteger("212"),
             ),
             AutoExpenseResolver.resolve(payment, rule, eurAccount, eurCategory),
         )
@@ -86,5 +87,21 @@ class AutoExpenseResolverTest {
         assertEquals(BigInteger("210"), AutoExpenseResolver.toMinorUnits(BigDecimal("2.1"), 2))
         assertEquals(BigInteger("123456"), AutoExpenseResolver.toMinorUnits(BigDecimal("1234.56"), 2))
         assertNull(AutoExpenseResolver.toMinorUnits(BigDecimal("2.125"), 2))
+    }
+
+    @Test
+    fun categoryMustMatchPaymentDirection() {
+        val incomeCategory = eurCategory.copy(isIncome = true)
+        val incomingPayment = payment.copy(isIncoming = true)
+
+        assertEquals(
+            Resolution.Pending(PendingReason.CategoryDirectionMismatch),
+            AutoExpenseResolver.resolve(payment, rule, eurAccount, incomeCategory),
+        )
+        assertEquals(
+            Resolution.Pending(PendingReason.CategoryDirectionMismatch),
+            AutoExpenseResolver.resolve(incomingPayment, rule, eurAccount, eurCategory),
+        )
+        assertTrue(AutoExpenseResolver.resolve(incomingPayment, rule, eurAccount, incomeCategory) is Resolution.Create)
     }
 }

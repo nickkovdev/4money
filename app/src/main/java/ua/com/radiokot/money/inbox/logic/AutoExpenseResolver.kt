@@ -25,7 +25,8 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 /**
- * Decides whether a parsed payment can become an expense without the user.
+ * Decides whether a parsed payment can become an expense
+ * (or an income, for an incoming payment) without the user.
  */
 object AutoExpenseResolver {
 
@@ -40,6 +41,7 @@ object AutoExpenseResolver {
         val subcategoryId: String?,
         val currencyCode: String,
         val precision: Int,
+        val isIncome: Boolean = false,
     )
 
     enum class PendingReason {
@@ -48,6 +50,7 @@ object AutoExpenseResolver {
         NoAccount,
         ForeignCurrency,
         CategoryMissing,
+        CategoryDirectionMismatch,
         CategoryCurrencyMismatch,
         UnsupportedPrecision,
     }
@@ -58,8 +61,14 @@ object AutoExpenseResolver {
             val rule: PayeeRule,
             val account: AccountRef,
             val category: CategoryRef,
-            val sourceAmount: BigInteger,
-            val destinationAmount: BigInteger,
+            /**
+             * The payment amount in the account currency minor units.
+             */
+            val accountAmount: BigInteger,
+            /**
+             * The payment amount in the category currency minor units.
+             */
+            val categoryAmount: BigInteger,
         ) : Resolution
 
         data class Pending(
@@ -71,10 +80,11 @@ object AutoExpenseResolver {
      * @param payment null if the notification was not recognized
      * @param rule matched rule, if any
      * @param account resolved, existing, non-archived account, if any
-     * @param category resolved, existing, non-archived rule category, if any
+     * @param category resolved, existing, non-archived rule category, if any;
+     * an income one for an incoming payment, an expense one otherwise
      */
     fun resolve(
-        payment: ParsedBankNotification.CardPayment?,
+        payment: ParsedBankNotification.Payment?,
         rule: PayeeRule?,
         account: AccountRef?,
         category: CategoryRef?,
@@ -94,13 +104,16 @@ object AutoExpenseResolver {
         if (category == null) {
             return Resolution.Pending(PendingReason.CategoryMissing)
         }
+        if (category.isIncome != payment.isIncoming) {
+            return Resolution.Pending(PendingReason.CategoryDirectionMismatch)
+        }
         if (!category.currencyCode.equals(account.currencyCode, ignoreCase = true)) {
             return Resolution.Pending(PendingReason.CategoryCurrencyMismatch)
         }
 
-        val sourceAmount = toMinorUnits(payment.amount, account.precision)
-        val destinationAmount = toMinorUnits(payment.amount, category.precision)
-        if (sourceAmount == null || destinationAmount == null) {
+        val accountAmount = toMinorUnits(payment.amount, account.precision)
+        val categoryAmount = toMinorUnits(payment.amount, category.precision)
+        if (accountAmount == null || categoryAmount == null) {
             return Resolution.Pending(PendingReason.UnsupportedPrecision)
         }
 
@@ -108,8 +121,8 @@ object AutoExpenseResolver {
             rule = rule,
             account = account,
             category = category,
-            sourceAmount = sourceAmount,
-            destinationAmount = destinationAmount,
+            accountAmount = accountAmount,
+            categoryAmount = categoryAmount,
         )
     }
 

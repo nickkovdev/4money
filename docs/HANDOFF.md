@@ -25,7 +25,7 @@ personal category names or other personal data. `app/local.properties`, `local.p
 
 Key places:
 - Server schema/RPCs: `supabase/migrations/` (applied in order: `20261001000000_money_schema.sql`,
-  `20261002000000_money_rules_inbox.sql`).
+  `20261002000000_money_rules_inbox.sql`, `20261003000000_money_inbox_direction.sql`).
 - PowerSync deployment: `deploy/powersync/` (compose, `service.yaml`, `sync-config.yaml`).
 - 1Money importer: `tools/onemoney-import/onemoney_to_4money.py` (table semantics documented inside).
 - Icons: `tools/icons/import_tabler.py` (Tabler Icons, MIT, pinned version) → `*_itemicon` drawables.
@@ -108,9 +108,10 @@ never dump everything into a chat.
    client. Diff his against `supabase/migrations/20261001000000_money_schema.sql`, write a new migration
    with what's missing (position triggers at least), adapted to the `money` schema. Don't commit his file
    verbatim unless he agrees.
-3. More SEB templates: only the card payment ("Jauna rezervācija" / "Jūs samaksājāt …") is parsed.
-   Collect samples of an EUR payment, outgoing/incoming transfer, refund; unmatched SEB texts already
-   land in the Inbox raw, so nothing is lost meanwhile.
+3. More SEB templates: parsed are the card payment ("Jauna rezervācija"), the outgoing account payment
+   ("Jauns darījums" / "Jūs samaksājāt … <payee> par …") and the incoming one ("<payer> samaksāja …",
+   recorded as an income). Still missing: refund and other variants; unmatched SEB texts land in the
+   Inbox raw. The listener also processes notifications still shown when it connects.
 4. Known gaps: `update-pairs` edge function + cron for currency prices not deployed (all accounts are EUR,
    so only foreign totals are affected); phrase (Ed25519) auth edge functions not deployed (not needed for
    one user); Kong `:8000` is open to the internet via the Azure NSG (owner's TODO, data is protected by RLS).

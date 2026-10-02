@@ -38,6 +38,11 @@ import ua.com.radiokot.money.lazyLogger
  * Bound by the system and called only on notifications:
  * no foreground service, no wakelock, no polling, no network.
  * Everything not from a source bank returns before any other work.
+ *
+ * On connecting (after a reboot, an app update or granting the access)
+ * the notifications still shown are processed too, so payments notified
+ * while the listener was not bound are not lost. Already processed ones
+ * are duplicates by their dedup hash.
  */
 class BankNotificationListenerService :
     NotificationListenerService(),
@@ -46,7 +51,25 @@ class BankNotificationListenerService :
     private val log by lazyLogger("BankNotificationListener")
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    override fun onNotificationPosted(sbn: StatusBarNotification) {
+    override fun onListenerConnected() {
+        val activeNotifications = try {
+            activeNotifications
+        } catch (error: SecurityException) {
+            log.warn(error) {
+                "onListenerConnected(): can't get active notifications"
+            }
+            return
+        }
+
+        activeNotifications
+            ?.sortedBy(StatusBarNotification::getPostTime)
+            ?.forEach(::processNotification)
+    }
+
+    override fun onNotificationPosted(sbn: StatusBarNotification) =
+        processNotification(sbn)
+
+    private fun processNotification(sbn: StatusBarNotification) {
         if (sbn.packageName !in BankNotificationSources.packageNames) {
             return
         }
@@ -74,7 +97,7 @@ class BankNotificationListenerService :
         val sessionScope = getKoin().getScopeOrNull(DI_SCOPE_SESSION)
         if (sessionScope == null) {
             log.debug {
-                "onNotificationPosted(): skipping, there is no session"
+                "processNotification(): skipping, there is no session"
             }
             return
         }
@@ -94,7 +117,7 @@ class BankNotificationListenerService :
                 .onFailure { error ->
                     // No text, payee, amount or card digits: the log is public.
                     log.error(error) {
-                        "onNotificationPosted(): failed to process:" +
+                        "processNotification(): failed to process:" +
                                 "\npackageName=${incoming.packageName}"
                     }
                 }

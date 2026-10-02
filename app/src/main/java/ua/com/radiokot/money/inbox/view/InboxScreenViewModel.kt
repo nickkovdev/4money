@@ -125,7 +125,7 @@ class InboxScreenViewModel(
 
             if (accountId == null) {
                 log.warn {
-                    "onPendingItemClicked(): no account to pay from"
+                    "onPendingItemClicked(): no account to pay from or receive to"
                 }
                 return@launch
             }
@@ -138,7 +138,12 @@ class InboxScreenViewModel(
 
             itemBeingProcessed = inboxItem
             cardBeingMapped = null
-            _events.emit(Event.ProceedToCategorySelection(TransferCounterpartyId.Account(accountId)))
+            _events.emit(
+                Event.ProceedToCategorySelection(
+                    accountId = TransferCounterpartyId.Account(accountId),
+                    isIncome = inboxItem.direction == InboxItem.Direction.Incoming,
+                )
+            )
         }
     }
 
@@ -236,9 +241,13 @@ class InboxScreenViewModel(
 
         /**
          * Pass the result to [onCounterpartySelected].
+         *
+         * @param isIncome whether to select an income category (the source)
+         * rather than an expense one (the destination)
          */
         class ProceedToCategorySelection(
             val accountId: TransferCounterpartyId.Account,
+            val isIncome: Boolean,
         ) : Event
 
         /**

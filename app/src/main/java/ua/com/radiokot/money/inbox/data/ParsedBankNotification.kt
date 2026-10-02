@@ -24,16 +24,24 @@ import java.math.BigDecimal
 sealed interface ParsedBankNotification {
 
     /**
+     * A card or account payment, outgoing or incoming.
+     *
      * @param amount positive decimal amount
      * @param currencyCode upper-case ISO 4217 code
      * @param cardLast4 last 4 card digits, if the text has them
-     * @param payee merchant name as written by the bank (possibly truncated), trimmed
+     * @param payee the counterparty as written by the bank (possibly truncated), trimmed:
+     * the merchant or recipient for an outgoing payment, the payer for an incoming one
+     * @param isIncoming whether the money came to the account
+     * @param hasTimestamp whether the text carries the payment time, so identical texts
+     * are re-posts of one payment rather than separate payments
      */
-    data class CardPayment(
+    data class Payment(
         val amount: BigDecimal,
         val currencyCode: String,
         val cardLast4: String?,
         val payee: String,
+        val isIncoming: Boolean = false,
+        val hasTimestamp: Boolean = true,
     ) : ParsedBankNotification
 
     /**

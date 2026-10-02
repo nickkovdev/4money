@@ -39,7 +39,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 /**
- * Turns a bank notification into an expense (rule matched) or a pending inbox item.
+ * Turns a bank notification into an expense or an income (rule matched) or a pending inbox item.
  * Local writes only. Bind as a single instance per session: [mutex] serializes
  * the dedup check and the writes for notifications arriving at once.
  */
@@ -82,10 +82,10 @@ class ProcessBankNotificationUseCase(
             ?: return@runCatching Outcome.Ignored
 
         val payment = parser.parse(notification.title, notification.text)
-                as? ParsedBankNotification.CardPayment
+                as? ParsedBankNotification.Payment
         val dedupHash = BankNotificationDedupHash.compute(
             notification = notification,
-            includePostTime = payment == null,
+            includePostTime = payment == null || !payment.hasTimestamp,
         )
 
         mutex.withLock {
@@ -106,7 +106,10 @@ class ProcessBankNotificationUseCase(
                 ?.payee
                 ?.let(PayeeNormalizer::normalize)
                 ?.let { normalizedPayee ->
-                    PayeeRuleMatcher.match(normalizedPayee, payeeRuleRepository.getRules())
+                    PayeeRuleMatcher.match(
+                        normalizedPayee,
+                        getRulesOfDirection(isIncome = payment.isIncoming),
+                    )
                 }
 
             val account: Account? = cardAccountResolver
@@ -143,6 +146,11 @@ class ProcessBankNotificationUseCase(
                 status = InboxItem.Status.Pending,
                 transferId = null,
                 dedupHash = dedupHash,
+                direction =
+                    if (payment?.isIncoming == true)
+                        InboxItem.Direction.Incoming
+                    else
+                        InboxItem.Direction.Outgoing,
             )
 
             when (resolution) {
@@ -159,15 +167,28 @@ class ProcessBankNotificationUseCase(
                     // A separate PowerSync transaction on purpose: the connector uploads
                     // a transaction containing a transfer through the `transfer` RPC
                     // and drops its other rows, so the inbox item must not share it.
+                    val accountId = TransferCounterpartyId.Account(resolution.account.id)
+                    val categoryId = TransferCounterpartyId.Category(
+                        categoryId = resolution.category.categoryId,
+                        subcategoryId = resolution.category.subcategoryId,
+                    )
+                    val isIncoming = requireNotNull(payment).isIncoming
+
+                    // An income goes from the category to the account.
                     transferFundsUseCase(
-                        sourceId = TransferCounterpartyId.Account(resolution.account.id),
-                        sourceAmount = resolution.sourceAmount,
-                        destinationId = TransferCounterpartyId.Category(
-                            categoryId = resolution.category.categoryId,
-                            subcategoryId = resolution.category.subcategoryId,
-                        ),
-                        destinationAmount = resolution.destinationAmount,
-                        memo = PayeeNormalizer.displayName(requireNotNull(payment).payee),
+                        sourceId = if (isIncoming) categoryId else accountId,
+                        sourceAmount =
+                            if (isIncoming)
+                                resolution.categoryAmount
+                            else
+                                resolution.accountAmount,
+                        destinationId = if (isIncoming) accountId else categoryId,
+                        destinationAmount =
+                            if (isIncoming)
+                                resolution.accountAmount
+                            else
+                                resolution.categoryAmount,
+                        memo = PayeeNormalizer.displayName(payment.payee),
                         dateTime = receivedAt,
                         transferId = transferId,
                     ).getOrThrow()
@@ -194,6 +215,19 @@ class ProcessBankNotificationUseCase(
         }
     }
 
+    /**
+     * Rules whose category is of the given direction, so an expense rule
+     * never records an income from the same payee (e.g. a refund) and vice versa.
+     * Rules with a missing category are kept for the resolver to report.
+     */
+    private suspend fun getRulesOfDirection(isIncome: Boolean): List<PayeeRule> =
+        payeeRuleRepository
+            .getRules()
+            .filter { rule ->
+                val category = categoryRepository.getCategory(rule.categoryId)
+                category == null || category.isIncome == isIncome
+            }
+
     private suspend fun getCategoryRef(rule: PayeeRule): AutoExpenseResolver.CategoryRef? {
         val category = categoryRepository
             .getCategory(rule.categoryId)
@@ -209,6 +243,7 @@ class ProcessBankNotificationUseCase(
             subcategoryId = subcategoryId,
             currencyCode = category.currency.code,
             precision = category.currency.precision,
+            isIncome = category.isIncome,
         )
     }
 }

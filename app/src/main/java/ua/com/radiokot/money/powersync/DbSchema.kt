@@ -410,6 +410,7 @@ object DbSchema {
     const val INBOX_ITEM_STATUS = "status"
     const val INBOX_ITEM_TRANSFER_ID = "transfer_id"
     const val INBOX_ITEM_DEDUP_HASH = "dedup_hash"
+    const val INBOX_ITEM_DIRECTION = "direction"
 
     private fun getPowerSyncInboxItemsTable() = Table(
         name = INBOX_ITEMS_TABLE,
@@ -426,6 +427,7 @@ object DbSchema {
             Column.text(INBOX_ITEM_STATUS),
             Column.text(INBOX_ITEM_TRANSFER_ID),
             Column.text(INBOX_ITEM_DEDUP_HASH),
+            Column.text(INBOX_ITEM_DIRECTION),
         ),
         indexes = listOf(
             Index(
