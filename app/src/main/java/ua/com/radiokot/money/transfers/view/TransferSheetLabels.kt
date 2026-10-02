@@ -19,18 +19,19 @@
 
 package ua.com.radiokot.money.transfers.view
 
-enum class TransferKind {
-    Expense,
-    Income,
-    Transfer,
-    ;
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import ua.com.radiokot.money.R
 
-    val label: String
-        get() = when (this) {
-            Expense -> "Expense"
-            Income -> "Income"
-            Transfer -> "Transfer"
-        }
+enum class TransferKind(
+    @StringRes
+    val labelRes: Int,
+) {
+    Expense(R.string.transfers_kind_expense),
+    Income(R.string.transfers_kind_income),
+    Transfer(R.string.transfers_kind_transfer),
+    ;
 }
 
 /**
@@ -46,9 +47,18 @@ fun transferKindOf(
     else -> TransferKind.Transfer
 }
 
+@StringRes
+fun counterpartyHalfLabelRes(
+    isSource: Boolean,
+    counterparty: ViewTransferCounterparty,
+): Int =
+    if (counterparty is ViewTransferCounterparty.Category)
+        if (isSource) R.string.transfers_from_category else R.string.transfers_to_category
+    else
+        if (isSource) R.string.transfers_from_account else R.string.transfers_to_account
+
+@Composable
 fun counterpartyHalfLabel(
     isSource: Boolean,
     counterparty: ViewTransferCounterparty,
-): String =
-    (if (isSource) "From " else "To ") +
-            (if (counterparty is ViewTransferCounterparty.Category) "category" else "account")
+): String = stringResource(counterpartyHalfLabelRes(isSource, counterparty))

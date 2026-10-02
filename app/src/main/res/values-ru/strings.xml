@@ -145,4 +145,31 @@
     <string name="overview_all_categories">Все категории</string>
     <string name="overview_transactions">Операции</string>
     <string name="overview_no_subcategory">Без подкатегории</string>
+
+    <!-- Transfers -->
+    <string name="transfers_kind_expense">Расход</string>
+    <string name="transfers_kind_income">Доход</string>
+    <string name="transfers_kind_transfer">Перевод</string>
+    <string name="transfers_from_category">Из категории</string>
+    <string name="transfers_to_category">В категорию</string>
+    <string name="transfers_from_account">Со счёта</string>
+    <string name="transfers_to_account">На счёт</string>
+    <string name="transfers_income_category">Категория дохода</string>
+    <string name="transfers_expense_category">Категория расхода</string>
+    <string name="transfers_swap">Поменять местами</string>
+    <string name="transfers_note">Заметка</string>
+    <string name="transfers_remember_for">Запомнить для «%1$s»</string>
+    <string name="transfers_empty_title">Нет операций</string>
+    <string name="transfers_empty_text">За этот период пока ничего нет</string>
+
+    <!-- History -->
+    <string name="history_clear_filter">Сбросить фильтр</string>
+    <string name="history_in">Приход</string>
+    <string name="history_out">Расход</string>
+    <string name="history_deleted">Операция удалена</string>
+    <string name="history_previous_period">Предыдущий период</string>
+    <string name="history_next_period">Следующий период</string>
+    <string name="history_revert_title">Отменить эту операцию?</string>
+    <string name="history_revert_text">Она будет удалена, а сумма вернётся на балансы затронутых счетов.</string>
+    <string name="history_revert_confirm">Отменить</string>
 </resources>
