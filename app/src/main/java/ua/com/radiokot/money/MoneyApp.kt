@@ -39,16 +39,19 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.android.ext.android.get
+import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 import ua.com.radiokot.money.auth.authModule
 import ua.com.radiokot.money.auth.data.UserSession
+import ua.com.radiokot.money.auth.logic.DI_SCOPE_SESSION
 import ua.com.radiokot.money.auth.logic.UserSessionHolder
 import ua.com.radiokot.money.currency.logic.CurrencyPricesUpdateWorker
 import ua.com.radiokot.money.home.homeModule
 import ua.com.radiokot.money.lock.appLockModule
 import ua.com.radiokot.money.lock.logic.AppLock
 import ua.com.radiokot.money.powersync.BackgroundPowerSyncWorker
+import ua.com.radiokot.money.powersync.PowerSyncConnection
 import ua.com.radiokot.money.util.KermitSlf4jLogWriter
 import ua.com.radiokot.money.util.KoinSlf4jLogger
 import java.io.File
@@ -86,6 +89,7 @@ class MoneyApp : Application() {
         initBackgroundSync()
         initCurrencyPricesUpdate()
         initLock()
+        initSyncConnectionLifecycle()
     }
 
     private fun initLogging() {
@@ -246,6 +250,19 @@ class MoneyApp : Application() {
 
             override fun onStop(owner: LifecycleOwner) {
                 lock.onAppWentToBackground()
+            }
+        })
+    }
+
+    private fun initSyncConnectionLifecycle() {
+        ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
+
+            // Connected in MoneyAppActivity.onStart().
+            override fun onStop(owner: LifecycleOwner) {
+                getKoin()
+                    .getScopeOrNull(DI_SCOPE_SESSION)
+                    ?.getOrNull<PowerSyncConnection>()
+                    ?.disconnectWhenIdle(PowerSyncConnection.Holder.VISIBLE_APP)
             }
         })
     }

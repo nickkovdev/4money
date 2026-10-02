@@ -22,20 +22,22 @@ package ua.com.radiokot.money.powersync
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.powersync.PowerSyncDatabase
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeout
 import org.koin.core.component.KoinComponent
 import org.koin.core.scope.Scope
 import ua.com.radiokot.money.auth.logic.DI_SCOPE_SESSION
 import ua.com.radiokot.money.lazyLogger
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
+@OptIn(ExperimentalTime::class)
 class BackgroundPowerSyncWorker(
     appContext: Context,
     params: WorkerParameters,
@@ -64,16 +66,21 @@ class BackgroundPowerSyncWorker(
                     "Background sync started"
                 }
 
-                log.debug {
-                    "doWork(): waiting for PowerSync full sync"
-                }
+                val connection = sessionScope.get<PowerSyncConnection>()
+                // lastSyncedAt may be truncated to seconds.
+                val startedAt = Clock.System.now() - 2.seconds
 
-                // Sync kicks in here.
-                sessionScope
-                    .get<PowerSyncDatabase>()
-                    .currentStatus
-                    .asFlow()
-                    .first { it.hasSynced == true }
+                connection.connect(PowerSyncConnection.Holder.BACKGROUND_WORKER)
+                try {
+                    log.debug {
+                        "doWork(): waiting for PowerSync sync and upload"
+                    }
+
+                    connection.awaitSyncedAndUploaded(since = startedAt)
+                } finally {
+                    // Stays connected if the app is visible.
+                    connection.disconnectWhenIdle(PowerSyncConnection.Holder.BACKGROUND_WORKER)
+                }
             }
 
             log.info {

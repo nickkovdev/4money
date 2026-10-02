@@ -12,6 +12,7 @@ import ua.com.radiokot.money.auth.logic.createActivityScopeWithSession
 import ua.com.radiokot.money.auth.view.AuthActivity
 import ua.com.radiokot.money.lock.logic.AppLock
 import ua.com.radiokot.money.lock.view.UnlockActivity
+import ua.com.radiokot.money.powersync.PowerSyncConnection
 
 abstract class MoneyAppActivity(
     protected open val requiresUnlocking: Boolean,
@@ -51,6 +52,17 @@ abstract class MoneyAppActivity(
     }
 
     abstract fun onCreateAllowed(savedInstanceState: Bundle?)
+
+    override fun onStart() {
+        super.onStart()
+
+        // Released in MoneyApp when the whole app goes to background.
+        if (hasSession) {
+            scope
+                .getOrNull<PowerSyncConnection>()
+                ?.connect(PowerSyncConnection.Holder.VISIBLE_APP)
+        }
+    }
 
     override fun onResume() {
         super.onResume()
