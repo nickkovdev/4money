@@ -52,6 +52,7 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemColorSchemeAccents
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.colors.view.itemAccentColor
+import ua.com.radiokot.money.uikit.MoneyChip
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -63,7 +64,7 @@ fun SelectableSubcategoryRow(
     onItemClicked: (ViewSelectableSubcategoryListItem) -> Unit,
 ) {
     val rowState = rememberLazyListState()
-    val space = 12.dp
+    val space = 8.dp
 
     // Place the selected subcategory more or less at the center
     // if it is not currently visible.
@@ -101,9 +102,9 @@ fun SelectableSubcategoryRow(
 
     LazyRow(
         state = rowState,
-        horizontalArrangement = Arrangement.spacedBy(space, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(space),
         contentPadding = PaddingValues(
-            horizontal = space,
+            horizontal = 0.dp,
         ),
         modifier = modifier
     ) {
@@ -112,16 +113,13 @@ fun SelectableSubcategoryRow(
             items = itemList.value,
             key = ViewSelectableSubcategoryListItem::key,
         ) { item ->
-            SelectableSubcategoryListItem(
-                item = item,
-                colorScheme = colorScheme,
-                icon = icon,
-                modifier = Modifier
-                    .clickable(
-                        onClick = {
-                            onItemClicked(item)
-                        },
-                    )
+            MoneyChip(
+                text = item.title,
+                isSelected = item.isSelected,
+                selectedColor = itemAccentColor(colorScheme),
+                onClick = {
+                    onItemClicked(item)
+                },
             )
         }
     }
@@ -143,55 +141,3 @@ private fun SelectableSubcategoryRowPreview() {
     )
 }
 
-@Composable
-private fun SelectableSubcategoryListItem(
-    modifier: Modifier = Modifier,
-    item: ViewSelectableSubcategoryListItem,
-    colorScheme: ItemColorScheme,
-    icon: ItemIcon?,
-) {
-    val isDark = MoneyTheme.colors.isDark
-    val accentColor = itemAccentColor(colorScheme)
-    val onAccentColor = remember(colorScheme, isDark) {
-        Color(ItemColorSchemeAccents.onAccent(colorScheme, isDark))
-    }
-    val contentColor =
-        if (item.isSelected)
-            onAccentColor
-        else
-            accentColor
-    val shape = RoundedCornerShape(percent = 50)
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .clip(shape)
-            .run {
-                if (item.isSelected)
-                    background(color = accentColor, shape = shape)
-                else
-                    border(width = 1.dp, color = accentColor, shape = shape)
-            }
-            .padding(
-                horizontal = 12.dp,
-                vertical = 6.dp,
-            )
-    ) {
-        if (icon != null) {
-            Icon(
-                painter = painterResource(icon.resId),
-                contentDescription = null,
-                tint = contentColor,
-                modifier = Modifier.size(16.dp),
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-        }
-
-        Text(
-            text = item.title,
-            color = contentColor,
-            singleLine = true,
-            maxLines = 1,
-        )
-    }
-}

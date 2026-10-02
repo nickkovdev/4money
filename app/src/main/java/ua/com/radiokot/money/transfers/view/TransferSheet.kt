@@ -95,6 +95,15 @@ import ua.com.radiokot.money.currency.view.AnimatedAmountInputText
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberAmountInputState
 import ua.com.radiokot.money.uikit.MoneySwitch
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import ua.com.radiokot.money.uikit.MoneyIconButton
+import ua.com.radiokot.money.uikit.MoneyTextField
+import ua.com.radiokot.money.uikit.SheetHandle
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -158,15 +167,22 @@ private fun TransferSheet(
     onRememberPayeeToggled: (Boolean) -> Unit = {},
 ) = BoxWithConstraints(
     modifier = modifier
-        .background(MoneyTheme.colors.surface)
+        .background(MoneyTheme.colors.background)
         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
 ) {
-
+    val density = LocalDensity.current
+    // The sheet is lifted by the soft keyboard, but the constraints are not:
+    // keep the content between the status bar and the keyboard.
+    val imeHeight = with(density) { WindowInsets.ime.getBottom(density).toDp() }
+    val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
     val maxSheetHeightDp =
         if (maxHeight < 400.dp)
             maxHeight
         else
-            maxHeight * 0.85f
+            minOf(
+                maxHeight * 0.9f,
+                maxHeight - imeHeight - statusBarHeight - 8.dp,
+            ).coerceAtLeast(160.dp)
     val colors = MoneyTheme.colors
     val kind = remember(source, destination) {
         transferKindOf(source, destination)
@@ -177,7 +193,11 @@ private fun TransferSheet(
         else
             destination.colorScheme
     }
-    val accentColor = itemAccentColor(accentScheme)
+    val amountColor = when (kind) {
+        TransferKind.Expense -> colors.expense
+        TransferKind.Income -> colors.income
+        TransferKind.Transfer -> colors.ink
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -187,11 +207,21 @@ private fun TransferSheet(
                 max = maxSheetHeightDp,
             )
             .verticalScroll(rememberScrollState())
+            .padding(
+                horizontal = 16.dp,
+            )
     ) {
+        SheetHandle()
+
         Box(
             contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .padding(
+                    top = 4.dp,
+                )
         ) {
             Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .height(IntrinsicSize.Max)
             ) {
@@ -201,6 +231,11 @@ private fun TransferSheet(
                         ?: source.title,
                     colorScheme = source.colorScheme,
                     icon = source.icon,
+                    tint =
+                        if (kind == TransferKind.Income)
+                            colors.incomeTint
+                        else
+                            colors.surface,
                     onClick = onSourceClicked,
                     modifier = Modifier
                         .weight(1f)
@@ -212,6 +247,16 @@ private fun TransferSheet(
                         ?: destination.title,
                     colorScheme = destination.colorScheme,
                     icon = destination.icon,
+                    tint =
+                        if (kind == TransferKind.Expense)
+                            colors.expenseTint
+                        else
+                            colors.surface,
+                    startPadding =
+                        if (isSwapCounterpartiesShown)
+                            26.dp
+                        else
+                            14.dp,
                     onClick = onDestinationClicked,
                     modifier = Modifier
                         .weight(1f)
@@ -220,39 +265,20 @@ private fun TransferSheet(
             }
 
             if (isSwapCounterpartiesShown) {
-                Box(
-                    contentAlignment = Alignment.Center,
+                MoneyIconButton(
+                    icon = R.drawable.ic_tabler_arrows_exchange,
+                    contentDescription = "Swap",
+                    onClick = onSwapCounterpartiesClicked,
+                    size = 36.dp,
+                    iconSize = 18.dp,
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(colors.surface)
-                        .clickable(onClick = onSwapCounterpartiesClicked)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_tabler_arrows_exchange),
-                        contentDescription = "Swap",
-                        tint = colors.onBackground,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
+                        .background(
+                            color = colors.background,
+                            shape = CircleShape,
+                        )
+                        .padding(3.dp)
+                )
             }
-        }
-
-        if (subcategoryItemList.value.isNotEmpty()
-            && subcategoriesColorScheme.value != null
-        ) {
-            SelectableSubcategoryRow(
-                itemList = subcategoryItemList,
-                colorScheme = subcategoriesColorScheme.value!!,
-                icon = subcategoriesIcon.value,
-                onItemClicked = onSubcategoryItemClicked,
-                modifier = Modifier
-                    .padding(
-                        vertical = 12.dp,
-                    )
-            )
-        } else {
-            Spacer(modifier = Modifier.height(16.dp))
         }
 
         val sourceAmountInputState = rememberAmountInputState(
@@ -277,20 +303,20 @@ private fun TransferSheet(
             mutableStateOf(isSourceInputShown)
         }
 
+        Spacer(modifier = Modifier.height(14.dp))
+
         Text(
             text = kind.label,
-            color = accentColor,
-            fontSize = 14.sp,
+            style = MoneyTheme.typography.caption,
+            color = colors.ink3,
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         if (isSourceInputShown) {
             // Different currencies: both amounts, the keypad edits the highlighted one.
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 listOf(
                     Triple(true, sourceAmountInputState, source),
@@ -301,25 +327,26 @@ private fun TransferSheet(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(
-                                width = 1.dp,
-                                shape = RoundedCornerShape(12.dp),
-                                color = if (isCurrent) accentColor else Color.Transparent,
+                            .clip(MoneyShapes.medium)
+                            .background(
+                                if (isCurrent)
+                                    colors.surface
+                                else
+                                    Color.Transparent
                             )
                             .clickable { isEnteringSourceAmount = isSourceAmount }
-                            .padding(vertical = 6.dp)
+                            .padding(vertical = 8.dp)
                     ) {
                         Text(
                             text = counterparty.title,
-                            color = colors.onBackgroundSecondary,
-                            fontSize = 12.sp,
+                            style = MoneyTheme.typography.small,
+                            color = colors.ink3,
                             maxLines = 1,
                         )
                         AnimatedAmountInputText(
                             amountInputState = inputState,
-                            color = accentColor,
-                            fontSize = 24.sp,
+                            color = amountColor,
+                            fontSize = 26.sp,
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
                         )
@@ -329,88 +356,98 @@ private fun TransferSheet(
         } else {
             AnimatedAmountInputText(
                 amountInputState = destinationAmountInputState,
-                color = accentColor,
-                fontSize = 32.sp,
+                color = amountColor,
+                fontSize = 40.sp,
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
             )
         }
 
-        Box(
-            contentAlignment = Alignment.Center,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier
-                .padding(top = 8.dp)
-        ) {
-            var emptyMemoFieldOffset by remember {
-                mutableStateOf(IntOffset.Zero)
-            }
-
-            if (memo.value.isEmpty()) {
-                Text(
-                    text = "Notes",
-                    style = TextStyle(
-                        fontStyle = FontStyle.Italic,
-                        color = colors.onBackgroundSecondary,
-                    ),
-                    modifier = Modifier
-                        .onSizeChanged { (width, _) ->
-                            emptyMemoFieldOffset = IntOffset(
-                                x = -width / 2,
-                                y = 0,
-                            )
-                        }
+                .clip(MoneyShapes.pill)
+                .clickable(onClick = onDateClicked)
+                .padding(
+                    horizontal = 10.dp,
+                    vertical = 4.dp,
                 )
-            }
-
-            BasicTextField(
-                value = memo.value,
-                onValueChange = onMemoUpdated,
-                textStyle = TextStyle(
-                    fontStyle = FontStyle.Italic,
-                    textAlign = TextAlign.Center,
-                    color = colors.onBackground,
-                ),
-                cursorBrush = SolidColor(colors.onBackground),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    keyboardType = KeyboardType.Text,
-                ),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_tabler_calendar),
+                contentDescription = null,
+                tint = colors.ink3,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .offset {
-                        if (memo.value.isEmpty())
-                            emptyMemoFieldOffset
-                        else
-                            IntOffset.Zero
-                    }
+                    .size(14.dp)
+            )
+            Text(
+                text = date.value.getText(),
+                style = MoneyTheme.typography.labelRegular,
+                color = colors.ink2,
             )
         }
+
+        if (subcategoryItemList.value.isNotEmpty()
+            && subcategoriesColorScheme.value != null
+        ) {
+            SelectableSubcategoryRow(
+                itemList = subcategoryItemList,
+                colorScheme = subcategoriesColorScheme.value!!,
+                icon = subcategoriesIcon.value,
+                onItemClicked = onSubcategoryItemClicked,
+                modifier = Modifier
+                    .padding(
+                        top = 10.dp,
+                    )
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        MoneyTextField(
+            value = memo.value,
+            onValueChange = onMemoUpdated,
+            placeholder = "Note",
+            leadingIcon = R.drawable.ic_tabler_notes,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                keyboardType = KeyboardType.Text,
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+        )
 
         if (rememberPayeeDisplayName != null) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
+                    .padding(
+                        top = 8.dp,
+                    )
                     .fillMaxWidth()
+                    .clip(MoneyShapes.medium)
+                    .background(colors.surface)
                     .clickable(
                         onClick = { onRememberPayeeToggled(!isRememberPayeeEnabled.value) },
                     )
                     .padding(
-                        horizontal = 16.dp,
-                        vertical = 4.dp,
+                        horizontal = 14.dp,
+                        vertical = 8.dp,
                     )
             ) {
                 Text(
                     text = "Remember for \u201C$rememberPayeeDisplayName\u201D",
-                    color = colors.onBackground,
-                    fontSize = 14.sp,
+                    style = MoneyTheme.typography.labelRegular,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .weight(1f)
                 )
 
                 MoneySwitch(
                     isOn = isRememberPayeeEnabled.value,
-                    onToggled = onRememberPayeeToggled,
+                    onToggled = null,
                 )
             }
         }
@@ -446,24 +483,11 @@ private fun TransferSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    horizontal = 16.dp,
-                    vertical = 8.dp,
+                    top = 12.dp,
+                    bottom = 12.dp,
                 )
-                .height(maxSheetHeightDp / 2.4f)
+                .height(MoneySpacing.keypadKeyHeight * 4 + 24.dp)
         )
-
-        Text(
-            text = date.value.getText(),
-            color = colors.onBackgroundSecondary,
-            modifier = Modifier
-                .clickable(onClick = onDateClicked)
-                .padding(
-                    horizontal = 16.dp,
-                    vertical = 8.dp,
-                )
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 
@@ -547,53 +571,46 @@ private fun CounterpartyHalf(
     title: String,
     colorScheme: ItemColorScheme,
     icon: ItemIcon?,
+    tint: Color,
+    startPadding: Dp = 14.dp,
     onClick: () -> Unit,
-) {
-    val (backgroundColor, contentColor) = itemLogoColors(colorScheme)
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .padding(
-                horizontal = 12.dp,
-                vertical = 14.dp,
-            )
-    ) {
-        ItemLogo(
-            title = title,
-            colorScheme = colorScheme,
-            icon = icon,
-            shape = CircleShape,
-            modifier = Modifier
-                .size(36.dp)
-                .border(
-                    width = 1.dp,
-                    color = contentColor.copy(alpha = 0.4f),
-                    shape = CircleShape,
-                )
+) = Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(10.dp),
+    modifier = modifier
+        .clip(MoneyShapes.key)
+        .background(tint)
+        .clickable(onClick = onClick)
+        .padding(
+            start = startPadding,
+            end = 12.dp,
+            top = 12.dp,
+            bottom = 12.dp,
         )
+) {
+    ItemLogo(
+        title = title,
+        colorScheme = colorScheme,
+        icon = icon,
+        modifier = Modifier
+            .size(36.dp)
+    )
 
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(
-                text = label,
-                color = contentColor.copy(alpha = 0.75f),
-                fontSize = 12.sp,
-                maxLines = 1,
-            )
-            Text(
-                text = title,
-                color = contentColor,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+    Column(
+        modifier = Modifier.weight(1f),
+    ) {
+        Text(
+            text = label,
+            style = MoneyTheme.typography.small,
+            color = MoneyTheme.colors.ink3,
+            maxLines = 1,
+        )
+        Text(
+            text = title,
+            style = MoneyTheme.typography.bodyStrong,
+            fontSize = 15.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }

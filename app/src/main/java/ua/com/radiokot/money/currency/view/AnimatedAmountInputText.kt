@@ -46,6 +46,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.em
+import ua.com.radiokot.money.uikit.theme.OnestFontFamily
 import com.composeunstyled.Text
 import java.math.BigInteger
 import kotlin.math.max
@@ -66,7 +68,10 @@ fun AnimatedAmountInputText(
     val textStyle = TextStyle(
         textAlign = TextAlign.End,
         fontSize = fontSize,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold,
+        fontFamily = OnestFontFamily,
+        fontFeatureSettings = "tnum",
+        letterSpacing = (-0.02).em,
         color = color,
     )
     val textFadingEdgeWidth = textStyle.fontSize.value
