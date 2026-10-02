@@ -60,6 +60,8 @@ object DbSchema {
             getPowerSyncCategoriesTable(),
             getPowerSyncTransfersTable(),
             getPowerSyncSyncErrorsTable(),
+            getPowerSyncPayeeRulesTable(),
+            getPowerSyncInboxItemsTable(),
         )
     )
 
@@ -369,6 +371,76 @@ object DbSchema {
         name = SYNC_ERRORS_TABLE,
         columns = listOf(
             // Just an ID, which is a timestamp.
+        ),
+        ignoreEmptyUpdates = true,
+    )
+
+    const val PAYEE_RULES_TABLE = "payee_rules"
+    const val PAYEE_RULE_PATTERN = "payee_pattern"
+    const val PAYEE_RULE_MATCH_TYPE = "match_type"
+    const val PAYEE_RULE_CATEGORY_ID = "category_id"
+    const val PAYEE_RULE_SUBCATEGORY_ID = "subcategory_id"
+    const val PAYEE_RULE_ACCOUNT_ID = "account_id"
+    const val PAYEE_RULE_HITS = "hits"
+    const val PAYEE_RULE_LAST_USED_AT = "last_used_at"
+
+    private fun getPowerSyncPayeeRulesTable() = Table(
+        name = PAYEE_RULES_TABLE,
+        columns = listOf(
+            Column.text(PAYEE_RULE_PATTERN),
+            Column.text(PAYEE_RULE_MATCH_TYPE),
+            Column.text(PAYEE_RULE_CATEGORY_ID),
+            Column.text(PAYEE_RULE_SUBCATEGORY_ID),
+            Column.text(PAYEE_RULE_ACCOUNT_ID),
+            Column.integer(PAYEE_RULE_HITS),
+            Column.text(PAYEE_RULE_LAST_USED_AT),
+        ),
+        ignoreEmptyUpdates = true,
+    )
+
+    const val INBOX_ITEMS_TABLE = "inbox_items"
+    const val INBOX_ITEM_RECEIVED_AT = "received_at"
+    const val INBOX_ITEM_SOURCE_PACKAGE = "source_package"
+    const val INBOX_ITEM_RAW_TEXT = "raw_text"
+    const val INBOX_ITEM_AMOUNT = "amount"
+    const val INBOX_ITEM_CURRENCY_CODE = "currency_code"
+    const val INBOX_ITEM_PAYEE = "payee"
+    const val INBOX_ITEM_CARD_LAST4 = "card_last4"
+    const val INBOX_ITEM_ACCOUNT_ID = "account_id"
+    const val INBOX_ITEM_STATUS = "status"
+    const val INBOX_ITEM_TRANSFER_ID = "transfer_id"
+    const val INBOX_ITEM_DEDUP_HASH = "dedup_hash"
+
+    private fun getPowerSyncInboxItemsTable() = Table(
+        name = INBOX_ITEMS_TABLE,
+        columns = listOf(
+            Column.text(INBOX_ITEM_RECEIVED_AT),
+            Column.text(INBOX_ITEM_SOURCE_PACKAGE),
+            Column.text(INBOX_ITEM_RAW_TEXT),
+            // Decimal string, numeric on the server.
+            Column.text(INBOX_ITEM_AMOUNT),
+            Column.text(INBOX_ITEM_CURRENCY_CODE),
+            Column.text(INBOX_ITEM_PAYEE),
+            Column.text(INBOX_ITEM_CARD_LAST4),
+            Column.text(INBOX_ITEM_ACCOUNT_ID),
+            Column.text(INBOX_ITEM_STATUS),
+            Column.text(INBOX_ITEM_TRANSFER_ID),
+            Column.text(INBOX_ITEM_DEDUP_HASH),
+        ),
+        indexes = listOf(
+            Index(
+                name = "inbox-status-idx",
+                columns = listOf(
+                    IndexedColumn.ascending(INBOX_ITEM_STATUS),
+                    IndexedColumn.descending(INBOX_ITEM_RECEIVED_AT),
+                )
+            ),
+            Index(
+                name = "inbox-dedup-idx",
+                columns = listOf(
+                    IndexedColumn.ascending(INBOX_ITEM_DEDUP_HASH),
+                )
+            ),
         ),
         ignoreEmptyUpdates = true,
     )
