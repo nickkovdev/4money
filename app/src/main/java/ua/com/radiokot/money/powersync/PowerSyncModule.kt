@@ -21,26 +21,18 @@ package ua.com.radiokot.money.powersync
 
 import co.touchlab.kermit.Logger
 import com.powersync.DatabaseDriverFactory
-import com.powersync.ExperimentalPowerSyncAPI
 import com.powersync.PowerSyncDatabase
 import com.powersync.db.Queries
 import com.powersync.db.schema.Schema
-import com.powersync.sync.SyncOptions
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.koin.dsl.onClose
 import ua.com.radiokot.money.BuildConfig
 import ua.com.radiokot.money.auth.authModule
 import ua.com.radiokot.money.auth.logic.sessionScope
 
-@OptIn(
-    DelicateCoroutinesApi::class,
-    ExperimentalPowerSyncAPI::class,
-)
 val powerSyncModule = module {
     includes(authModule)
 
@@ -48,28 +40,25 @@ val powerSyncModule = module {
 
     sessionScope {
 
+        // Not connected on creation: see PowerSyncConnection.
         scoped {
             PowerSyncDatabase(
                 factory = DatabaseDriverFactory(androidApplication()),
                 schema = get(),
                 logger = Logger.withTag("PowerSync"),
-            ).apply {
-                GlobalScope.launch {
-                    connect(
-                        connector = AtomicCrudSupabaseConnector(
-                            supabaseClient = get(),
-                            powerSyncEndpoint = BuildConfig.POWERSYNC_URL,
-                        ),
-                        options = SyncOptions(
-                            userAgent = "4Money/${BuildConfig.VERSION_NAME}",
-                        ),
-                        appMetadata = mapOf(
-                            "v" to BuildConfig.VERSION_NAME,
-                            "debug" to BuildConfig.DEBUG.toString(),
-                        ),
-                    )
-                }
-            }
+            )
         } bind Queries::class
+
+        scoped {
+            PowerSyncConnection(
+                control = PowerSyncDatabaseControl(
+                    database = get(),
+                    connector = AtomicCrudSupabaseConnector(
+                        supabaseClient = get(),
+                        powerSyncEndpoint = BuildConfig.POWERSYNC_URL,
+                    ),
+                ),
+            )
+        } onClose { it?.close() }
     }
 }
