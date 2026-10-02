@@ -24,6 +24,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import ua.com.radiokot.money.auth.logic.sessionScope
 import ua.com.radiokot.money.currency.currencyModule
+import ua.com.radiokot.money.inbox.inboxModule
 import ua.com.radiokot.money.lock.appLockModule
 import ua.com.radiokot.money.preferences.view.PreferencesScreenViewModel
 import ua.com.radiokot.money.syncerrors.syncErrorsModule
@@ -34,6 +35,7 @@ val preferencesModule = module {
         currencyModule,
         syncErrorsModule,
         appLockModule,
+        inboxModule,
     )
 
     sessionScope {
@@ -43,6 +45,7 @@ val preferencesModule = module {
                 currencyPreferences = get(),
                 session = get(),
                 syncErrorRepository = get(),
+                inboxRepository = get(),
                 signOutUseCase = get(),
                 appLock = get(),
                 disableAppLockUseCase = get(),
