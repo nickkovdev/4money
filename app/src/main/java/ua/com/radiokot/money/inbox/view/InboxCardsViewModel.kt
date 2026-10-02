@@ -35,8 +35,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import ua.com.radiokot.money.inbox.logic.LearnedRule
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.accounts.data.Account
 import ua.com.radiokot.money.accounts.data.AccountRepository
 import ua.com.radiokot.money.categories.data.Category
@@ -63,8 +62,6 @@ import ua.com.radiokot.money.transfers.logic.TransferFundsUseCase
 import ua.com.radiokot.money.transfers.view.TransferCounterpartySelectionResult
 import ua.com.radiokot.money.transfers.view.TransferSheetRoute
 import java.util.UUID
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import ua.com.radiokot.money.uikit.ViewText
 
 /**
@@ -190,7 +187,6 @@ class InboxCardsViewModel(
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     private fun toViewCard(
         item: InboxItem,
         lookup: Lookup,
@@ -256,7 +252,6 @@ class InboxCardsViewModel(
         val payeeDisplayName = item.payee
             ?.let(PayeeNormalizer::displayName)
             ?.takeIf(String::isNotEmpty)
-        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
         return ViewInboxCard(
             key = item.id,
@@ -269,7 +264,6 @@ class InboxCardsViewModel(
                     && item.currencyCode != null
                     && !item.currencyCode.equals(account.currency.code, ignoreCase = true),
             receivedAt = item.receivedAt,
-            isReceivedToday = item.receivedAt.date == today,
             sourceText = listOfNotNull(
                 account?.title,
                 item.cardLast4?.let { "•$it" }.takeIf { account == null },
@@ -279,22 +273,36 @@ class InboxCardsViewModel(
                 when (val reason = result.suggestion.reason) {
                     is InboxCardSuggester.Reason.Rule ->
                         if (reason.rule.amountRange != null)
-                            describeRangeText(reason.rule.amountRange, item.currencyCode)
-                                .let { range ->
-                                    ViewText.Dynamic { context ->
-                                        "${range(context)} at $payeeDisplayName → ${category.fullTitle}"
-                                    }
-                                }
+                            ViewText.Res(
+                                id = R.string.inbox_reason_range,
+                                args = listOf(
+                                    ViewText.Dynamic(
+                                        describeRangeText(reason.rule.amountRange, item.currencyCode)
+                                    ),
+                                    payeeDisplayName.orEmpty(),
+                                    category.fullTitle,
+                                ),
+                            )
                         else if (reason.rule.matchType == PayeeRule.MatchType.Exact)
-                            ViewText.Plain("Remembered payee → ${category.fullTitle}")
+                            ViewText.Res(
+                                id = R.string.inbox_reason_remembered,
+                                args = listOf(category.fullTitle),
+                            )
                         else
-                            ViewText.Plain("Payee contains “${reason.rule.payeePattern}” → ${category.fullTitle}")
+                            ViewText.Res(
+                                id = R.string.inbox_reason_contains,
+                                args = listOf(reason.rule.payeePattern, category.fullTitle),
+                            )
 
                     is InboxCardSuggester.Reason.PayeeHistory ->
-                        ViewText.Plain("Recorded to ${category.fullTitle} ${reason.count}× before")
+                        ViewText.Plural(
+                            id = R.plurals.inbox_reason_history,
+                            count = reason.count,
+                            args = listOf(category.fullTitle, reason.count),
+                        )
 
                     InboxCardSuggester.Reason.MostUsed ->
-                        ViewText.Plain("New payee: your most used category")
+                        ViewText.Res(R.string.inbox_reason_most_used)
                 }
             },
             alternatives = result.alternatives.mapNotNull(::viewCategory),
@@ -366,7 +374,7 @@ class InboxCardsViewModel(
             key = card.key,
             previousSkipped = previousSkipped,
         )
-        showUndo("Skipped, it stays in the inbox")
+        showUndo(ViewText.Res(R.string.inbox_cards_skipped))
     }
 
     fun onPickClicked(card: ViewInboxCard) {
@@ -434,7 +442,7 @@ class InboxCardsViewModel(
 
             if (account == null || category == null) {
                 inFlightKeys.value -= item.id
-                _events.emit(Event.ShowError("No account or category to record to"))
+                _events.emit(Event.ShowError(ViewText.Res(R.string.inbox_no_account_or_category)))
                 return@launch
             }
 
@@ -523,15 +531,26 @@ class InboxCardsViewModel(
                                 learnedRuleId = learnedRuleId,
                             )
                             showUndo(
-                                "Recorded to ${categoryTitle ?: category.title}" +
-                                        if (learnedRuleId != null) ", remembered" else ""
+                                ViewText.Res(
+                                    id =
+                                        if (learnedRuleId != null)
+                                            R.string.inbox_cards_recorded_remembered
+                                        else
+                                            R.string.inbox_cards_recorded,
+                                    args = listOf(categoryTitle ?: category.title),
+                                )
                             )
                         }
                         .onFailure { error ->
                             log.error(error) {
                                 "record(): failed to record"
                             }
-                            _events.emit(Event.ShowError("Failed to record: ${error.message}"))
+                            _events.emit(Event.ShowError(
+                                ViewText.Res(
+                                    id = R.string.inbox_cards_record_failed,
+                                    args = listOf(error.message.orEmpty()),
+                                )
+                            ))
                         }
                 }
             }
@@ -572,7 +591,7 @@ class InboxCardsViewModel(
             log.warn {
                 "resolveAccount(): no account to pay from or receive to"
             }
-            _events.emit(Event.ShowError("No account to record to"))
+            _events.emit(Event.ShowError(ViewText.Res(R.string.inbox_no_account)))
         }
         return account
     }
@@ -598,7 +617,12 @@ class InboxCardsViewModel(
                             log.error(error) {
                                 "onUndoClicked(): failed to undo"
                             }
-                            _events.emit(Event.ShowError("Failed to undo: ${error.message}"))
+                            _events.emit(Event.ShowError(
+                                ViewText.Res(
+                                    id = R.string.inbox_undo_failed,
+                                    args = listOf(error.message.orEmpty()),
+                                )
+                            ))
                         }
                 }
         }
@@ -610,7 +634,7 @@ class InboxCardsViewModel(
         }
     }
 
-    private fun showUndo(text: String) {
+    private fun showUndo(text: ViewText) {
         _undo.value = ViewInboxCardUndo(
             text = text,
             id = System.nanoTime(),
@@ -644,7 +668,7 @@ class InboxCardsViewModel(
         ) : Event
 
         class ShowError(
-            val text: String,
+            val text: ViewText,
         ) : Event
 
         /**

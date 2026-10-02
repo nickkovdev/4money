@@ -25,8 +25,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.view.TransferSheetRoute
+import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.resolve
 
 @Serializable
 object InboxScreenRoute
@@ -68,7 +71,9 @@ fun NavGraphBuilder.inboxScreen(
                     Toast
                         .makeText(
                             context,
-                            "Failed to undo: ${event.technicalReason}",
+                            ViewText
+                                .Res(R.string.inbox_undo_failed, listOf(event.technicalReason))
+                                .resolve(context),
                             Toast.LENGTH_LONG,
                         )
                         .show()

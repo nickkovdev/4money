@@ -22,6 +22,7 @@
     <string name="date_today">Сегодня</string>
     <string name="date_yesterday">Вчера</string>
     <string name="date_today_at">Сегодня, %1$s</string>
+    <string name="date_at_time">%1$s, %2$s</string>
     <string name="history_period_entire_time">За всё время</string>
     <string name="date_picker_previous_month">Предыдущий месяц</string>
     <string name="date_picker_next_month">Следующий месяц</string>
@@ -172,4 +173,63 @@
     <string name="history_revert_title">Отменить эту операцию?</string>
     <string name="history_revert_text">Она будет удалена, а сумма вернётся на балансы затронутых счетов.</string>
     <string name="history_revert_confirm">Отменить</string>
+
+    <!-- Inbox -->
+    <string name="inbox_title">Входящие</string>
+    <string name="inbox_rules">Правила</string>
+    <string name="inbox_nothing_to_sort">Нечего разбирать</string>
+    <string name="inbox_to_sort">К разбору: %1$d</string>
+    <string name="inbox_progress_to_sort">%1$d из %2$d к разбору</string>
+    <string name="inbox_sort_as_cards">Разобрать карточками</string>
+    <string name="inbox_section_pending">Нужна категория</string>
+    <string name="inbox_all_sorted">Всё разобрано</string>
+    <string name="inbox_empty_text">Новые банковские платежи, которым нужна категория, появятся здесь.</string>
+    <string name="inbox_dismiss">Убрать</string>
+    <string name="inbox_section_cards">Карты</string>
+    <string name="inbox_card_title">Карта •%1$s</string>
+    <string name="inbox_card_subtitle">%1$s · нажмите, чтобы изменить</string>
+    <string name="inbox_most_used_account">Самый частый счёт</string>
+    <string name="inbox_section_recorded">Записано</string>
+    <string name="inbox_item_foreign_currency">%1$s · иностранная валюта</string>
+    <string name="inbox_private_title">Банковский платёж</string>
+    <string name="inbox_undo_failed">Не удалось отменить: %1$s</string>
+    <string name="inbox_no_account">Нет счёта для записи</string>
+    <string name="inbox_no_account_or_category">Нет счёта или категории для записи</string>
+
+    <!-- Inbox cards -->
+    <string name="inbox_cards_title">Разбор платежей</string>
+    <string name="inbox_cards_empty_text">Новые банковские платежи появятся здесь карточками.</string>
+    <string name="inbox_cards_back_to_inbox">Назад во входящие</string>
+    <string name="inbox_cards_skip_for_now">Пропустить пока</string>
+    <string name="inbox_cards_choose_category">Выбрать категорию</string>
+    <string name="inbox_cards_accept">Принять: %1$s</string>
+    <string name="inbox_cards_hint_skip">← пропуск</string>
+    <string name="inbox_cards_hint_pick">↑ выбор</string>
+    <string name="inbox_cards_hint_accept">принять →</string>
+    <string name="inbox_cards_swipe_description">Карточка платежа: смахните вправо, чтобы принять, влево, чтобы пропустить, вверх, чтобы выбрать</string>
+    <string name="inbox_cards_stamp_pick">Выбрать категорию</string>
+    <string name="inbox_cards_stamp_skip">Пропустить</string>
+    <string name="inbox_cards_foreign_hint">Иностранная валюта: откроется форма перевода, чтобы конвертировать сумму</string>
+    <string name="inbox_cards_no_suggestion">Пока нет подсказки: выберите категорию</string>
+    <string name="inbox_cards_remember">Запомнить для этого получателя</string>
+    <string name="inbox_cards_remember_on">В следующий раз запишется автоматически</string>
+    <string name="inbox_cards_remember_off">В следующий раз снова появится здесь</string>
+    <string name="inbox_cards_amount_rules_hint">Здесь разные категории: настройте правила по сумме</string>
+    <string name="inbox_cards_or_pick">ИЛИ ВЫБЕРИТЕ</string>
+    <string name="inbox_cards_skipped">Пропущено, платёж остаётся во входящих</string>
+    <string name="inbox_cards_recorded">Записано в %1$s</string>
+    <string name="inbox_cards_recorded_remembered">Записано в %1$s, запомнено</string>
+    <string name="inbox_cards_record_failed">Не удалось записать: %1$s</string>
+
+    <!-- Inbox card reasons -->
+    <string name="inbox_reason_remembered">Запомненный получатель → %1$s</string>
+    <string name="inbox_reason_contains">Получатель содержит «%1$s» → %2$s</string>
+    <plurals name="inbox_reason_history">
+        <item quantity="one">Раньше записано в %1$s: %2$d раз</item>
+        <item quantity="few">Раньше записано в %1$s: %2$d раза</item>
+        <item quantity="many">Раньше записано в %1$s: %2$d раз</item>
+        <item quantity="other">Раньше записано в %1$s: %2$d раза</item>
+    </plurals>
+    <string name="inbox_reason_most_used">Новый получатель: ваша самая частая категория</string>
+    <string name="inbox_reason_range">%1$s в %2$s → %3$s</string>
 </resources>
