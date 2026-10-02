@@ -109,6 +109,7 @@ import ua.com.radiokot.money.categories.view.EditCategoryScreenRoute
 import ua.com.radiokot.money.categories.view.categoriesScreen
 import ua.com.radiokot.money.categories.view.categoryActionSheet
 import ua.com.radiokot.money.lock.view.SetUpPasscodeActivity
+import ua.com.radiokot.money.overview.view.overviewScreen
 import ua.com.radiokot.money.preferences.view.PreferencesScreenRoute
 import ua.com.radiokot.money.preferences.view.preferencesScreen
 import ua.com.radiokot.money.rememberMoneyAppNavController
@@ -270,6 +271,14 @@ private fun HomeScreen(
             activityScreen(
                 homeViewModel = viewModel,
                 onProceedToEditingTransfer = transfersNavigator::proceedToTransfer,
+            )
+
+            overviewScreen(
+                homeViewModel = viewModel,
+                onProceedToCategories = {
+                    navController.popBackStack()
+                    navController.navigate(CategoriesScreenRoute)
+                },
             )
 
             preferencesScreen(
