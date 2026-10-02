@@ -106,6 +106,15 @@ class CategoriesScreenViewModel(
             .map { it.second.totalInPrimaryCurrency?.let(::ViewAmount) }
             .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
+    /**
+     * Total in the primary currency of the current (expense/income) mode,
+     * the denominator of the category shares shown in the privacy mode.
+     */
+    val currentModeTotal: StateFlow<BigInteger?> =
+        categoriesWithAmountAndTotalSharedFlow
+            .map { it.totalInPrimaryCurrency?.value }
+            .stateIn(viewModelScope, SharingStarted.Lazily, null)
+
     val ringSegments: StateFlow<List<DonutSegment<ItemColorScheme>>> =
         categoriesWithAmountAndTotalSharedFlow
             .map { data ->

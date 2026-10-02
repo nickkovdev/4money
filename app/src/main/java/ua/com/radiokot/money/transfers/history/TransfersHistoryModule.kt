@@ -63,6 +63,7 @@ val transfersHistoryModule = module {
                 transferHistoryRepository = get(),
                 historyStatsRepository = get(),
                 revertTransferUseCase = get(),
+                getCategoriesWithAmountAndTotalUseCase = get(),
             )
         } bind ActivityViewModel::class
     }

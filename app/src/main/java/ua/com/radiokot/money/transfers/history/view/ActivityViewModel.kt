@@ -55,6 +55,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
+import ua.com.radiokot.money.categories.logic.GetCategoriesWithAmountsAndTotalUseCase
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.eventSharedFlow
 import ua.com.radiokot.money.isSameDayAs
@@ -66,6 +67,7 @@ import ua.com.radiokot.money.transfers.history.data.HistoryStatsRepository
 import ua.com.radiokot.money.transfers.history.data.TransferHistoryRepository
 import ua.com.radiokot.money.transfers.logic.RevertTransferUseCase
 import ua.com.radiokot.money.transfers.view.ViewDate
+import ua.com.radiokot.money.transfers.view.ViewPrivacyTotals
 import ua.com.radiokot.money.transfers.view.ViewTransferListItem
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -83,6 +85,7 @@ class ActivityViewModel(
     private val transferHistoryRepository: TransferHistoryRepository,
     private val historyStatsRepository: HistoryStatsRepository,
     private val revertTransferUseCase: RevertTransferUseCase,
+    private val getCategoriesWithAmountAndTotalUseCase: GetCategoriesWithAmountsAndTotalUseCase,
 ) : ViewModel(),
     HistoryStatsPeriodViewModel by historyStatsPeriodViewModel,
     ActivityFilterViewModel by activityFilterViewModelDelegate {
@@ -208,6 +211,37 @@ class ActivityViewModel(
                             currency = ViewCurrency(accountCounterparty.account.currency),
                         )
                     }
+            }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /**
+     * Whole period (not affected by the filter) expense and income totals
+     * in the primary currency, for the shares shown in the privacy mode.
+     */
+    val privacyTotals: StateFlow<ViewPrivacyTotals?> =
+        historyStatsPeriod
+            .flatMapLatest { period ->
+                combine(
+                    getCategoriesWithAmountAndTotalUseCase(
+                        isIncome = false,
+                        period = period,
+                    ),
+                    getCategoriesWithAmountAndTotalUseCase(
+                        isIncome = true,
+                        period = period,
+                    ),
+                ) { expense, income ->
+                    val expenseTotal = expense.totalInPrimaryCurrency
+                    val incomeTotal = income.totalInPrimaryCurrency
+                    if (expenseTotal != null && incomeTotal != null)
+                        ViewPrivacyTotals(
+                            currency = ViewCurrency(expenseTotal.currency),
+                            expense = expenseTotal.value,
+                            income = incomeTotal.value,
+                        )
+                    else
+                        null
+                }
             }
             .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 

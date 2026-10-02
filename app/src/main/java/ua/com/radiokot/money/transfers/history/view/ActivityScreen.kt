@@ -72,6 +72,7 @@ import kotlinx.coroutines.flow.Flow
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.view.TransferList
+import ua.com.radiokot.money.transfers.view.ViewPrivacyTotals
 import ua.com.radiokot.money.transfers.view.ViewTransferCounterparty
 import ua.com.radiokot.money.transfers.view.ViewTransferListItem
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
@@ -82,6 +83,7 @@ fun ActivityScreenRoot(
     viewModel: ActivityViewModel,
 ) = ActivityScreen(
     totalIncomeAndExpense = viewModel.totalIncomeAndExpense.collectAsState(),
+    privacyTotals = viewModel.privacyTotals.collectAsState(),
     itemPagingFlow = viewModel.transferItemPagingFlow,
     onTransferItemClicked = remember { viewModel::onTransferItemClicked },
     onTransferItemLongClicked = remember { viewModel::onTransferItemLongClicked },
@@ -105,6 +107,7 @@ fun ActivityScreenRoot(
 private fun ActivityScreen(
     modifier: Modifier = Modifier,
     totalIncomeAndExpense: State<ViewTotalIncomeAndExpense?>,
+    privacyTotals: State<ViewPrivacyTotals?>,
     itemPagingFlow: Flow<PagingData<ViewTransferListItem>>,
     onTransferItemClicked: (ViewTransferListItem.Transfer) -> Unit,
     onTransferItemLongClicked: (ViewTransferListItem.Transfer) -> Unit,
@@ -283,6 +286,7 @@ Column(
             onTransferItemEditClicked = onTransferItemClicked,
             onTransferItemDeleteClicked = onTransferItemDeleteClicked,
             state = transferListState,
+            privacyTotals = privacyTotals.value,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(

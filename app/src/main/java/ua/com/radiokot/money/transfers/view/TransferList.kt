@@ -78,7 +78,10 @@ import ua.com.radiokot.money.R
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewAmountFormat
+import ua.com.radiokot.money.currency.view.formatOrPrivate
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -90,6 +93,7 @@ fun TransferList(
     onTransferItemLongClicked: (ViewTransferListItem.Transfer) -> Unit,
     onTransferItemEditClicked: ((ViewTransferListItem.Transfer) -> Unit)? = null,
     onTransferItemDeleteClicked: ((ViewTransferListItem.Transfer) -> Unit)? = null,
+    privacyTotals: ViewPrivacyTotals? = null,
 ) {
     val locale = LocalConfiguration.current.locales.get(0)
     val amountFormat = rememberViewAmountFormat()
@@ -188,6 +192,7 @@ fun TransferList(
                         TransferItem(
                             item = item,
                             amountFormat = amountFormat,
+                            privacyTotals = privacyTotals,
                             modifier = Modifier
                                 .listGroupItem(
                                     position = groupPosition,
@@ -252,6 +257,7 @@ private fun TransferItem(
     modifier: Modifier = Modifier,
     item: ViewTransferListItem.Transfer,
     amountFormat: ViewAmountFormat,
+    privacyTotals: ViewPrivacyTotals?,
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -339,18 +345,26 @@ private fun TransferItem(
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
-            text = amountFormat(
+            text = amountFormat.formatOrPrivate(
                 amount = ViewAmount(
                     value = item.primaryAmount,
                     currency = primary.currency,
                 ),
                 customColor = amountColor,
+                privateAs = PrivacyAmounts.forTransfer(
+                    isExpense = item.type == ViewTransferListItem.Transfer.Type.Expense,
+                    isIncome = item.type == ViewTransferListItem.Transfer.Type.Income,
+                    isInTotalsCurrency = privacyTotals != null
+                            && primary.currency == privacyTotals.currency,
+                    expenseTotal = privacyTotals?.expense,
+                    incomeTotal = privacyTotals?.income,
+                ),
             ),
             maxLines = 1,
             style = MoneyTheme.typography.bodyStrong,
         )
 
-        if (primary.currency != secondary.currency) {
+        if (primary.currency != secondary.currency && !LocalPrivacyMode.current) {
             Text(
                 text = amountFormat(
                     amount = ViewAmount(
