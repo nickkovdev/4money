@@ -19,9 +19,11 @@
 
 package ua.com.radiokot.money.transfers.history.view
 
-import android.app.Activity
-import androidx.activity.compose.LocalActivity
-import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import ua.com.radiokot.money.uikit.MoneyDialog
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -39,7 +41,7 @@ fun NavGraphBuilder.activityScreen(
     onProceedToEditingTransfer: (transferToEdit: Transfer) -> Unit,
 ) = composable(ActivityScreenRoute) {
 
-    val activity: Activity? = LocalActivity.current
+    var transferToRevertId by rememberSaveable { mutableStateOf<String?>(null) }
     val viewModel: ActivityViewModel = koinViewModel {
         parametersOf(
             homeViewModel,
@@ -54,20 +56,7 @@ fun NavGraphBuilder.activityScreen(
                 }
 
                 is ActivityViewModel.Event.ProceedToRevertingTransferConfirmation -> {
-                    checkNotNull(activity) {
-                        "The screen must have an activity to proceed"
-                    }
-
-                    AlertDialog.Builder(activity)
-                        .setTitle("Revert a transfer")
-                        .setMessage("Are you sure you want to revert this transfer?")
-                        .setPositiveButton("Yes") { _, _ ->
-                            viewModel.onTransferRevertConfirmed(
-                                transferToRevertId = event.transferToRevertId,
-                            )
-                        }
-                        .setNegativeButton("No", null)
-                        .show()
+                    transferToRevertId = event.transferToRevertId
                 }
             }
         }
@@ -78,4 +67,23 @@ fun NavGraphBuilder.activityScreen(
         modifier = Modifier
             .fillMaxSize()
     )
+
+    transferToRevertId?.also { idToRevert ->
+        MoneyDialog(
+            title = "Revert this transaction?",
+            text = "It will be removed, and the amount goes back " +
+                    "to the balances of the accounts it touched.",
+            confirmText = "Revert",
+            isDestructive = true,
+            onConfirm = {
+                transferToRevertId = null
+                viewModel.onTransferRevertConfirmed(
+                    transferToRevertId = idToRevert,
+                )
+            },
+            onDismissRequest = {
+                transferToRevertId = null
+            },
+        )
+    }
 }

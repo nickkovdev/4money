@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,6 +84,14 @@ enum class GroupPosition {
     val isFirst: Boolean
         get() = this == Single || this == First
 
+    val shape: Shape
+        get() = when (this) {
+            Single -> RoundedCornerShape(groupCorner)
+            First -> RoundedCornerShape(topStart = groupCorner, topEnd = groupCorner)
+            Middle -> RectangleShape
+            Last -> RoundedCornerShape(bottomStart = groupCorner, bottomEnd = groupCorner)
+        }
+
     companion object {
         /**
          * @param isGroupMember whether the item at the given index belongs to a group,
@@ -117,12 +126,7 @@ fun Modifier.listGroupItem(
     dividerStartInset: Dp = 0.dp,
 ): Modifier {
     val colors = MoneyTheme.colors
-    val shape = when (position) {
-        GroupPosition.Single -> RoundedCornerShape(groupCorner)
-        GroupPosition.First -> RoundedCornerShape(topStart = groupCorner, topEnd = groupCorner)
-        GroupPosition.Middle -> RectangleShape
-        GroupPosition.Last -> RoundedCornerShape(bottomStart = groupCorner, bottomEnd = groupCorner)
-    }
+    val shape = position.shape
     return this
         .clip(shape)
         .background(colors.surface)

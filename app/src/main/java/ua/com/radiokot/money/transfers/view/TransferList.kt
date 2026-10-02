@@ -19,6 +19,14 @@
 
 package ua.com.radiokot.money.transfers.view
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.draw.clip
+import ua.com.radiokot.money.uikit.GroupPosition
+import ua.com.radiokot.money.uikit.ListRowTileDividerInset
+import ua.com.radiokot.money.uikit.SectionHeader
+import ua.com.radiokot.money.uikit.listGroupItem
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -101,7 +109,8 @@ fun TransferList(
 
     LazyColumn(
         contentPadding = PaddingValues(
-            vertical = 16.dp,
+            top = 4.dp,
+            bottom = 96.dp,
         ),
         state = state,
         modifier = modifier,
@@ -119,7 +128,11 @@ fun TransferList(
                         monthYearFormat = monthYearFormat,
                         modifier = Modifier
                             .padding(
-                                bottom = 16.dp,
+                                top =
+                                    if (itemIndex == 0)
+                                        0.dp
+                                    else
+                                        14.dp,
                             )
                     )
                 }
@@ -137,6 +150,14 @@ fun TransferList(
                             },
                         )
                     }
+
+                    val groupPosition = GroupPosition.of(
+                        index = itemIndex,
+                        size = lazyPagingItems.itemCount,
+                        isGroupMember = { index ->
+                            lazyPagingItems.peek(index) is ViewTransferListItem.Transfer
+                        },
+                    )
 
                     SwipeRevealRow(
                         isSwipeEnabled = onTransferItemDeleteClicked != null,
@@ -162,20 +183,27 @@ fun TransferList(
                             )
                         },
                         modifier = Modifier
-                            .padding(
-                                bottom = 16.dp,
-                            )
+                            .clip(groupPosition.shape)
                     ) {
                         TransferItem(
                             item = item,
                             amountFormat = amountFormat,
-                            modifier = clickableModifier
+                            modifier = Modifier
+                                .listGroupItem(
+                                    position = groupPosition,
+                                    dividerStartInset = ListRowTileDividerInset,
+                                )
+                                .then(clickableModifier)
                         )
                     }
                 }
 
                 null ->
-                    Text(text = "Loading $itemIndex")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                    )
             }
         }
     }
@@ -199,70 +227,50 @@ private fun HeaderItem(
     item: ViewTransferListItem.Header,
     dayFormat: DateTimeFormat<LocalDate>,
     monthYearFormat: DateTimeFormat<LocalDate>,
-) = Row(
-    verticalAlignment = Alignment.Bottom,
-    modifier = modifier
-        .fillMaxWidth(),
-) {
-    Text(
-        text = item.date.localDate.day.toString(),
-        style = TextStyle(
-            fontSize = 30.sp,
-            fontWeight = FontWeight(300),
-        ),
-        modifier = Modifier.alignByBaseline()
-    )
+) = SectionHeader(
+    // The period bar already says the month, so the header names only the day.
+    title =
+        when (item.date.specificType) {
+            ViewDate.SpecificType.Today ->
+                "Today"
 
-    Spacer(modifier = Modifier.width(4.dp))
+            ViewDate.SpecificType.Yesterday ->
+                "Yesterday"
 
-    Column(
-        modifier = Modifier
-            .alignBy(LastBaseline),
-    ) {
-        Text(
-            text =
-                when (item.date.specificType) {
-                    ViewDate.SpecificType.Today ->
-                        "Today"
+            null ->
+                dayFormat.format(item.date.localDate) + ", " + item.date.localDate.day
+        },
+    modifier = modifier,
+)
 
-                    ViewDate.SpecificType.Yesterday ->
-                        "Yesterday"
-
-                    null ->
-                        dayFormat.format(item.date.localDate)
-                },
-            style = TextStyle(
-                fontSize = 12.sp,
-                fontWeight = FontWeight(200)
-            ),
-        )
-        Text(
-            text = monthYearFormat.format(item.date.localDate),
-            style = TextStyle(
-                fontSize = 14.sp,
-            ),
-        )
-    }
-}
-
+/**
+ * Category on top, then subcategory and the other side (account),
+ * the note under it in tertiary ink; the amount on the right.
+ */
 @Composable
 private fun TransferItem(
     modifier: Modifier = Modifier,
     item: ViewTransferListItem.Transfer,
     amountFormat: ViewAmountFormat,
 ) = Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(14.dp),
     modifier = modifier
-        .fillMaxWidth(),
+        .fillMaxWidth()
+        .padding(
+            horizontal = MoneySpacing.rowHorizontal,
+            vertical = 12.dp,
+        ),
 ) {
+    val primary = item.primaryCounterparty
+    val secondary = item.secondaryCounterparty
+
     ItemLogo(
-        title = item.primaryCounterparty.title,
-        colorScheme = item.primaryCounterparty.colorScheme,
-        icon = item.primaryCounterparty.icon,
+        title = primary.title,
+        colorScheme = primary.colorScheme,
+        icon = primary.icon,
         modifier = Modifier
-            .padding(
-                end = 12.dp,
-            )
-            .size(38.dp)
+            .size(MoneySpacing.itemTile)
     )
 
     val colors = MoneyTheme.colors
@@ -275,93 +283,84 @@ private fun TransferItem(
                 colors.expense
 
             ViewTransferListItem.Transfer.Type.Other ->
-                colors.neutralAmount
+                colors.ink
         }
     }
 
     Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp),
         modifier = Modifier
             .weight(1f)
     ) {
+        Text(
+            text =
+                if (primary is ViewTransferCounterparty.Category)
+                    primary.categoryTitle
+                else
+                    primary.title,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            style = MoneyTheme.typography.bodyStrong,
+        )
 
-        Row(
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            Text(
-                text = item.primaryCounterparty.title,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                style = TextStyle(
-                    fontSize = 16.sp,
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .alignByBaseline(),
-            )
-
-            Text(
-                text = amountFormat(
-                    amount = ViewAmount(
-                        value = item.primaryAmount,
-                        currency = item.primaryCounterparty.currency,
-                    ),
-                    customColor = amountColor,
-                ),
-                style = TextStyle(
-                    fontSize = 18.sp,
-                ),
-                modifier = Modifier
-                    .alignBy(LastBaseline),
-            )
-        }
-
-        Row(
-            verticalAlignment = Alignment.Top,
-            modifier = Modifier
-                .padding(
-                    top = 2.dp,
-                )
-        ) {
-            Text(
-                text = item.secondaryCounterparty.title,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                style = TextStyle(
-                    fontSize = 14.sp,
-                ),
-                modifier = Modifier.weight(1f),
-            )
-
-            if (item.primaryCounterparty.currency != item.secondaryCounterparty.currency) {
-                Text(
-                    text = amountFormat(
-                        amount = ViewAmount(
-                            value = item.secondaryAmount,
-                            currency = item.secondaryCounterparty.currency,
-                        ),
-                        customColor = amountColor,
-                    ),
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                    )
-                )
+        val subtitle = buildList {
+            if (primary is ViewTransferCounterparty.Category && primary.subcategoryTitle != null) {
+                add(primary.subcategoryTitle)
             }
-        }
+            add(
+                if (secondary is ViewTransferCounterparty.Category)
+                    secondary.categoryTitle
+                else
+                    secondary.title
+            )
+        }.joinToString(" · ")
+
+        Text(
+            text = subtitle,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            style = MoneyTheme.typography.caption,
+            color = colors.ink2,
+        )
 
         if (item.memo != null) {
             Text(
-                text = item.memo,
+                text = remember(item.memo) { softenAllCaps(item.memo) },
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                style = TextStyle(
-                    color = MoneyTheme.colors.onBackgroundSecondary,
-                    fontSize = 14.sp,
-                    fontStyle = FontStyle.Italic,
+                style = MoneyTheme.typography.caption,
+                color = colors.ink3,
+            )
+        }
+    }
+
+    Column(
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            text = amountFormat(
+                amount = ViewAmount(
+                    value = item.primaryAmount,
+                    currency = primary.currency,
                 ),
-                modifier = Modifier
-                    .padding(
-                        top = 2.dp,
-                    )
+                customColor = amountColor,
+            ),
+            maxLines = 1,
+            style = MoneyTheme.typography.bodyStrong,
+        )
+
+        if (primary.currency != secondary.currency) {
+            Text(
+                text = amountFormat(
+                    amount = ViewAmount(
+                        value = item.secondaryAmount,
+                        currency = secondary.currency,
+                    ),
+                    customColor = colors.ink3,
+                ),
+                maxLines = 1,
+                style = MoneyTheme.typography.caption,
             )
         }
     }
