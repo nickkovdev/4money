@@ -31,6 +31,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -180,7 +181,10 @@ fun MoneyAppModalBottomSheetHost(
 
     val sheetState = rememberModalBottomSheetState(
         initialDetent = SheetDetent.Hidden,
-        animationSpec = tween(200),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow,
+        ),
         positionalThreshold = { sheetDragThresholdDp },
         // Prevent closing by accident.
         velocityThreshold = { Dp.Infinity },
@@ -222,8 +226,8 @@ fun MoneyAppModalBottomSheetHost(
         val sheetContentTransition = remember {
             fun AnimatedContentTransitionScope<NavBackStackEntry>.() =
                 ContentTransform(
-                    targetContentEnter = fadeIn(),
-                    initialContentExit = fadeOut(),
+                    targetContentEnter = fadeIn(tween(220)) + scaleIn(initialScale = 0.96f, animationSpec = tween(220)),
+                    initialContentExit = fadeOut(tween(150)),
                     sizeTransform = null,
                 )
         }
