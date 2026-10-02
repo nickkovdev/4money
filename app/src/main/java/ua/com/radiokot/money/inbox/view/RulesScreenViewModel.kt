@@ -42,6 +42,7 @@ import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.view.TransferCounterpartySelectionResult
+import ua.com.radiokot.money.uikit.ViewText
 
 /**
  * Activity-level: also receives the category picker result for a range being edited.
@@ -109,8 +110,8 @@ class RulesScreenViewModel(
                 val subcategory = rule.subcategoryId?.let(subcategoriesById::get)
                 ViewPayeeRuleRow(
                     rangeText = rule.amountRange
-                        ?.let { describeRange(it, currencyCode) }
-                        ?: if (rules.size > 1) "Other amounts" else "Any amount",
+                        ?.let { ViewText.Dynamic(describeRangeText(it, currencyCode)) }
+                        ?: ViewText.Plain(if (rules.size > 1) "Other amounts" else "Any amount"),
                     targetTitle = when {
                         rule.action == PayeeRule.Action.Ask -> "Ask me"
                         category == null -> "Missing category"

@@ -343,4 +343,66 @@ class ViewAmountFormatTest {
         Assert.assertEquals("12%", custom.text)
         Assert.assertEquals(blue, custom.spanStyles.single().item.color)
     }
+
+    private val ru = Locale.forLanguageTag("ru")
+    private val eur = ViewCurrency(symbol = "€", precision = 2)
+
+    @Test
+    fun invoke_English() {
+        val format = ViewAmountFormat(Locale.ENGLISH)
+
+        Assert.assertEquals(
+            "1,234,567.89 €",
+            format(BigInteger.valueOf(123456789), eur).text,
+        )
+    }
+
+    @Test
+    fun invoke_Russian() {
+        val format = ViewAmountFormat(ru)
+        val grouping = format.groupingSeparator
+
+        Assert.assertTrue(Character.isSpaceChar(grouping))
+        Assert.assertEquals(',', format.decimalSeparator)
+        Assert.assertEquals(
+            "1${grouping}234${grouping}567,89 €",
+            format(BigInteger.valueOf(123456789), eur).text,
+        )
+    }
+
+    @Test
+    fun invoke_RussianNegativeStartsWithMinusSign() {
+        val format = ViewAmountFormat(ru)
+
+        val text = format(BigInteger.valueOf(-150), eur).text
+
+        Assert.assertTrue(text.startsWith(format.minusSign))
+        Assert.assertEquals("${format.minusSign}1,50 €", text)
+    }
+
+    @Test
+    fun formatInputAndParseInput_RussianRoundTrip() {
+        val format = ViewAmountFormat(ru)
+
+        Assert.assertEquals(
+            BigInteger.valueOf(123450),
+            format.parseInput("1234,5", eur),
+        )
+        Assert.assertEquals(
+            "1${format.groupingSeparator}234,5",
+            format.formatInput("1234,5"),
+        )
+        Assert.assertEquals(
+            BigInteger.valueOf(123450),
+            format.parseInput(format.formatInput(BigInteger.valueOf(123450), eur), eur),
+        )
+    }
+
+    @Test
+    fun privateText_RussianUnchanged() {
+        val format = ViewAmountFormat(ru)
+
+        Assert.assertEquals("12%", format.privateText("12%", BigInteger.ONE).text)
+        Assert.assertEquals("<1%", format.privateText("<1%", BigInteger.ONE).text)
+    }
 }

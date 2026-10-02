@@ -27,4 +27,12 @@
     <string name="history_period_entire_time">The entire time</string>
     <string name="date_picker_previous_month">Previous month</string>
     <string name="date_picker_next_month">Next month</string>
+
+    <!-- Inbox amount ranges -->
+    <string name="inbox_range_between">%1$s–%2$s</string>
+    <string name="inbox_range_up_to">Up to %1$s</string>
+    <string name="inbox_range_under">Under %1$s</string>
+    <string name="inbox_range_from">From %1$s</string>
+    <string name="inbox_range_over">Over %1$s</string>
+    <string name="inbox_range_any">Any amount</string>
 </resources>

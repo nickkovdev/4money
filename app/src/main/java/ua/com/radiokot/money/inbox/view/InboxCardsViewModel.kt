@@ -65,6 +65,7 @@ import ua.com.radiokot.money.transfers.view.TransferSheetRoute
 import java.util.UUID
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import ua.com.radiokot.money.uikit.ViewText
 
 /**
  * The inbox as swipe cards: accept the suggestion, skip to the end, or pick a category.
@@ -278,17 +279,22 @@ class InboxCardsViewModel(
                 when (val reason = result.suggestion.reason) {
                     is InboxCardSuggester.Reason.Rule ->
                         if (reason.rule.amountRange != null)
-                            "${describeRange(reason.rule.amountRange, item.currencyCode)} at $payeeDisplayName → ${category.fullTitle}"
+                            describeRangeText(reason.rule.amountRange, item.currencyCode)
+                                .let { range ->
+                                    ViewText.Dynamic { context ->
+                                        "${range(context)} at $payeeDisplayName → ${category.fullTitle}"
+                                    }
+                                }
                         else if (reason.rule.matchType == PayeeRule.MatchType.Exact)
-                            "Remembered payee → ${category.fullTitle}"
+                            ViewText.Plain("Remembered payee → ${category.fullTitle}")
                         else
-                            "Payee contains “${reason.rule.payeePattern}” → ${category.fullTitle}"
+                            ViewText.Plain("Payee contains “${reason.rule.payeePattern}” → ${category.fullTitle}")
 
                     is InboxCardSuggester.Reason.PayeeHistory ->
-                        "Recorded to ${category.fullTitle} ${reason.count}× before"
+                        ViewText.Plain("Recorded to ${category.fullTitle} ${reason.count}× before")
 
                     InboxCardSuggester.Reason.MostUsed ->
-                        "New payee: your most used category"
+                        ViewText.Plain("New payee: your most used category")
                 }
             },
             alternatives = result.alternatives.mapNotNull(::viewCategory),

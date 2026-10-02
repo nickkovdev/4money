@@ -103,6 +103,8 @@ import ua.com.radiokot.money.uikit.MoneyChip
 import ua.com.radiokot.money.uikit.MoneyIconButton
 import ua.com.radiokot.money.uikit.MoneyIconButtonStyle
 import ua.com.radiokot.money.uikit.MoneySwitch
+import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.resolve
 import ua.com.radiokot.money.uikit.theme.MidnightMoneyColors
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
@@ -721,7 +723,7 @@ private fun CardContent(
     HintBox(
         icon = R.drawable.ic_tabler_adjustments_horizontal,
         iconTint = colors.accent,
-        text = card.reasonText ?: "No suggestion yet: pick a category",
+        text = card.reasonText?.resolve() ?: "No suggestion yet: pick a category",
     )
 
     val isRememberOn = card.isRememberOn
@@ -911,7 +913,7 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
                     isReceivedToday = true,
                     sourceText = "Card",
                     suggestion = food,
-                    reasonText = "Remembered payee → Food",
+                    reasonText = ViewText.Plain("Remembered payee → Food"),
                     alternatives = listOf(car),
                 ),
                 ViewInboxCard(
