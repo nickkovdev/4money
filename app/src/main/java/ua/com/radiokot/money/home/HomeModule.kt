@@ -26,6 +26,7 @@ import ua.com.radiokot.money.accounts.accountsModule
 import ua.com.radiokot.money.auth.logic.sessionScope
 import ua.com.radiokot.money.categories.categoriesModule
 import ua.com.radiokot.money.home.view.HomeViewModel
+import ua.com.radiokot.money.overview.overviewModule
 import ua.com.radiokot.money.preferences.preferencesModule
 import ua.com.radiokot.money.syncerrors.syncErrorsModule
 import ua.com.radiokot.money.transfers.transfersModule
@@ -38,6 +39,7 @@ val homeModule = module {
         transfersModule,
         preferencesModule,
         syncErrorsModule,
+        overviewModule,
     )
 
     sessionScope {
