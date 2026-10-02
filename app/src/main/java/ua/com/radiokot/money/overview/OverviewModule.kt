@@ -17,37 +17,28 @@
    along with 4Money. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package ua.com.radiokot.money.home
+package ua.com.radiokot.money.overview
 
-import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import ua.com.radiokot.money.accounts.accountsModule
 import ua.com.radiokot.money.auth.logic.sessionScope
 import ua.com.radiokot.money.categories.categoriesModule
-import ua.com.radiokot.money.home.view.HomeViewModel
-import ua.com.radiokot.money.overview.overviewModule
-import ua.com.radiokot.money.preferences.preferencesModule
-import ua.com.radiokot.money.syncerrors.syncErrorsModule
-import ua.com.radiokot.money.transfers.transfersModule
+import ua.com.radiokot.money.overview.logic.GetOverviewStatsUseCase
 
-val homeModule = module {
-
+val overviewModule = module {
     includes(
-        accountsModule,
         categoriesModule,
-        transfersModule,
-        preferencesModule,
-        syncErrorsModule,
-        overviewModule,
     )
 
     sessionScope {
-
-        viewModel {
-            HomeViewModel(
-                syncErrorRepository = get(),
+        scoped {
+            GetOverviewStatsUseCase(
+                currencyPreferences = get(),
+                currencyRepository = get(),
+                currencyPriceRepository = get(),
+                categoryRepository = get(),
+                historyStatsRepository = get(),
             )
-        } bind HomeViewModel::class
+        } bind GetOverviewStatsUseCase::class
     }
 }
