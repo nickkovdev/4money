@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import org.koin.compose.viewmodel.koinViewModel
 import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.auth.logic.UserSessionScope
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 class SetUpPasscodeActivity : MoneyAppActivity(
     requiresUnlocking = false,
@@ -42,10 +43,12 @@ class SetUpPasscodeActivity : MoneyAppActivity(
         enableEdgeToEdge()
 
         setContent {
-            UserSessionScope {
-                Content(
-                    finishActivity = ::finish,
-                )
+            MoneyTheme {
+                UserSessionScope {
+                    Content(
+                        finishActivity = ::finish,
+                    )
+                }
             }
         }
     }

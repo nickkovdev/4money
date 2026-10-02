@@ -23,6 +23,7 @@ import android.app.Application
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Environment
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -32,9 +33,15 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import co.touchlab.kermit.Logger
+import com.composeunstyled.ComposeUnstyledFlags
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -49,6 +56,8 @@ import ua.com.radiokot.money.home.homeModule
 import ua.com.radiokot.money.lock.appLockModule
 import ua.com.radiokot.money.lock.logic.AppLock
 import ua.com.radiokot.money.powersync.BackgroundPowerSyncWorker
+import ua.com.radiokot.money.theme.data.ThemePreferences
+import ua.com.radiokot.money.theme.themeModule
 import ua.com.radiokot.money.util.KermitSlf4jLogWriter
 import ua.com.radiokot.money.util.KoinSlf4jLogger
 import java.io.File
@@ -86,6 +95,30 @@ class MoneyApp : Application() {
         initBackgroundSync()
         initCurrencyPricesUpdate()
         initLock()
+    }
+
+    private val themeScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
+
+    private fun initTheme() {
+        val themePreferences: ThemePreferences = get()
+
+        AppCompatDelegate.setDefaultNightMode(
+            themePreferences.themeMode.value.appCompatNightMode
+        )
+
+        // AppCompat recreates started activities when the mode changes.
+        themeScope.launch {
+            themePreferences.themeMode
+                .drop(1)
+                .collect { themeMode ->
+                    log.debug {
+                        "initTheme(): applying theme mode:" +
+                                "\nthemeMode=$themeMode"
+                    }
+
+                    AppCompatDelegate.setDefaultNightMode(themeMode.appCompatNightMode)
+                }
+        }
     }
 
     private fun initLogging() {

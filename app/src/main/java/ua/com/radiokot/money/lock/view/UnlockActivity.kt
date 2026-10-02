@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.R
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 class UnlockActivity : MoneyAppActivity(
     requiresUnlocking = false,
@@ -70,7 +71,9 @@ class UnlockActivity : MoneyAppActivity(
         setResult(RESULT_CANCELED)
 
         setContent {
-            Content()
+            MoneyTheme {
+                Content()
+            }
         }
 
         if (canUseBiometrics) {
