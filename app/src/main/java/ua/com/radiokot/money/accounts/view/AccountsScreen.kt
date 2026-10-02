@@ -67,6 +67,7 @@ import com.composeunstyled.Tooltip
 import com.composeunstyled.TooltipPanel
 import kotlinx.coroutines.launch
 import ua.com.radiokot.money.currency.view.ViewAmount
+import ua.com.radiokot.money.currency.view.AnimatedAmountText
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.uikit.TextButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
@@ -405,8 +406,8 @@ private fun TotalPage(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = amountFormat(totalAmount.value!!),
+        AnimatedAmountText(
+            amount = totalAmount.value!!,
             style = TextStyle(
                 fontSize = 22.sp,
                 textAlign = TextAlign.Center,
