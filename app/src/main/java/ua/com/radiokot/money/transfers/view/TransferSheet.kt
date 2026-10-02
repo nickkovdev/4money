@@ -94,7 +94,7 @@ import ua.com.radiokot.money.currency.view.AmountKeyboardMainAction
 import ua.com.radiokot.money.currency.view.AnimatedAmountInputText
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberAmountInputState
-import ua.com.radiokot.money.uikit.RedToggleSwitch
+import ua.com.radiokot.money.uikit.MoneySwitch
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -408,8 +408,8 @@ private fun TransferSheet(
                         .weight(1f)
                 )
 
-                RedToggleSwitch(
-                    isToggled = isRememberPayeeEnabled,
+                MoneySwitch(
+                    isOn = isRememberPayeeEnabled.value,
                     onToggled = onRememberPayeeToggled,
                 )
             }

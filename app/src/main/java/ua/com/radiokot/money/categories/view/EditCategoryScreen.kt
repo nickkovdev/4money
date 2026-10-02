@@ -68,7 +68,7 @@ import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.colors.view.ItemLogo
-import ua.com.radiokot.money.uikit.RedToggleSwitch
+import ua.com.radiokot.money.uikit.MoneySwitch
 import ua.com.radiokot.money.uikit.TextButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
@@ -323,9 +323,9 @@ private fun EditCategoryScreen(
                             .weight(1f)
                     )
 
-                    RedToggleSwitch(
-                        isToggled = isArchived,
-                        onToggled = { onArchivedClicked() }
+                    MoneySwitch(
+                        isOn = isArchived.value,
+                        onToggled = { onArchivedClicked() },
                     )
                 }
             }

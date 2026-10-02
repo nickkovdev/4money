@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.theme.data.ThemeMode
-import ua.com.radiokot.money.uikit.RedToggleSwitch
+import ua.com.radiokot.money.uikit.MoneySwitch
 import ua.com.radiokot.money.uikit.TextButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
@@ -276,9 +276,9 @@ private fun PreferencesScreen(
                 .weight(1f)
         )
 
-        RedToggleSwitch(
-            isToggled = isAppLockEnabled,
-            onToggled = { onAppLockClicked() }
+        MoneySwitch(
+            isOn = isAppLockEnabled.value,
+            onToggled = { onAppLockClicked() },
         )
     }
 

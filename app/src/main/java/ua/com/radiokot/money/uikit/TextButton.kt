@@ -19,53 +19,48 @@
 
 package ua.com.radiokot.money.uikit
 
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.Text
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
+/**
+ * A tonal pill with a label; the click goes in [modifier].
+ * Prefer [MoneyButton] in new code.
+ */
 @Composable
 fun TextButton(
     modifier: Modifier = Modifier,
     text: String,
     isEnabled: Boolean = true,
-    padding: PaddingValues = PaddingValues(12.dp),
+    padding: PaddingValues = PaddingValues(
+        horizontal = 20.dp,
+        vertical = 13.dp,
+    ),
 ) {
-    val shape = remember {
-        RoundedCornerShape(12.dp)
-    }
-    val color =
-        if (isEnabled)
-            MoneyTheme.colors.outline
-        else
-            MoneyTheme.colors.outlineDisabled
-
     Text(
         text = text,
-        style = TextStyle(
+        style = MoneyTheme.typography.label.copy(
             textAlign = TextAlign.Center,
-            color = color,
+            fontSize = MoneyTheme.typography.bodyStrong.fontSize,
         ),
+        color = MoneyTheme.colors.ink,
         modifier = Modifier
-            .clip(shape)
+            .alpha(if (isEnabled) 1f else 0.45f)
+            .clip(MoneyShapes.pill)
             .then(modifier)
-            .border(
-                width = 1.dp,
-                color = color,
-                shape = shape,
-            )
+            .background(MoneyTheme.colors.surface)
             .padding(padding)
     )
 }
