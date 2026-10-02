@@ -84,6 +84,7 @@ import ua.com.radiokot.money.currency.view.AmountKeyboardMainAction
 import ua.com.radiokot.money.currency.view.AnimatedAmountInputText
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberAmountInputState
+import ua.com.radiokot.money.uikit.RedToggleSwitch
 import ua.com.radiokot.money.uikit.TextButton
 import java.math.BigInteger
 
@@ -113,6 +114,9 @@ fun TransferSheetRoot(
         onSourceClicked = remember { viewModel::onSourceClicked },
         onDestinationClicked = remember { viewModel::onDestinationClicked },
         onSwapCounterpartiesClicked = remember { viewModel::onSwapCounterpartiesClicked },
+        rememberPayee = viewModel.rememberPayee,
+        isRememberPayeeEnabled = viewModel.isRememberPayeeEnabled.collectAsState(),
+        onRememberPayeeToggled = remember { viewModel::onRememberPayeeToggled },
     )
 }
 
@@ -138,6 +142,9 @@ private fun TransferSheet(
     onSourceClicked: () -> Unit,
     onDestinationClicked: () -> Unit,
     onSwapCounterpartiesClicked: () -> Unit,
+    rememberPayee: String? = null,
+    isRememberPayeeEnabled: State<Boolean> = remember { mutableStateOf(false) },
+    onRememberPayeeToggled: (Boolean) -> Unit = {},
 ) = BoxWithConstraints(
     modifier = modifier
         .background(Color.White)
@@ -444,6 +451,32 @@ private fun TransferSheet(
             )
         }
 
+        if (rememberPayee != null) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        onClick = { onRememberPayeeToggled(!isRememberPayeeEnabled.value) },
+                    )
+                    .padding(
+                        horizontal = 16.dp,
+                        vertical = 4.dp,
+                    )
+            ) {
+                BasicText(
+                    text = "Remember for \u201C$rememberPayee\u201D",
+                    modifier = Modifier
+                        .weight(1f)
+                )
+
+                RedToggleSwitch(
+                    isToggled = isRememberPayeeEnabled,
+                    onToggled = onRememberPayeeToggled,
+                )
+            }
+        }
+
         AmountKeyboard(
             inputState =
                 if (isEnteringSourceAmount)
@@ -546,6 +579,7 @@ private fun TransferSheetPreview(
             onSourceClicked = { },
             onDestinationClicked = { },
             onSwapCounterpartiesClicked = { },
+            rememberPayee = "deepseerwea",
             modifier = Modifier
                 .heightIn(
                     max = 600.dp,

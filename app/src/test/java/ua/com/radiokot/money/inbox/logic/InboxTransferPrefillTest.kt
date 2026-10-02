@@ -1,0 +1,74 @@
+package ua.com.radiokot.money.inbox.logic
+
+import kotlinx.datetime.LocalDateTime
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+import ua.com.radiokot.money.inbox.EUR
+import ua.com.radiokot.money.inbox.USD
+import ua.com.radiokot.money.inbox.data.InboxItem
+import ua.com.radiokot.money.inbox.testAccount
+import ua.com.radiokot.money.inbox.testCategory
+import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
+import java.math.BigDecimal
+import java.math.BigInteger
+
+class InboxTransferPrefillTest {
+
+    private val item = InboxItem(
+        id = "item",
+        receivedAt = LocalDateTime(2026, 10, 2, 8, 6),
+        sourcePackage = "se.seb.latvia",
+        rawText = "x",
+        amount = BigDecimal("2.12"),
+        currencyCode = "EUR",
+        payee = "DEEPSEERWEA ",
+        cardLast4 = "0000",
+        accountId = "acc",
+        status = InboxItem.Status.Pending,
+        transferId = null,
+        dedupHash = "h",
+    )
+
+    @Test
+    fun sameCurrencyPrefillsAmounts() {
+        val route = InboxTransferPrefill.buildRoute(item, testAccount("acc", EUR), testCategory("cat", EUR))
+
+        assertEquals(TransferCounterpartyId.Account("acc"), route.sourceId)
+        assertEquals(TransferCounterpartyId.Category("cat", null), route.destinationId)
+        assertEquals(BigInteger("212"), route.sourceAmount)
+        assertEquals(BigInteger("212"), route.destinationAmount)
+        assertEquals("DEEPSEERWEA", route.memo)
+        assertEquals(LocalDateTime(2026, 10, 2, 8, 6), route.dateTime)
+        assertEquals("item", route.inboxItemId)
+        assertEquals("deepseerwea", route.rememberPayee)
+    }
+
+    @Test
+    fun foreignCurrencyLeavesAmountsEmptyAndShowsOriginal() {
+        val route = InboxTransferPrefill.buildRoute(
+            item.copy(currencyCode = "USD"),
+            testAccount("acc", EUR),
+            testCategory("cat", EUR),
+        )
+
+        assertNull(route.sourceAmount)
+        assertNull(route.destinationAmount)
+        assertEquals("DEEPSEERWEA · 2,12 USD", route.memo)
+    }
+
+    @Test
+    fun categoryInOtherCurrencyPrefillsSourceOnly() {
+        val route = InboxTransferPrefill.buildRoute(item, testAccount("acc", EUR), testCategory("cat", USD))
+
+        assertEquals(BigInteger("212"), route.sourceAmount)
+        assertNull(route.destinationAmount)
+    }
+
+    @Test
+    fun originalAmountTextUsesDecimalCommaAndCode() {
+        assertEquals("2,12 EUR", item.originalAmountText())
+        assertEquals("EUR", item.copy(amount = null).originalAmountText())
+        assertEquals("", item.copy(amount = null, currencyCode = null).originalAmountText())
+    }
+}

@@ -33,6 +33,7 @@ import ua.com.radiokot.money.inbox.data.PowerSyncInboxRepository
 import ua.com.radiokot.money.inbox.data.PowerSyncMostUsedAccountSource
 import ua.com.radiokot.money.inbox.data.PowerSyncPayeeRuleRepository
 import ua.com.radiokot.money.inbox.logic.CardAccountResolver
+import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
 import ua.com.radiokot.money.inbox.logic.DefaultCardAccountResolver
 import ua.com.radiokot.money.inbox.logic.ProcessBankNotificationUseCase
 import ua.com.radiokot.money.inbox.logic.SebLatviaNotificationParser
@@ -93,5 +94,12 @@ val inboxModule = module {
                 transferFundsUseCase = get(),
             )
         } bind ProcessBankNotificationUseCase::class
+
+        factory {
+            CompleteInboxItemUseCase(
+                inboxRepository = get(),
+                payeeRuleRepository = get(),
+            )
+        } bind CompleteInboxItemUseCase::class
     }
 }
