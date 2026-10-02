@@ -35,7 +35,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
@@ -49,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -58,15 +56,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.composeunstyled.Text
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import ua.com.radiokot.money.colors.data.DrawableResItemIconRepository
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.ViewAmount
-import ua.com.radiokot.money.currency.view.ViewAmountFormat
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.animateAmountValueAsState
+import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.uikit.ViewAmountPreviewParameterProvider
 import java.math.BigInteger
 
@@ -351,7 +350,7 @@ private fun HeaderItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BasicText(
+        Text(
             text = title,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -364,15 +363,12 @@ private fun HeaderItem(
         )
 
         if (amount != null) {
-            val locale = LocalConfiguration.current.locales[0]
-            val amountFormat = remember(locale) {
-                ViewAmountFormat(locale)
-            }
+            val amountFormat = rememberViewAmountFormat()
             val animatedAmount = animateAmountValueAsState(
                 targetAmount = amount
             )
 
-            BasicText(
+            Text(
                 text = amountFormat(
                     value = animatedAmount.value,
                     currency = amount.currency,
@@ -424,7 +420,7 @@ private fun AccountItem(
                 min = 38.dp,
             )
     ) {
-        BasicText(
+        Text(
             text = item.title,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -436,15 +432,12 @@ private fun AccountItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         if (!item.isIncognito) {
-            val locale = LocalConfiguration.current.locales[0]
-            val amountFormat = remember(locale) {
-                ViewAmountFormat(locale)
-            }
+            val amountFormat = rememberViewAmountFormat()
             val animatedAmount = animateAmountValueAsState(
                 targetAmount = item.balance,
             )
 
-            BasicText(
+            Text(
                 text = amountFormat(
                     value = animatedAmount.value,
                     currency = item.balance.currency,
@@ -456,7 +449,7 @@ private fun AccountItem(
                 ),
             )
         } else {
-            BasicText(
+            Text(
                 text = item.balance.currency.symbol,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

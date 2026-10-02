@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.composeunstyled.Text
 import ua.com.radiokot.money.transfers.view.ViewDate
 import ua.com.radiokot.money.uikit.TextButton
 
@@ -67,7 +67,7 @@ fun PeriodBar(
             )
     )
 
-    BasicText(
+    Text(
         text = period.value.getText(),
         style = TextStyle(
             fontSize = 16.sp,

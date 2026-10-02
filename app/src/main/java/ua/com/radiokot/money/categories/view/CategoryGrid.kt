@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -31,8 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,8 +40,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastFilter
 import com.composeunstyled.Text
 import ua.com.radiokot.money.colors.view.ItemLogo
-import ua.com.radiokot.money.currency.view.ViewAmountFormat
 import ua.com.radiokot.money.currency.view.animateAmountValueAsState
+import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun CategoryGrid(
@@ -204,7 +202,7 @@ private fun CategoryListItem(
     val title = item.title
     val amount = item.amount
 
-    BasicText(
+    Text(
         text = title,
         style = TextStyle(
             textAlign = TextAlign.Center,
@@ -229,17 +227,14 @@ private fun CategoryListItem(
     Spacer(modifier = Modifier.height(4.dp))
 
     if (!item.isIncognito) {
-        val locale = LocalConfiguration.current.locales[0]
-        val amountFormat = remember(locale) {
-            ViewAmountFormat(locale)
-        }
+        val amountFormat = rememberViewAmountFormat()
 
 
         val animatedAmountValue = animateAmountValueAsState(
             targetAmount = amount,
         )
 
-        BasicText(
+        Text(
             text = amountFormat(
                 value = animatedAmountValue.value,
                 currency = amount.currency,
@@ -253,7 +248,7 @@ private fun CategoryListItem(
                 .fillMaxWidth()
         )
     } else {
-        BasicText(
+        Text(
             text = amount.currency.symbol,
             style = TextStyle(
                 textAlign = TextAlign.Center,
@@ -288,7 +283,7 @@ private fun AddItem(
             .size(LOGO_SIZE_DP.dp)
             .border(
                 width = 1.dp,
-                color = Color.DarkGray,
+                color = MoneyTheme.colors.outline,
                 shape = CircleShape,
             )
     ) {

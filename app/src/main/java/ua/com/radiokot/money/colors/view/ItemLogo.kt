@@ -29,7 +29,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Icon
+import com.composeunstyled.Text
 import ua.com.radiokot.money.colors.data.DrawableResItemIconRepository
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemColorScheme
@@ -91,7 +91,7 @@ fun ItemLogo(
             "…"
     }
 
-    BasicText(
+    Text(
         text = firstGrapheme,
         style = TextStyle(
             color = Color(colorScheme.onPrimary),

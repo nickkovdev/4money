@@ -32,12 +32,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
@@ -52,6 +50,7 @@ import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.composeunstyled.Text
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.datetime.LocalDate
@@ -62,6 +61,8 @@ import kotlinx.datetime.format.char
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewAmountFormat
+import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun TransferList(
@@ -72,9 +73,7 @@ fun TransferList(
     onTransferItemLongClicked: (ViewTransferListItem.Transfer) -> Unit,
 ) {
     val locale = LocalConfiguration.current.locales.get(0)
-    val amountFormat = remember(locale) {
-        ViewAmountFormat(locale)
-    }
+    val amountFormat = rememberViewAmountFormat()
     val dayFormat = remember(locale) {
         LocalDate.Format {
             dayOfWeek(DayOfWeekNames.ENGLISH_FULL)
@@ -139,7 +138,7 @@ fun TransferList(
                 }
 
                 null ->
-                    BasicText(text = "Loading $itemIndex")
+                    Text(text = "Loading $itemIndex")
             }
         }
     }
@@ -168,7 +167,7 @@ private fun HeaderItem(
     modifier = modifier
         .fillMaxWidth(),
 ) {
-    BasicText(
+    Text(
         text = item.date.localDate.day.toString(),
         style = TextStyle(
             fontSize = 30.sp,
@@ -183,7 +182,7 @@ private fun HeaderItem(
         modifier = Modifier
             .alignBy(LastBaseline),
     ) {
-        BasicText(
+        Text(
             text =
                 when (item.date.specificType) {
                     ViewDate.SpecificType.Today ->
@@ -200,7 +199,7 @@ private fun HeaderItem(
                 fontWeight = FontWeight(200)
             ),
         )
-        BasicText(
+        Text(
             text = monthYearFormat.format(item.date.localDate),
             style = TextStyle(
                 fontSize = 14.sp,
@@ -229,16 +228,17 @@ private fun TransferItem(
             .size(38.dp)
     )
 
-    val amountColor = remember {
+    val colors = MoneyTheme.colors
+    val amountColor = remember(item.type, colors) {
         when (item.type) {
             ViewTransferListItem.Transfer.Type.Income ->
-                Color(0xff50af99)
+                colors.income
 
             ViewTransferListItem.Transfer.Type.Expense ->
-                Color(0xffd85e8c)
+                colors.expense
 
             ViewTransferListItem.Transfer.Type.Other ->
-                Color(0xff757575)
+                colors.neutralAmount
         }
     }
 
@@ -250,7 +250,7 @@ private fun TransferItem(
         Row(
             verticalAlignment = Alignment.Bottom,
         ) {
-            BasicText(
+            Text(
                 text = item.primaryCounterparty.title,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
@@ -262,7 +262,7 @@ private fun TransferItem(
                     .alignByBaseline(),
             )
 
-            BasicText(
+            Text(
                 text = amountFormat(
                     amount = ViewAmount(
                         value = item.primaryAmount,
@@ -285,7 +285,7 @@ private fun TransferItem(
                     top = 2.dp,
                 )
         ) {
-            BasicText(
+            Text(
                 text = item.secondaryCounterparty.title,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
@@ -296,7 +296,7 @@ private fun TransferItem(
             )
 
             if (item.primaryCounterparty.currency != item.secondaryCounterparty.currency) {
-                BasicText(
+                Text(
                     text = amountFormat(
                         amount = ViewAmount(
                             value = item.secondaryAmount,
@@ -312,12 +312,12 @@ private fun TransferItem(
         }
 
         if (item.memo != null) {
-            BasicText(
+            Text(
                 text = item.memo,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
-                    color = Color.Gray,
+                    color = MoneyTheme.colors.onBackgroundSecondary,
                     fontSize = 14.sp,
                     fontStyle = FontStyle.Italic,
                 ),

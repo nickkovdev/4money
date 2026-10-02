@@ -25,16 +25,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.composeunstyled.Text
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun TextButton(
@@ -46,14 +46,13 @@ fun TextButton(
     val shape = remember {
         RoundedCornerShape(12.dp)
     }
-    val color = remember(isEnabled) {
+    val color =
         if (isEnabled)
-            Color.DarkGray
+            MoneyTheme.colors.outline
         else
-            Color.LightGray
-    }
+            MoneyTheme.colors.outlineDisabled
 
-    BasicText(
+    Text(
         text = text,
         style = TextStyle(
             textAlign = TextAlign.Center,
