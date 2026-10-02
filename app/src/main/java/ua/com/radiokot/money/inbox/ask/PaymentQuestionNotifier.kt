@@ -204,8 +204,11 @@ class PaymentQuestionNotifier(
     }
 
     /**
-     * The application context follows the app language set in the Settings
-     * only on Android 13+, so the language is applied explicitly.
+     * On Android 13+ the framework applies the per-app language to the application context,
+     * so it is always correct there. On API 26-32 [AppCompatDelegate.getApplicationLocales]
+     * only returns the in-process value, set when an activity attaches or the language is changed;
+     * in a cold process without an activity (e.g. started by the notification listener)
+     * it is empty and the notification uses the device language.
      */
     private fun getLocalizedContext(): Context {
         val locales = AppCompatDelegate.getApplicationLocales()
