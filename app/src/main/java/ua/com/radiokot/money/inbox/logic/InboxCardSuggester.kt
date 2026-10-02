@@ -66,7 +66,30 @@ object InboxCardSuggester {
          * never including the suggested one.
          */
         val alternatives: List<CategoryKey>,
-    )
+        /**
+         * How many different categories this payee was recorded to in the history.
+         */
+        val payeeCategoryCount: Int = 0,
+    ) {
+        /**
+         * The default of the card "Remember" toggle, null when there is nothing to learn
+         * (the suggestion already comes from a rule, or the payee has no history):
+         * on when the payee always went to one category, off when it varies
+         * (then amount rules are the way to go).
+         */
+        val rememberDefault: Boolean?
+            get() =
+                if (suggestion?.reason is Reason.PayeeHistory)
+                    payeeCategoryCount == 1
+                else
+                    null
+
+        /**
+         * Whether the payee went to several categories, so amount ranges may help.
+         */
+        val isPayeeHistoryMixed: Boolean
+            get() = payeeCategoryCount > 1
+    }
 
     /**
      * @param normalizedPayee [PayeeNormalizer.normalize] of the card payee, empty if unknown
@@ -130,6 +153,7 @@ object InboxCardSuggester {
         return Result(
             suggestion = suggestion,
             alternatives = alternatives,
+            payeeCategoryCount = payeeRanking.size,
         )
     }
 

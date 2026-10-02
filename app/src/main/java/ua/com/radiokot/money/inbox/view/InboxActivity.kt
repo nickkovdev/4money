@@ -141,6 +141,16 @@ private fun Content(
 
         inboxCardsScreen(
             viewModel = inboxCardsViewModel,
+            onProceedToAmountRules = { request ->
+                rulesViewModel.onAddRangeForPayeeRequested(
+                    payeePattern = request.payeePattern,
+                    displayPattern = request.displayPattern,
+                    currencyCode = request.currencyCode,
+                    isIncome = request.isIncome,
+                    categoryOptions = request.categoryOptions,
+                )
+                navController.navigate(RulesScreenRoute)
+            },
             onProceedToCategorySelection = onProceedToCategorySelection,
             onProceedToTransfer = { route ->
                 navController.navigate(route)

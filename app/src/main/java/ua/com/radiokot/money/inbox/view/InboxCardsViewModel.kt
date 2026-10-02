@@ -31,7 +31,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import ua.com.radiokot.money.inbox.logic.LearnedRule
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -87,6 +90,9 @@ class InboxCardsViewModel(
     /** Skipped items go to the end, in the order of skipping. */
     private val skippedKeys = MutableStateFlow<List<String>>(emptyList())
 
+    /** The "Remember" toggles changed by the user, by item ID. */
+    private val rememberOverrides = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+
     /** Items being recorded: hidden right away so the next card shows. */
     private val inFlightKeys = MutableStateFlow<Set<String>>(emptySet())
     private val seenKeys = mutableSetOf<String>()
@@ -138,8 +144,9 @@ class InboxCardsViewModel(
         combine(
             orderedPendingItems,
             lookupFlow,
-        ) { items, lookup ->
-            items.map { item -> toViewCard(item, lookup) to item }
+            rememberOverrides,
+        ) { items, lookup, overrides ->
+            items.map { item -> toViewCard(item, lookup, overrides[item.id]) to item }
         }
             .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -187,6 +194,7 @@ class InboxCardsViewModel(
     private fun toViewCard(
         item: InboxItem,
         lookup: Lookup,
+        rememberOverride: Boolean?,
     ): ViewInboxCard {
         val isIncoming = item.direction == InboxItem.Direction.Incoming
         val normalizedPayee = item.payee
@@ -283,6 +291,10 @@ class InboxCardsViewModel(
                 }
             },
             alternatives = result.alternatives.mapNotNull(::viewCategory),
+            isRememberOn = result.rememberDefault
+                ?.let { default -> rememberOverride ?: default }
+                ?.takeIf { normalizedPayee.isNotEmpty() },
+            isAmountRulesHinted = result.isPayeeHistoryMixed && normalizedPayee.isNotEmpty(),
         )
     }
 
@@ -315,6 +327,40 @@ class InboxCardsViewModel(
         category: ViewInboxCardCategory,
     ) {
         record(card, category.key)
+    }
+
+    fun onRememberToggled(
+        card: ViewInboxCard,
+        isOn: Boolean,
+    ) {
+        rememberOverrides.value += card.key to isOn
+    }
+
+    fun onAmountRulesClicked(card: ViewInboxCard) {
+        val item = itemOf(card)
+            ?: return
+        val normalizedPayee = item.payee
+            ?.let(PayeeNormalizer::normalize)
+            ?.takeIf(String::isNotEmpty)
+            ?: return
+
+        _events.tryEmit(
+            Event.ProceedToAmountRules(
+                payeePattern = normalizedPayee,
+                displayPattern = card.title,
+                currencyCode = item.currencyCode,
+                isIncome = card.isIncoming,
+                categoryOptions = (listOfNotNull(card.suggestion) + card.alternatives)
+                    .map { category ->
+                        ViewRangeTarget.Category(
+                            categoryId = category.key.categoryId,
+                            subcategoryId = category.key.subcategoryId,
+                            title = category.fullTitle,
+                        )
+                    }
+                    .distinct(),
+            )
+        )
     }
 
     fun onSkipClicked(card: ViewInboxCard) {
@@ -405,6 +451,18 @@ class InboxCardsViewModel(
 
                 is InboxCardAcceptance.Decision.Record -> {
                     val transferId = UUID.randomUUID().toString()
+                    // Learn an exact rule only when the card asks to remember.
+                    val rememberPattern = item.payee
+                        ?.let(PayeeNormalizer::normalize)
+                        ?.takeIf(String::isNotEmpty)
+                        ?.takeIf {
+                            cardsWithItems.value
+                                .firstOrNull { (_, cardItem) -> cardItem.id == item.id }
+                                ?.first
+                                ?.isRememberOn == true
+                        }
+                    val rulesBefore = payeeRuleRepository.getRules()
+                    var learnedRuleId: String? = null
 
                     log.debug {
                         "record(): recording:" +
@@ -424,13 +482,33 @@ class InboxCardsViewModel(
                         completeInboxItemUseCase(
                             itemId = item.id,
                             transferId = transferId,
-                            rememberPayeePattern = null,
+                            rememberPayeePattern = rememberPattern,
                             sourceId = decision.sourceId,
                             destinationId = decision.destinationId,
                         ).onFailure { error ->
                             log.error(error) {
                                 "record(): failed to complete the item"
                             }
+                        }
+
+                        if (rememberPattern != null) {
+                            // The rule cache is refreshed by the database watch, wait for it a bit.
+                            val rulesAfter = withTimeoutOrNull(RULES_REFRESH_TIMEOUT_MS) {
+                                payeeRuleRepository
+                                    .getRulesFlow()
+                                    .first { rules ->
+                                        rules.any { rule ->
+                                            rule.payeePattern == rememberPattern
+                                                    && rule.matchType == PayeeRule.MatchType.Exact
+                                                    && rule.amountRange == null
+                                        }
+                                    }
+                            } ?: payeeRuleRepository.getRules()
+                            learnedRuleId = LearnedRule.createdRuleId(
+                                rulesBefore = rulesBefore,
+                                rulesAfter = rulesAfter,
+                                payeePattern = rememberPattern,
+                            )
                         }
 
                         recordRuleHitIfFollowed(item, categoryKey)
@@ -446,8 +524,12 @@ class InboxCardsViewModel(
                                     status = InboxItem.Status.Done,
                                     transferId = transferId,
                                 ),
+                                learnedRuleId = learnedRuleId,
                             )
-                            showUndo("Recorded to ${categoryTitle ?: category.title}")
+                            showUndo(
+                                "Recorded to ${categoryTitle ?: category.title}" +
+                                        if (learnedRuleId != null) ", remembered" else ""
+                            )
                         }
                         .onFailure { error ->
                             log.error(error) {
@@ -511,6 +593,10 @@ class InboxCardsViewModel(
 
             is LastAction.Recorded ->
                 viewModelScope.launch {
+                    // Only a rule this accept created is removed, never an older one.
+                    action.learnedRuleId?.let { ruleId ->
+                        payeeRuleRepository.deleteRule(ruleId)
+                    }
                     undoInboxItemUseCase(action.item)
                         .onFailure { error ->
                             log.error(error) {
@@ -543,6 +629,7 @@ class InboxCardsViewModel(
 
         class Recorded(
             val item: InboxItem,
+            val learnedRuleId: String?,
         ) : LastAction
     }
 
@@ -563,6 +650,17 @@ class InboxCardsViewModel(
         class ShowError(
             val text: String,
         ) : Event
+
+        /**
+         * Open the payee rules with a new amount range for this payee.
+         */
+        class ProceedToAmountRules(
+            val payeePattern: String,
+            val displayPattern: String,
+            val currencyCode: String?,
+            val isIncome: Boolean,
+            val categoryOptions: List<ViewRangeTarget.Category>,
+        ) : Event
     }
 
     private companion object {
@@ -570,5 +668,7 @@ class InboxCardsViewModel(
          * Recent transfers to learn suggestions from, newest first.
          */
         const val HISTORY_LIMIT = 400
+
+        const val RULES_REFRESH_TIMEOUT_MS = 3000L
     }
 }

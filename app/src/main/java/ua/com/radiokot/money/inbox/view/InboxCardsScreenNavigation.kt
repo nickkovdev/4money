@@ -39,6 +39,7 @@ fun NavGraphBuilder.inboxCardsScreen(
     onProceedToCategorySelection: (accountId: TransferCounterpartyId.Account, isIncome: Boolean) -> Unit,
     onProceedToTransfer: (TransferSheetRoute) -> Unit,
     onProceedToRules: () -> Unit,
+    onProceedToAmountRules: (InboxCardsViewModel.Event.ProceedToAmountRules) -> Unit,
     onClose: () -> Unit,
 ) = composable<InboxCardsScreenRoute> {
 
@@ -52,6 +53,9 @@ fun NavGraphBuilder.inboxCardsScreen(
 
                 is InboxCardsViewModel.Event.ProceedToTransfer ->
                     onProceedToTransfer(event.route)
+
+                is InboxCardsViewModel.Event.ProceedToAmountRules ->
+                    onProceedToAmountRules(event)
 
                 is InboxCardsViewModel.Event.ShowError ->
                     Toast
