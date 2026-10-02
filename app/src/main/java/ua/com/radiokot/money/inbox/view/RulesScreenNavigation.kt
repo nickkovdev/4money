@@ -19,26 +19,56 @@
 
 package ua.com.radiokot.money.inbox.view
 
-import android.app.Activity
-import android.widget.EditText
-import androidx.activity.compose.LocalActivity
-import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.composeunstyled.Text
 import kotlinx.serialization.Serializable
 import org.koin.compose.viewmodel.koinViewModel
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.inbox.data.PayeeRule
+import ua.com.radiokot.money.uikit.IconTile
+import ua.com.radiokot.money.uikit.ListDivider
+import ua.com.radiokot.money.uikit.ListGroup
+import ua.com.radiokot.money.uikit.ListRow
+import ua.com.radiokot.money.uikit.MoneyButton
+import ua.com.radiokot.money.uikit.MoneyButtonStyle
+import ua.com.radiokot.money.uikit.MoneyDialog
+import ua.com.radiokot.money.uikit.MoneyDialogContainer
+import ua.com.radiokot.money.uikit.MoneyTextField
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Serializable
 object RulesScreenRoute
+
+private sealed interface RuleDialog {
+    val rule: PayeeRule
+
+    class Actions(override val rule: PayeeRule) : RuleDialog
+    class EditPattern(override val rule: PayeeRule) : RuleDialog
+    class ConfirmDelete(override val rule: PayeeRule) : RuleDialog
+}
 
 fun NavGraphBuilder.rulesScreen(
     onClose: () -> Unit,
 ) = composable<RulesScreenRoute> {
 
-    val activity: Activity? = LocalActivity.current
     val viewModel: RulesScreenViewModel = koinViewModel()
+    var dialog by remember { mutableStateOf<RuleDialog?>(null) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -47,13 +77,7 @@ fun NavGraphBuilder.rulesScreen(
                     onClose()
 
                 is RulesScreenViewModel.Event.ProceedToRuleActions ->
-                    showRuleActions(
-                        activity = checkNotNull(activity) {
-                            "The screen must have an activity to proceed"
-                        },
-                        rule = event.rule,
-                        viewModel = viewModel,
-                    )
+                    dialog = RuleDialog.Actions(event.rule)
             }
         }
     }
@@ -61,52 +85,155 @@ fun NavGraphBuilder.rulesScreen(
     RulesScreen(
         viewModel = viewModel,
     )
-}
 
-private fun showRuleActions(
-    activity: Activity,
-    rule: PayeeRule,
-    viewModel: RulesScreenViewModel,
-) {
-    val toggleMatchTypeTitle =
-        if (rule.matchType == PayeeRule.MatchType.Exact)
-            "Match payees containing it"
-        else
-            "Match the exact payee only"
+    when (val currentDialog = dialog) {
+        is RuleDialog.Actions ->
+            RuleActionsDialog(
+                rule = currentDialog.rule,
+                onEditPattern = { dialog = RuleDialog.EditPattern(currentDialog.rule) },
+                onToggleMatchType = {
+                    dialog = null
+                    viewModel.onMatchTypeToggled(currentDialog.rule)
+                },
+                onDelete = { dialog = RuleDialog.ConfirmDelete(currentDialog.rule) },
+                onDismissRequest = { dialog = null },
+            )
 
-    AlertDialog.Builder(activity)
-        .setTitle(rule.payeePattern)
-        .setItems(arrayOf("Edit pattern", toggleMatchTypeTitle, "Delete")) { _, which ->
-            when (which) {
-                0 -> showPatternEditor(activity, rule, viewModel)
-                1 -> viewModel.onMatchTypeToggled(rule)
-                2 -> AlertDialog.Builder(activity)
-                    .setMessage("Delete the rule for “${rule.payeePattern}”?")
-                    .setPositiveButton("Delete") { _, _ -> viewModel.onDeleteConfirmed(rule) }
-                    .setNegativeButton("Cancel", null)
-                    .show()
-            }
-        }
-        .show()
-}
+        is RuleDialog.EditPattern ->
+            PatternEditorDialog(
+                rule = currentDialog.rule,
+                onSave = { newPattern ->
+                    dialog = null
+                    viewModel.onPatternEdited(currentDialog.rule, newPattern)
+                },
+                onDismissRequest = { dialog = null },
+            )
 
-private fun showPatternEditor(
-    activity: Activity,
-    rule: PayeeRule,
-    viewModel: RulesScreenViewModel,
-) {
-    val input = EditText(activity).apply {
-        setText(rule.payeePattern)
-        setSingleLine()
-        setSelection(text.length)
+        is RuleDialog.ConfirmDelete ->
+            MoneyDialog(
+                title = "Delete the rule?",
+                text = "Payments from “${currentDialog.rule.payeePattern}” " +
+                        "will wait in the inbox again.",
+                confirmText = "Delete",
+                isDestructive = true,
+                onConfirm = {
+                    dialog = null
+                    viewModel.onDeleteConfirmed(currentDialog.rule)
+                },
+                onDismissRequest = { dialog = null },
+            )
+
+        null ->
+            Unit
     }
+}
 
-    AlertDialog.Builder(activity)
-        .setTitle("Payee pattern")
-        .setView(input)
-        .setPositiveButton("Save") { _, _ ->
-            viewModel.onPatternEdited(rule, input.text.toString())
+@Composable
+private fun RuleActionsDialog(
+    rule: PayeeRule,
+    onEditPattern: () -> Unit,
+    onToggleMatchType: () -> Unit,
+    onDelete: () -> Unit,
+    onDismissRequest: () -> Unit,
+) = MoneyDialogContainer(
+    onDismissRequest = onDismissRequest,
+) {
+    Column(
+        modifier = Modifier
+            .padding(20.dp)
+    ) {
+        Text(
+            text = rule.payeePattern,
+            style = MoneyTheme.typography.title,
+            modifier = Modifier
+                .padding(
+                    start = 4.dp,
+                    bottom = 14.dp,
+                )
+        )
+
+        ListGroup {
+            ListRow(
+                title = "Edit pattern",
+                leading = { IconTile(icon = R.drawable.ic_tabler_pencil) },
+                onClick = onEditPattern,
+            )
+            ListDivider()
+            ListRow(
+                title =
+                    if (rule.matchType == PayeeRule.MatchType.Exact)
+                        "Match payees containing it"
+                    else
+                        "Match the exact payee only",
+                leading = { IconTile(icon = R.drawable.ic_tabler_filter) },
+                onClick = onToggleMatchType,
+            )
+            ListDivider()
+            ListRow(
+                title = "Delete",
+                titleColor = MoneyTheme.colors.expense,
+                leading = {
+                    IconTile(
+                        icon = R.drawable.ic_tabler_trash,
+                        tint = MoneyTheme.colors.expense,
+                        background = MoneyTheme.colors.expenseTint,
+                    )
+                },
+                onClick = onDelete,
+            )
         }
-        .setNegativeButton("Cancel", null)
-        .show()
+    }
+}
+
+@Composable
+private fun PatternEditorDialog(
+    rule: PayeeRule,
+    onSave: (String) -> Unit,
+    onDismissRequest: () -> Unit,
+) = MoneyDialogContainer(
+    onDismissRequest = onDismissRequest,
+) {
+    var pattern by remember { mutableStateOf(rule.payeePattern) }
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+        modifier = Modifier
+            .padding(24.dp)
+    ) {
+        Text(
+            text = "Payee pattern",
+            style = MoneyTheme.typography.title,
+        )
+
+        MoneyTextField(
+            value = pattern,
+            onValueChange = { pattern = it },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done,
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            MoneyButton(
+                text = "Cancel",
+                onClick = onDismissRequest,
+                modifier = Modifier
+                    .weight(1f)
+            )
+            MoneyButton(
+                text = "Save",
+                style = MoneyButtonStyle.Filled,
+                isEnabled = pattern.isNotBlank(),
+                onClick = { onSave(pattern) },
+                modifier = Modifier
+                    .weight(1f)
+            )
+        }
+    }
 }

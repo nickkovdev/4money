@@ -19,6 +19,25 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.uikit.EmptyState
+import ua.com.radiokot.money.uikit.GroupPosition
+import ua.com.radiokot.money.uikit.IconTile
+import ua.com.radiokot.money.uikit.ListRow
+import ua.com.radiokot.money.uikit.MoneyButton
+import ua.com.radiokot.money.uikit.MoneyButtonStyle
+import ua.com.radiokot.money.uikit.MoneyIconButton
+import ua.com.radiokot.money.uikit.MoneyIconButtonStyle
+import ua.com.radiokot.money.uikit.RowChevron
+import ua.com.radiokot.money.uikit.SectionHeader
+import ua.com.radiokot.money.uikit.listGroupItem
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,7 +65,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
-import ua.com.radiokot.money.uikit.TextButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -60,135 +78,185 @@ private fun InboxScreen(
     onCardItemClicked: (ViewCardAccountItem) -> Unit,
     onRulesClicked: () -> Unit,
     onCloseClicked: () -> Unit,
+    onSortAsCardsClicked: (() -> Unit)? = null,
 ) = Column(
     modifier = Modifier
         .windowInsetsPadding(
             WindowInsets.navigationBars
                 .add(WindowInsets.statusBars)
         )
-        .padding(
-            horizontal = 16.dp,
-        )
 ) {
-    val buttonPadding = remember { PaddingValues(6.dp) }
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(
-                min = 56.dp,
+            .padding(
+                horizontal = MoneySpacing.screen,
+                vertical = 12.dp,
             )
     ) {
-        TextButton(
-            text = "❌",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onCloseClicked,
-                )
+        MoneyIconButton(
+            icon = R.drawable.ic_tabler_x,
+            contentDescription = "Close",
+            onClick = onCloseClicked,
         )
 
-        Text(
-            text = "Inbox",
-            fontSize = 16.sp,
+        Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(
-                    horizontal = 16.dp,
-                )
-        )
+        ) {
+            Text(
+                text = "Inbox",
+                style = MoneyTheme.typography.headline,
+            )
+            Text(
+                text =
+                    if (pendingItemList.value.isEmpty())
+                        "Nothing to sort"
+                    else
+                        "${pendingItemList.value.size} to sort",
+                style = MoneyTheme.typography.caption,
+                color = MoneyTheme.colors.ink3,
+            )
+        }
 
-        TextButton(
-            text = "Rules",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onRulesClicked,
-                )
+        MoneyIconButton(
+            icon = R.drawable.ic_tabler_adjustments_horizontal,
+            contentDescription = "Rules",
+            onClick = onRulesClicked,
         )
     }
 
     LazyColumn(
+        contentPadding = PaddingValues(
+            start = MoneySpacing.screen,
+            end = MoneySpacing.screen,
+            bottom = 24.dp,
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .weight(1f)
     ) {
-        if (cardItemList.value.isNotEmpty()) {
-            item(key = "cards-title") {
-                SectionTitle("Cards")
-            }
+        val pending = pendingItemList.value
 
-            items(
-                items = cardItemList.value,
-                key = { "card-${it.cardLast4}" },
-            ) { card ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+        if (pending.isNotEmpty() && onSortAsCardsClicked != null) {
+            item(key = "sort-cards") {
+                MoneyButton(
+                    text = "Sort as cards",
+                    icon = R.drawable.ic_tabler_cards,
+                    style = MoneyButtonStyle.Filled,
+                    onClick = onSortAsCardsClicked,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(
-                            onClick = { onCardItemClicked(card) },
-                        )
-                        .padding(
-                            vertical = 10.dp,
-                        )
-                ) {
-                    Text(
-                        text = "Card •${card.cardLast4}",
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-                    Text(
-                        text = card.accountTitle ?: "Most used account",
-                        color = MoneyTheme.colors.onBackgroundSecondary,
-                    )
-                }
-            }
-        }
-
-        item(key = "pending-title") {
-            SectionTitle("To categorize")
-        }
-
-        if (pendingItemList.value.isEmpty()) {
-            item(key = "pending-empty") {
-                Text(
-                    text = "Nothing to categorize",
-                    color = MoneyTheme.colors.onBackgroundSecondary,
-                    modifier = Modifier
-                        .padding(vertical = 10.dp)
+                        .padding(bottom = 8.dp)
                 )
             }
         }
 
-        items(
-            items = pendingItemList.value,
-            key = ViewInboxItem::key,
-        ) { item ->
+        item(key = "pending-title") {
+            SectionHeader(title = "To categorize")
+        }
+
+        if (pending.isEmpty()) {
+            item(key = "pending-empty") {
+                EmptyState(
+                    icon = R.drawable.ic_tabler_circle_check,
+                    title = "All sorted",
+                    text = "New bank payments that need a category will appear here.",
+                    modifier = Modifier
+                        .clip(MoneyShapes.large)
+                        .background(MoneyTheme.colors.surface)
+                )
+            }
+        }
+
+        itemsIndexed(
+            items = pending,
+            key = { _, item -> item.key },
+        ) { index, item ->
             InboxItemRow(
                 item = item,
-                actionText = "✕",
                 onClick = { onPendingItemClicked(item) },
-                onActionClicked = { onDismissClicked(item) },
+                modifier = Modifier
+                    .listGroupItem(
+                        position = GroupPosition.of(index, pending.size) { true },
+                    ),
+                trailing = {
+                    MoneyIconButton(
+                        icon = R.drawable.ic_tabler_x,
+                        contentDescription = "Dismiss",
+                        style = MoneyIconButtonStyle.Plain,
+                        size = 36.dp,
+                        iconSize = 18.dp,
+                        onClick = { onDismissClicked(item) },
+                    )
+                },
             )
         }
 
-        if (doneItemList.value.isNotEmpty()) {
-            item(key = "done-title") {
-                SectionTitle("Recorded")
+        val cards = cardItemList.value
+        if (cards.isNotEmpty()) {
+            item(key = "cards-title") {
+                SectionHeader(
+                    title = "Cards",
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                )
             }
 
-            items(
-                items = doneItemList.value,
-                key = { "done-${it.key}" },
-            ) { item ->
+            itemsIndexed(
+                items = cards,
+                key = { _, card -> "card-${card.cardLast4}" },
+            ) { index, card ->
+                ListRow(
+                    title = "Card •${card.cardLast4}",
+                    subtitle = (card.accountTitle ?: "Most used account") + " · tap to change",
+                    leading = {
+                        IconTile(icon = R.drawable.ic_tabler_credit_card)
+                    },
+                    trailing = { RowChevron() },
+                    onClick = { onCardItemClicked(card) },
+                    modifier = Modifier
+                        .listGroupItem(
+                            position = GroupPosition.of(index, cards.size) { true },
+                            dividerStartInset = 16.dp + 36.dp + 14.dp,
+                        ),
+                )
+            }
+        }
+
+        val done = doneItemList.value
+        if (done.isNotEmpty()) {
+            item(key = "done-title") {
+                SectionHeader(
+                    title = "Recorded",
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                )
+            }
+
+            itemsIndexed(
+                items = done,
+                key = { _, item -> "done-${item.key}" },
+            ) { index, item ->
                 InboxItemRow(
                     item = item,
-                    actionText = "Undo",
                     onClick = null,
-                    onActionClicked = { onUndoClicked(item) },
+                    modifier = Modifier
+                        .listGroupItem(
+                            position = GroupPosition.of(index, done.size) { true },
+                        ),
+                    trailing = {
+                        MoneyIconButton(
+                            icon = R.drawable.ic_tabler_arrow_back_up,
+                            contentDescription = "Undo",
+                            style = MoneyIconButtonStyle.Plain,
+                            size = 36.dp,
+                            iconSize = 18.dp,
+                            onClick = { onUndoClicked(item) },
+                        )
+                    },
                 )
             }
         }
@@ -196,28 +264,15 @@ private fun InboxScreen(
 }
 
 @Composable
-private fun SectionTitle(
-    text: String,
-) = Text(
-    text = text,
-    fontSize = 16.sp,
-    fontWeight = FontWeight(500),
-    modifier = Modifier
-        .padding(
-            top = 20.dp,
-            bottom = 6.dp,
-        )
-)
-
-@Composable
 private fun InboxItemRow(
+    modifier: Modifier = Modifier,
     item: ViewInboxItem,
-    actionText: String,
     onClick: (() -> Unit)?,
-    onActionClicked: () -> Unit,
+    trailing: @Composable () -> Unit,
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,
-    modifier = Modifier
+    horizontalArrangement = Arrangement.spacedBy(10.dp),
+    modifier = modifier
         .fillMaxWidth()
         .then(
             if (onClick != null)
@@ -226,46 +281,62 @@ private fun InboxItemRow(
                 Modifier
         )
         .padding(
-            vertical = 10.dp,
+            start = MoneySpacing.rowHorizontal,
+            end = 6.dp,
+            top = 10.dp,
+            bottom = 10.dp,
         )
 ) {
     Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp),
         modifier = Modifier
             .weight(1f)
     ) {
         Text(
             text = item.title,
-            fontSize = 16.sp,
+            style = MoneyTheme.typography.bodyStrong,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
-        Text(
-            text = item.dateText,
-            fontSize = 12.sp,
-            color = MoneyTheme.colors.onBackgroundSecondary,
-        )
-    }
-
-    if (item.amountText != null) {
         Text(
             text =
                 if (item.isForeignCurrency)
-                    "${item.amountText} ⚠"
+                    item.dateText + " · foreign currency"
                 else
-                    item.amountText,
-            modifier = Modifier
-                .padding(
-                    horizontal = 12.dp,
-                )
+                    item.dateText,
+            style = MoneyTheme.typography.caption,
+            color =
+                if (item.isForeignCurrency)
+                    MoneyTheme.colors.warning
+                else
+                    MoneyTheme.colors.ink3,
         )
     }
 
-    TextButton(
-        text = actionText,
-        padding = remember { PaddingValues(6.dp) },
-        modifier = Modifier
-            .clickable(
-                onClick = onActionClicked,
-            )
-    )
+    val amount = item.amount
+    if (amount != null) {
+        val amountFormat = rememberViewAmountFormat()
+        Text(
+            text = amountFormat(
+                amount = amount,
+                customColor =
+                    if (item.isIncoming)
+                        MoneyTheme.colors.income
+                    else
+                        MoneyTheme.colors.expense,
+            ),
+            style = MoneyTheme.typography.bodyStrong,
+            maxLines = 1,
+        )
+    } else if (item.amountText != null) {
+        Text(
+            text = item.amountText,
+            style = MoneyTheme.typography.bodyStrong,
+            maxLines = 1,
+        )
+    }
+
+    trailing()
 }
 
 @Composable

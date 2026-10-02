@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import ua.com.radiokot.money.currency.view.ViewAmount
+import ua.com.radiokot.money.currency.view.ViewCurrency
 import androidx.compose.runtime.Immutable
 import ua.com.radiokot.money.inbox.data.InboxItem
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
@@ -32,6 +34,11 @@ class ViewInboxItem(
     val isForeignCurrency: Boolean,
     val key: String,
     val source: InboxItem? = null,
+    /**
+     * The amount in the app format: negative for outgoing, null if not parsed.
+     */
+    val amount: ViewAmount? = null,
+    val isIncoming: Boolean = false,
 ) {
     /**
      * @param accountCurrencyCode currency of the item's account, if known
@@ -57,6 +64,42 @@ class ViewInboxItem(
                 && !item.currencyCode.equals(accountCurrencyCode, ignoreCase = true),
         key = item.id,
         source = item,
+        amount = viewAmountOf(item),
+        isIncoming = item.direction == InboxItem.Direction.Incoming,
+    )
+}
+
+/**
+ * The bank amount as an app amount, e.g. 18.90 EUR → −18.90 €,
+ * with the currency symbol and precision of [java.util.Currency].
+ */
+fun viewAmountOf(item: InboxItem): ViewAmount? {
+    val amount = item.amount
+        ?: return null
+    val currencyCode = item.currencyCode
+        ?: return null
+    val javaCurrency = runCatching {
+        java.util.Currency.getInstance(currencyCode.uppercase())
+    }.getOrNull()
+    val precision = javaCurrency
+        ?.defaultFractionDigits
+        ?.takeIf { it >= 0 }
+        ?: 2
+    val minorUnits = amount
+        .movePointRight(precision)
+        .setScale(0, java.math.RoundingMode.HALF_UP)
+        .toBigIntegerExact()
+
+    return ViewAmount(
+        value =
+            if (item.direction == InboxItem.Direction.Incoming)
+                minorUnits.abs()
+            else
+                minorUnits.abs().negate(),
+        currency = ViewCurrency(
+            symbol = javaCurrency?.symbol ?: currencyCode,
+            precision = precision,
+        ),
     )
 }
 
