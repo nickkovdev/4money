@@ -3,6 +3,7 @@ package ua.com.radiokot.money.inbox.logic
 import kotlinx.datetime.LocalDateTime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import ua.com.radiokot.money.inbox.EUR
 import ua.com.radiokot.money.inbox.USD
@@ -64,6 +65,20 @@ class InboxTransferPrefillTest {
 
         assertEquals(BigInteger("212"), route.sourceAmount)
         assertNull(route.destinationAmount)
+    }
+
+    @Test
+    fun displayAmountTextFollowsLocale() {
+        val big = item.copy(amount = BigDecimal("1234.5"))
+        val ru = java.util.Locale.forLanguageTag("ru")
+        val ruGrouping = java.text.DecimalFormatSymbols.getInstance(ru).groupingSeparator
+
+        assertTrue(Character.isSpaceChar(ruGrouping))
+        assertEquals("1,234.50 EUR", big.displayAmountText(java.util.Locale.ENGLISH))
+        assertEquals("1${ruGrouping}234,50 EUR", big.displayAmountText(ru))
+        assertEquals("2.12 EUR", item.displayAmountText(java.util.Locale.ENGLISH))
+        assertEquals("EUR", item.copy(amount = null).displayAmountText(ru))
+        assertEquals("", item.copy(amount = null, currencyCode = null).displayAmountText(ru))
     }
 
     @Test
