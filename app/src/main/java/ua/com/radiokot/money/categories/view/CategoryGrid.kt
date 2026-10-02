@@ -156,7 +156,7 @@ private fun LazyGridScope.categoryItems(
 }
 
 @Composable
-private fun ArchiveHeader(
+internal fun ArchiveHeader(
     isArchiveExpanded: MutableState<Boolean>,
 ) {
     Row(
@@ -192,7 +192,7 @@ private fun ArchiveHeader(
 }
 
 @Composable
-private fun CategoryListItem(
+internal fun CategoryListItem(
     modifier: Modifier = Modifier,
     item: ViewCategoryListItem,
 ) = Column(
@@ -262,7 +262,7 @@ private fun CategoryListItem(
 }
 
 @Composable
-private fun AddItem(
+internal fun AddItem(
     modifier: Modifier = Modifier,
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
