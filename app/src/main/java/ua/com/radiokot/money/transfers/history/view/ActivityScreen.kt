@@ -19,6 +19,19 @@
 
 package ua.com.radiokot.money.transfers.history.view
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
+import com.composeunstyled.Icon
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.home.view.HomeTabHeader
+import ua.com.radiokot.money.uikit.MoneyButton
+import ua.com.radiokot.money.uikit.MoneyButtonStyle
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -119,19 +132,13 @@ Column(
             onNext = onNextPeriodClicked,
         ),
 ) {
-    PeriodBar(
+    HomeTabHeader(
         period = period,
         onPeriodClicked = onPeriodClicked,
-        isNextButtonEnabled = isNextPeriodButtonEnabled,
+        isNextPeriodButtonEnabled = isNextPeriodButtonEnabled,
         onNextPeriodClicked = onNextPeriodClicked,
-        isPreviousButtonEnabled = isPreviousPeriodButtonEnabled,
+        isPreviousPeriodButtonEnabled = isPreviousPeriodButtonEnabled,
         onPreviousPeriodClicked = onPreviousPeriodClicked,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = 22.dp,
-                vertical = 16.dp,
-            )
     )
 
     val areCounterpartiesShown by remember {
@@ -141,74 +148,112 @@ Column(
     }
 
     if (areCounterpartiesShown) {
-        Text(
-            text = buildString {
-                counterparties.value.forEachIndexed { i, counterparty ->
-                    append(counterparty.title)
-                    if (i != counterparties.value.size - 1) {
-                        append(", ")
-                    }
-                }
-            },
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontStyle = FontStyle.Italic,
-                textAlign = TextAlign.Center,
-            ),
+        // The active filter, clearable here and not only with the system BACK.
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 8.dp,
+                    horizontal = MoneySpacing.screen,
                 )
-        )
+                .padding(
+                    bottom = 10.dp,
+                )
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .clip(MoneyShapes.pill)
+                    .background(MoneyTheme.colors.accentTint)
+                    .clickable(onClick = onBack)
+                    .padding(
+                        start = 14.dp,
+                        end = 10.dp,
+                        top = 8.dp,
+                        bottom = 8.dp,
+                    )
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_tabler_filter),
+                    contentDescription = null,
+                    tint = MoneyTheme.colors.accent,
+                    modifier = Modifier
+                        .size(16.dp)
+                )
+                val titles = mutableListOf<String>()
+                counterparties.value.forEach { counterparty ->
+                    titles += counterparty.title
+                }
+                Text(
+                    text = titles.joinToString(", "),
+                    style = MoneyTheme.typography.label,
+                    color = MoneyTheme.colors.accent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                )
+                Icon(
+                    painter = painterResource(R.drawable.ic_tabler_x),
+                    contentDescription = "Clear filter",
+                    tint = MoneyTheme.colors.accent,
+                    modifier = Modifier
+                        .size(16.dp)
+                )
+            }
+        }
     }
 
     val totalIncomeAndExpense = totalIncomeAndExpense.value
-    if (totalIncomeAndExpense != null) {
+    if (totalIncomeAndExpense != null
+        && (totalIncomeAndExpense.income.signum() > 0 || totalIncomeAndExpense.expense.signum() > 0)
+    ) {
         val amountFormat = rememberViewAmountFormat()
 
-        Text(
-            text = buildAnnotatedString {
-                if (totalIncomeAndExpense.income.signum() > 0) {
-                    append("In ")
-                    append(
-                        amountFormat(
-                            value = totalIncomeAndExpense.income,
-                            currency = totalIncomeAndExpense.currency,
-                            customColor = Color.Unspecified,
-                        )
-                    )
-                }
-
-                if (totalIncomeAndExpense.expense.signum() > 0) {
-                    if (totalIncomeAndExpense.income.signum() > 0) {
-                        append("  ")
-                    }
-                    append("Out ")
-                    append(
-                        amountFormat(
-                            value = totalIncomeAndExpense.expense,
-                            currency = totalIncomeAndExpense.currency,
-                            customColor = Color.Unspecified,
-                        )
-                    )
-                }
-            },
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontStyle = FontStyle.Italic,
-                textAlign = TextAlign.Center,
-            ),
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 8.dp,
+                    horizontal = MoneySpacing.screen,
                 )
-        )
+                .padding(
+                    bottom = 12.dp,
+                )
+        ) {
+            listOf(
+                Triple("In", totalIncomeAndExpense.income, MoneyTheme.colors.income),
+                Triple("Out", totalIncomeAndExpense.expense, MoneyTheme.colors.expense),
+            ).forEach { (label, value, color) ->
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(MoneyShapes.medium)
+                        .background(MoneyTheme.colors.surface)
+                        .padding(
+                            horizontal = 14.dp,
+                            vertical = 10.dp,
+                        )
+                ) {
+                    Text(
+                        text = label,
+                        style = MoneyTheme.typography.caption,
+                        color = MoneyTheme.colors.ink3,
+                    )
+                    Text(
+                        text = amountFormat(
+                            value = value,
+                            currency = totalIncomeAndExpense.currency,
+                            customColor = color,
+                        ),
+                        style = MoneyTheme.typography.bodyStrong,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
     }
 
     val transferListState = remember(period.value) {
@@ -230,7 +275,7 @@ Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    horizontal = 16.dp,
+                    horizontal = MoneySpacing.screen,
                 )
         )
     }
@@ -254,25 +299,26 @@ AnimatedVisibility(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MoneyTheme.colors.surfaceVariant,
-                shape = RoundedCornerShape(12.dp),
+                color = MoneyTheme.colors.surface2,
+                shape = MoneyShapes.medium,
             )
             .padding(
-                horizontal = 16.dp,
-                vertical = 12.dp,
+                start = 16.dp,
+                end = 6.dp,
+                top = 4.dp,
+                bottom = 4.dp,
             )
     ) {
         Text(
             text = "Transaction deleted",
+            style = MoneyTheme.typography.labelRegular,
             modifier = Modifier.weight(1f),
         )
-        Text(
+        MoneyButton(
             text = "Undo",
-            fontWeight = FontWeight.SemiBold,
-            color = MoneyTheme.colors.income,
-            modifier = Modifier
-                .clickable(onClick = onUndoDeletionClicked)
-                .padding(4.dp),
+            style = MoneyButtonStyle.Text,
+            icon = R.drawable.ic_tabler_arrow_back_up,
+            onClick = onUndoDeletionClicked,
         )
     }
 }
