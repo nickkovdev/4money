@@ -19,6 +19,11 @@
 
 package ua.com.radiokot.money.auth.view
 
+import androidx.compose.foundation.layout.fillMaxWidth
+import com.composeunstyled.Text
+import ua.com.radiokot.money.uikit.MoneyButton
+import ua.com.radiokot.money.uikit.MoneyButtonStyle
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -35,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ua.com.radiokot.money.uikit.TextButton
 
 @Composable
 private fun TempAuthScreen(
@@ -51,22 +55,30 @@ private fun TempAuthScreen(
         )
         .fillMaxSize()
 ) {
-    TextButton(
-        text = "Just authenticate",
-        modifier = Modifier
-            .clickable(
-                onClick = onAuthenticateClicked,
-            )
+    Spacer(modifier = Modifier.weight(1f))
+
+    Text(
+        text = "4Money",
+        style = MoneyTheme.typography.display,
     )
 
-    Spacer(modifier = Modifier.height(24.dp))
+    Spacer(modifier = Modifier.weight(1f))
 
-    TextButton(
-        text = "Use recovery phrase",
+    MoneyButton(
+        text = "Just authenticate",
+        style = MoneyButtonStyle.Filled,
+        onClick = onAuthenticateClicked,
         modifier = Modifier
-            .clickable(
-                onClick = onPhraseClicked,
-            )
+            .fillMaxWidth()
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    MoneyButton(
+        text = "Use recovery phrase",
+        onClick = onPhraseClicked,
+        modifier = Modifier
+            .fillMaxWidth()
     )
 }
 

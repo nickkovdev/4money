@@ -19,6 +19,12 @@
 
 package ua.com.radiokot.money.categories.view
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.text.KeyboardActions
+import ua.com.radiokot.money.uikit.MoneyButton
+import ua.com.radiokot.money.uikit.MoneyButtonStyle
+import ua.com.radiokot.money.uikit.MoneyTextField
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -59,7 +65,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
-import ua.com.radiokot.money.uikit.TextButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -71,110 +76,69 @@ private fun EditSubcategoryScreen(
     onTitleChanged: (String) -> Unit,
     onCloseClicked: () -> Unit,
 ) = Column(
+    verticalArrangement = Arrangement.spacedBy(14.dp),
     modifier = Modifier
-        .windowInsetsPadding(
-            WindowInsets.navigationBars
-                .only(WindowInsetsSides.Horizontal)
-                .add(WindowInsets.statusBars)
+        .fillMaxWidth()
+        .background(
+            color = MoneyTheme.colors.surface2,
+            shape = MoneyShapes.extraLarge,
         )
-        .padding(
-            horizontal = 16.dp,
-        )
+        .padding(24.dp)
 ) {
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(
-                min = 56.dp,
-            )
-    ) {
-        val buttonPadding = remember {
-            PaddingValues(6.dp)
-        }
-
-        TextButton(
-            text = "❌",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onCloseClicked,
-                )
-        )
-
-        Text(
-            text =
+    Text(
+        text =
             if (isNewSubcategory)
-                "Add subcategory"
+                "New subcategory"
             else
                 "Edit subcategory",
-            fontSize = 16.sp,
-            modifier = Modifier
-                .weight(1f)
-                .padding(
-                    horizontal = 16.dp,
-                )
-        )
-
-        TextButton(
-            text = "✔️",
-            isEnabled = isSaveEnabled.value,
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    enabled = isSaveEnabled.value,
-                    onClick = onSaveClicked,
-                )
-        )
-    }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
-        text = "Title",
+        style = MoneyTheme.typography.title,
     )
-
-    Spacer(modifier = Modifier.height(6.dp))
 
     val focusRequester = remember {
         FocusRequester()
     }
 
-    BasicTextField(
+    MoneyTextField(
         value = title.value,
         onValueChange = onTitleChanged,
-        textStyle = TextStyle(color = MoneyTheme.colors.onBackground),
-        cursorBrush = SolidColor(MoneyTheme.colors.onBackground),
-        singleLine = true,
+        placeholder = "Title",
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
             capitalization = KeyboardCapitalization.Words,
             imeAction = ImeAction.Done,
         ),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                if (isSaveEnabled.value) {
+                    onSaveClicked()
+                }
+            },
+        ),
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = MoneyTheme.colors.outline,
-            )
-            .padding(12.dp)
             .focusRequester(focusRequester)
     )
 
-    Spacer(modifier = Modifier.height(24.dp))
-
-    TextButton(
-        text = "Continue",
-        isEnabled = isSaveEnabled.value,
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
-            .fillMaxWidth(1f)
-            .clickable(
-                enabled = isSaveEnabled.value,
-                onClick = onSaveClicked,
-            )
-    )
+            .fillMaxWidth()
+    ) {
+        MoneyButton(
+            text = "Cancel",
+            onClick = onCloseClicked,
+            modifier = Modifier
+                .weight(1f)
+        )
+        MoneyButton(
+            text = "Done",
+            style = MoneyButtonStyle.Filled,
+            isEnabled = isSaveEnabled.value,
+            onClick = onSaveClicked,
+            modifier = Modifier
+                .weight(1f)
+        )
+    }
 
     LaunchedEffect(focusRequester) {
         focusRequester.requestFocus()

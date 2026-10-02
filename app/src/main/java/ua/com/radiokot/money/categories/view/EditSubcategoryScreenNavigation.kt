@@ -21,7 +21,7 @@ package ua.com.radiokot.money.categories.view
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -50,7 +50,7 @@ data class EditSubcategoryScreenRoute(
 fun NavGraphBuilder.editSubcategoryScreen(
     onClose: () -> Unit,
     onDone: (subcategoryToUpdate: SubcategoryToUpdate) -> Unit,
-) = composable<EditSubcategoryScreenRoute> { entry ->
+) = dialog<EditSubcategoryScreenRoute> { entry ->
 
     val route: EditSubcategoryScreenRoute = entry.toRoute()
     val viewModel: EditSubcategoryScreenViewModel = koinViewModel {

@@ -19,6 +19,12 @@
 
 package ua.com.radiokot.money.auth.view
 
+import androidx.compose.foundation.background
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.uikit.MoneyButton
+import ua.com.radiokot.money.uikit.MoneyButtonStyle
+import ua.com.radiokot.money.uikit.MoneyIconButton
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -63,7 +69,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.Text
-import ua.com.radiokot.money.uikit.TextButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -91,25 +96,13 @@ private fun PhraseAuthScreen(
         )
 ) {
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(
-                min = 56.dp,
-            )
+            .padding(vertical = 12.dp)
     ) {
-        val buttonPadding = remember {
-            PaddingValues(6.dp)
-        }
-
-        TextButton(
-            text = "❌",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onCloseClicked,
-                )
+        MoneyIconButton(
+            icon = R.drawable.ic_tabler_x,
+            contentDescription = "Close",
+            onClick = onCloseClicked,
         )
     }
 
@@ -117,6 +110,7 @@ private fun PhraseAuthScreen(
 
     Text(
         text = "Recovery phrase",
+        style = MoneyTheme.typography.headline,
     )
 
     Spacer(modifier = Modifier.height(6.dp))
@@ -126,8 +120,8 @@ private fun PhraseAuthScreen(
     BasicTextField(
         value = phrase.value,
         onValueChange = onPhraseChanged,
-        textStyle = TextStyle(color = MoneyTheme.colors.onBackground),
-        cursorBrush = SolidColor(MoneyTheme.colors.onBackground),
+        textStyle = MoneyTheme.typography.body.copy(color = MoneyTheme.colors.ink),
+        cursorBrush = SolidColor(MoneyTheme.colors.accent),
         singleLine = false,
         minLines = 3,
         keyboardOptions = KeyboardOptions(
@@ -145,24 +139,22 @@ private fun PhraseAuthScreen(
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = MoneyTheme.colors.outline,
+            .background(
+                color = MoneyTheme.colors.surface,
+                shape = MoneyShapes.medium,
             )
-            .padding(12.dp)
+            .padding(14.dp)
     )
 
     Spacer(modifier = Modifier.height(24.dp))
 
-    TextButton(
+    MoneyButton(
         text = "Sign in",
+        style = MoneyButtonStyle.Filled,
         isEnabled = isSignInEnabled.value,
+        onClick = onSignInClicked,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(
-                enabled = isSignInEnabled.value,
-                onClick = onSignInClicked,
-            )
     )
 
     Spacer(modifier = Modifier.height(24.dp))

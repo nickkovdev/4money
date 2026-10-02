@@ -19,6 +19,11 @@
 
 package ua.com.radiokot.money.colors.view
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.draw.clip
+import com.composeunstyled.Text
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -89,6 +94,8 @@ fun ItemLogoIconPicker(
 
     val columnCount = 6
 
+    val ringColor = MoneyTheme.colors.ink
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(columnCount),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -96,30 +103,46 @@ fun ItemLogoIconPicker(
         contentPadding = contentPadding,
         modifier = modifier,
     ) {
-        noIconAndIcons.forEach { categoryIcons ->
-            val selectedItemRowIndex: Int? =
-                categoryIcons
-                    .indexOf(selectedIcon.value)
-                    .takeIf { it >= 0 }
-                    ?.let { it / columnCount }
+        noIconAndIcons.forEachIndexed { categoryIndex, categoryIcons ->
+            val groupName = categoryIcons.firstOrNull()?.name?.substringBefore('_')
+
+            item(
+                key = "label-$categoryIndex",
+                span = { GridItemSpan(maxLineSpan) },
+            ) {
+                Text(
+                    text = iconGroupLabel(groupName),
+                    style = MoneyTheme.typography.overline,
+                    color = MoneyTheme.colors.ink3,
+                    modifier = Modifier
+                        .padding(
+                            start = 4.dp,
+                            top =
+                                if (categoryIndex == 0)
+                                    0.dp
+                                else
+                                    12.dp,
+                        )
+                )
+            }
 
             itemsIndexed(
                 items = categoryIcons,
                 key = { _, icon -> icon?.name ?: "noicon" },
-            ) { index, icon ->
+            ) { _, icon ->
 
                 BoxWithConstraints(
                     contentAlignment = Alignment.Center,
                 ) {
-                    val circleSize = min(maxWidth, maxHeight)
+                    val tileSize = min(maxWidth, maxHeight)
 
                     ItemLogo(
                         title = itemTitle,
                         colorScheme = colorScheme.value,
                         icon = icon,
-                        shape = CircleShape,
                         modifier = Modifier
-                            .size(circleSize)
+                            .size(tileSize)
+                            .clip(MoneyShapes.itemTile)
                             .clickable(
                                 onClick = {
                                     onIconClicked(icon)
@@ -135,61 +158,28 @@ fun ItemLogoIconPicker(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(circleSize * 0.86f)
+                                .size(tileSize)
                                 .border(
-                                    width = circleSize * 0.05f,
-                                    color = Color(colorScheme.value.onPrimary),
-                                    shape = CircleShape,
-                                )
-                        )
-                    }
-
-                    // Indicator for a row containing selected icon.
-                    AnimatedVisibility(
-                        visible = selectedItemRowIndex != null
-                                && index % columnCount == 0
-                                && index / columnCount == selectedItemRowIndex,
-                        enter = selectionIndicatorEnterTransition,
-                        exit = selectionIndicatorExitTransition,
-                        label = "row-selection-indicator",
-                        modifier = Modifier
-                            .offset(
-                                x = (-10).dp,
-                            )
-
-                            .align(Alignment.CenterStart)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(
-                                    width = 3.dp,
-                                    height = circleSize / 2,
-                                )
-                                .background(
-                                    color = Color(colorScheme.value.primary),
-                                    shape = RoundedCornerShape(
-                                        percent = 50,
-                                    ),
+                                    width = 2.dp,
+                                    color = ringColor,
+                                    shape = MoneyShapes.itemTile,
                                 )
                         )
                     }
                 }
             }
-
-            if (categoryIcons != noIconAndIcons.last()) {
-                item(
-                    key = categoryIcons,
-                    span = { GridItemSpan(maxLineSpan) },
-                    content = {
-                        Spacer(
-                            modifier = Modifier.height(16.dp)
-                        )
-                    },
-                )
-            }
         }
     }
 }
+
+/**
+ * The first group is "no icon" (the letter), others are named by the icon name prefix.
+ */
+private fun iconGroupLabel(groupName: String?): String =
+    when (groupName) {
+        null -> "LETTER"
+        else -> groupName.uppercase()
+    }
 
 @Preview
 @Composable

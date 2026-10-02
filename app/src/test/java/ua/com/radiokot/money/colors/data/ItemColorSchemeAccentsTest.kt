@@ -98,4 +98,27 @@ class ItemColorSchemeAccentsTest {
         val b = (argb and 0xFF) / 255.0
         return 0.2126 * r + 0.7152 * g + 0.0722 * b
     }
+
+    @Test
+    fun themedAccent_KeepsLevelsOfAFamilyDistinct() {
+        listOf(false, true).forEach { isDark ->
+            val colors = (1..6).map { level ->
+                ItemColorSchemeAccents.themedAccent(schemesByName.getValue("Red$level"), isDark)
+            }
+            Assert.assertEquals(
+                "isDark=$isDark: $colors",
+                6,
+                colors.toSet().size,
+            )
+        }
+    }
+
+    @Test
+    fun themedAccent_PaleOnLightUsesOnColor_DeepOnDarkUsesOnColor() {
+        val red1 = schemesByName.getValue("Red1")
+        val red6 = schemesByName.getValue("Red6")
+        Assert.assertEquals(red1.onPrimary, ItemColorSchemeAccents.themedAccent(red1, isDark = false))
+        Assert.assertEquals(red6.onPrimary, ItemColorSchemeAccents.themedAccent(red6, isDark = true))
+        Assert.assertEquals(red1.primary, ItemColorSchemeAccents.themedAccent(red1, isDark = true))
+    }
 }

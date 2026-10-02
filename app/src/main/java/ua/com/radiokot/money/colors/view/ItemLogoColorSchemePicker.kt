@@ -19,6 +19,10 @@
 
 package ua.com.radiokot.money.colors.view
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.draw.clip
+import ua.com.radiokot.money.colors.data.ItemColorSchemeAccents
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -78,36 +82,35 @@ fun ItemLogoColorSchemePicker(
 
     val columnCount = 6
 
+    val isDark = MoneyTheme.colors.isDark
+    val ringColor = MoneyTheme.colors.ink
+    val ringGapColor = MoneyTheme.colors.background
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(columnCount),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = contentPadding,
         modifier = modifier,
     ) {
-        val selectedItemRowIndex: Int? =
-            colorSchemeList.value
-                .indexOf(selectedColorScheme.value)
-                .takeIf { it >= 0 }
-                ?.let { it / columnCount }
-
         itemsIndexed(
             items = colorSchemeList.value,
             key = { _, colorScheme -> colorScheme.name },
-        ) { index, colorScheme ->
+        ) { _, colorScheme ->
 
             BoxWithConstraints(
                 contentAlignment = Alignment.Center,
             ) {
-                val circleSize = min(maxWidth, maxHeight)
+                val swatchSize = min(maxWidth, maxHeight)
+                val swatchColor = remember(colorScheme, isDark) {
+                    Color(ItemColorSchemeAccents.themedAccent(colorScheme, isDark))
+                }
 
-                ItemLogo(
-                    title = "•",
-                    colorScheme = colorScheme,
-                    icon = null,
-                    shape = CircleShape,
+                Box(
                     modifier = Modifier
-                        .size(circleSize)
+                        .size(swatchSize)
+                        .clip(CircleShape)
+                        .background(swatchColor)
                         .clickable(
                             onClick = {
                                 onColorSchemeClicked(colorScheme)
@@ -123,41 +126,17 @@ fun ItemLogoColorSchemePicker(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(circleSize * 0.86f)
+                            .size(swatchSize)
                             .border(
-                                width = circleSize * 0.05f,
-                                color = Color(colorScheme.onPrimary),
+                                width = 3.dp,
+                                color = ringColor,
                                 shape = CircleShape,
                             )
-                    )
-                }
-
-                // Indicator for a row containing selected icon.
-                AnimatedVisibility(
-                    visible = selectedItemRowIndex != null
-                            && index % columnCount == 0
-                            && index / columnCount == selectedItemRowIndex,
-                    enter = selectionIndicatorEnterTransition,
-                    exit = selectionIndicatorExitTransition,
-                    label = "row-selection-indicator",
-                    modifier = Modifier
-                        .offset(
-                            x = (-10).dp,
-                        )
-
-                        .align(Alignment.CenterStart)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(
-                                width = 3.dp,
-                                height = circleSize / 2,
-                            )
-                            .background(
-                                color = Color(selectedColorScheme.value.primary),
-                                shape = RoundedCornerShape(
-                                    percent = 50,
-                                ),
+                            .padding(3.dp)
+                            .border(
+                                width = 2.dp,
+                                color = ringGapColor,
+                                shape = CircleShape,
                             )
                     )
                 }

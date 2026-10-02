@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.lock.view
 
+import ua.com.radiokot.money.R
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -185,7 +186,8 @@ private fun Keyboard(
         ) {
             if (isBiometricsButtonShown) {
                 ActionButton(
-                    text = "🫆",
+                    icon = R.drawable.ic_tabler_fingerprint,
+                    contentDescription = "Biometrics",
                     onClick = onBiometricsClicked,
                     modifier = Modifier
                         .size(buttonSize)
@@ -203,7 +205,8 @@ private fun Keyboard(
                     .size(buttonSize)
             )
             ActionButton(
-                text = "🔙",
+                icon = R.drawable.ic_tabler_backspace,
+                contentDescription = "Erase",
                 onClick = onBackspaceClicked,
                 modifier = Modifier
                     .size(buttonSize)
@@ -234,15 +237,15 @@ private fun NumberButton(
                     onClick(number)
                 },
             )
-            .border(
-                width = 1.dp,
-                color = MoneyTheme.colors.outline,
+            .background(
+                color = MoneyTheme.colors.surface,
                 shape = shape,
             )
     ) {
         Text(
             text = number.toString(),
-            fontSize = 28.sp,
+            style = MoneyTheme.typography.headline,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
         )
     }
 }
@@ -250,7 +253,9 @@ private fun NumberButton(
 @Composable
 private fun ActionButton(
     modifier: Modifier,
-    text: String,
+    @androidx.annotation.DrawableRes
+    icon: Int,
+    contentDescription: String,
     onClick: () -> Unit,
 ) {
     val shape = CircleShape
@@ -270,13 +275,16 @@ private fun ActionButton(
                 },
             )
             .background(
-                color = MoneyTheme.colors.surfaceVariant,
+                color = MoneyTheme.colors.surface2,
                 shape = shape,
             )
     ) {
-        Text(
-            text = text,
-            fontSize = 22.sp,
+        com.composeunstyled.Icon(
+            painter = androidx.compose.ui.res.painterResource(icon),
+            contentDescription = contentDescription,
+            tint = MoneyTheme.colors.accent,
+            modifier = Modifier
+                .size(26.dp)
         )
     }
 }

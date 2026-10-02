@@ -19,6 +19,16 @@
 
 package ua.com.radiokot.money.currency.view
 
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.lazy.itemsIndexed
+import ua.com.radiokot.money.uikit.GroupPosition
+import ua.com.radiokot.money.uikit.ListRow
+import ua.com.radiokot.money.uikit.MoneyButton
+import ua.com.radiokot.money.uikit.MoneyButtonStyle
+import ua.com.radiokot.money.uikit.ScreenTopBar
+import ua.com.radiokot.money.uikit.listGroupItem
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,7 +59,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.uikit.SelectionMark
-import ua.com.radiokot.money.uikit.TextButton
 
 @Composable
 private fun CurrencySelectionScreen(
@@ -65,100 +74,72 @@ private fun CurrencySelectionScreen(
                 .only(WindowInsetsSides.Horizontal)
                 .add(WindowInsets.statusBars)
         )
-        .padding(
-            horizontal = 16.dp,
-        )
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(
-                min = 56.dp,
-            )
-    ) {
-        val buttonPadding = remember {
-            PaddingValues(6.dp)
-        }
+    ScreenTopBar(
+        title = "Currency",
+        onNavigationClicked = onCloseClicked,
+    )
 
-        TextButton(
-            text = "❌",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onCloseClicked,
-                )
-        )
-
-        Text(
-            text = "Currency",
-            fontSize = 16.sp,
-            modifier = Modifier
-                .weight(1f)
-                .padding(
-                    horizontal = 16.dp,
-                )
-        )
-
-        TextButton(
-            text = "✔️",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onSaveClicked,
-                )
-        )
+    val items = remember(itemList.value) {
+        sortedForDisplay(itemList.value)
     }
-
 
     LazyColumn(
-
         contentPadding = PaddingValues(
-            horizontal = 3.dp,
-            vertical = 16.dp,
-        )
+            start = MoneySpacing.screen,
+            end = MoneySpacing.screen,
+            top = 4.dp,
+            bottom = 16.dp,
+        ),
+        modifier = Modifier
+            .weight(1f)
     ) {
-
-        items(
-            items = itemList.value,
-            key = CurrencySelectionListItem::key,
-        ) { item ->
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .height(38.dp)
-                    .fillMaxWidth()
-                    .clickable(
-                        onClick = {
-                            onItemClicked(item)
-                        },
+        itemsIndexed(
+            items = items,
+            key = { _, item -> item.key },
+        ) { index, item ->
+            ListRow(
+                title = item.code,
+                trailing = {
+                    Text(
+                        text = item.symbol,
+                        style = MoneyTheme.typography.body,
+                        color = MoneyTheme.colors.ink2,
+                        modifier = Modifier
+                            .padding(end = 12.dp)
                     )
-            ) {
-
-                SelectionMark(
-                    isSelected = item.isSelected,
-                    modifier = Modifier
-                        .padding(4.dp)
-                )
-
-                Text(
-                    text = item.code,
-                    modifier = Modifier
-                        .padding(
-                            horizontal = 8.dp,
-                        )
-                        .weight(1f)
-                )
-
-                Text(
-                    text = item.symbol,
-                )
-            }
+                    SelectionMark(
+                        isSelected = item.isSelected,
+                    )
+                },
+                onClick = { onItemClicked(item) },
+                modifier = Modifier
+                    .listGroupItem(
+                        position = GroupPosition.of(index, items.size) { true },
+                    ),
+            )
         }
     }
+
+    MoneyButton(
+        text = "Done",
+        style = MoneyButtonStyle.Filled,
+        onClick = onSaveClicked,
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(
+                horizontal = MoneySpacing.screen,
+                vertical = 12.dp,
+            )
+    )
 }
+
+/**
+ * Alphabetical by code, so a currency is easy to find.
+ */
+internal fun sortedForDisplay(items: List<CurrencySelectionListItem>): List<CurrencySelectionListItem> =
+    items.sortedBy(CurrencySelectionListItem::code)
 
 @Composable
 fun CurrencySelectionScreenRoot(
