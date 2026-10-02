@@ -45,6 +45,8 @@ import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.view.TransferCounterpartySelectionResult
 import ua.com.radiokot.money.uikit.ViewText
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 
 /**
  * Activity-level: also receives the category picker result for a range being edited.
@@ -167,6 +169,7 @@ class RulesScreenViewModel(
     fun onRowClicked(
         group: ViewPayeeRuleGroup,
         row: ViewPayeeRuleRow,
+        locale: Locale,
     ) {
         val rule = row.rule
         val range = rule.amountRange
@@ -179,11 +182,22 @@ class RulesScreenViewModel(
 
         _rangeDraft.value = newDraft(group).copy(
             ruleId = rule.id,
-            fromText = range.min?.stripTrailingZeros()?.toPlainString().orEmpty(),
-            underText = range.max?.stripTrailingZeros()?.toPlainString().orEmpty(),
+            fromText = range.min?.let { editableAmountText(it, locale) }.orEmpty(),
+            underText = range.max?.let { editableAmountText(it, locale) }.orEmpty(),
             target = targetOf(rule),
         )
     }
+
+    /**
+     * A plain number with the decimal separator of the [locale] and no grouping,
+     * as the range editor hint shows it. The editor parser accepts both '.' and ','.
+     */
+    private fun editableAmountText(
+        amount: java.math.BigDecimal,
+        locale: Locale,
+    ): String =
+        amount.stripTrailingZeros().toPlainString()
+            .replace('.', DecimalFormatSymbols.getInstance(locale).decimalSeparator)
 
     /**
      * Opens a new range for a payee, also one without rules yet (from an inbox card).

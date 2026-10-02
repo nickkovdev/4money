@@ -81,7 +81,7 @@ To check phases 1–4 on the phone before the migration, build commit **5b60431*
 - In Russian walk all four tabs, Settings, Inbox list and cards, Rules, the transfer sheet, the date picker and the category sheet: nothing left in English except user data and theme names.
 - Month headers read "Октябрь 2026", day lines like "1 октября".
 - Amounts show "1 234,56 €" (comma decimal); the keypad decimal key is "," and typing "1234,5" gives 1 234,50.
-- Plurals: 1 / 3 / 5 / 21 → операция / операции / операций / операция (history header, category sheet, rules, Settings Inbox row).
+- Plurals: 1 / 3 / 5 / 21 → операция / операции / операций / операция (category sheet transaction count, Rules rule count, Settings Inbox row, inbox card reasons).
 - "Payments to sort" notification arrives in Russian.
 - Privacy mode in Russian: `•••` and % as before.
 - System with a device language other than English or Russian (e.g. Latvian): English strings, no crash.

@@ -195,6 +195,7 @@
     <string name="inbox_item_foreign_currency">%1$s · foreign currency</string>
     <string name="inbox_private_title">Bank payment</string>
     <string name="inbox_undo_failed">Failed to undo: %1$s</string>
+    <string name="inbox_undo_failed_no_reason">Failed to undo</string>
     <string name="inbox_no_account">No account to record to</string>
     <string name="inbox_no_account_or_category">No account or category to record to</string>
 
@@ -222,6 +223,7 @@
     <string name="inbox_cards_recorded">Recorded to %1$s</string>
     <string name="inbox_cards_recorded_remembered">Recorded to %1$s, remembered</string>
     <string name="inbox_cards_record_failed">Failed to record: %1$s</string>
+    <string name="inbox_cards_record_failed_no_reason">Failed to record</string>
 
     <!-- Inbox card reasons -->
     <string name="inbox_reason_remembered">Remembered payee → %1$s</string>
@@ -320,6 +322,7 @@
     <string name="auth_recovery_phrase">Recovery phrase</string>
     <string name="auth_sign_in">Sign in</string>
     <string name="auth_sign_in_failed">Sign in failed: %1$s</string>
+    <string name="auth_sign_in_failed_no_reason">Sign in failed</string>
 
     <!-- Lock -->
     <string name="lock_biometrics">Biometrics</string>

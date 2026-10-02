@@ -29,6 +29,7 @@ import ua.com.radiokot.money.R
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.view.TransferSheetRoute
 import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.failureText
 import ua.com.radiokot.money.uikit.resolve
 
 @Serializable
@@ -71,9 +72,11 @@ fun NavGraphBuilder.inboxScreen(
                     Toast
                         .makeText(
                             context,
-                            ViewText
-                                .Res(R.string.inbox_undo_failed, listOf(event.technicalReason))
-                                .resolve(context),
+                            failureText(
+                                withReasonId = R.string.inbox_undo_failed,
+                                withoutReasonId = R.string.inbox_undo_failed_no_reason,
+                                reason = event.technicalReason,
+                            ).resolve(context),
                             Toast.LENGTH_LONG,
                         )
                         .show()

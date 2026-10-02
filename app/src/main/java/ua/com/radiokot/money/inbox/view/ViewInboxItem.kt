@@ -22,6 +22,7 @@ package ua.com.radiokot.money.inbox.view
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import androidx.compose.runtime.Immutable
+import kotlinx.datetime.LocalDateTime
 import ua.com.radiokot.money.inbox.data.InboxItem
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
 import ua.com.radiokot.money.inbox.logic.displayAmountText
@@ -32,7 +33,7 @@ import java.util.Locale
 class ViewInboxItem(
     val title: String,
     val amountText: ViewText?,
-    val dateText: String,
+    val receivedAt: LocalDateTime,
     val isForeignCurrency: Boolean,
     val key: String,
     val source: InboxItem? = null,
@@ -67,7 +68,7 @@ class ViewInboxItem(
                         amountText
                 }
             },
-        dateText = item.receivedAt.toString().replace('T', ' ').take(16),
+        receivedAt = item.receivedAt,
         isForeignCurrency = accountCurrencyCode != null
                 && item.currencyCode != null
                 && !item.currencyCode.equals(accountCurrencyCode, ignoreCase = true),

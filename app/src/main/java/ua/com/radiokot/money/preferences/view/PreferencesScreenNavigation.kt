@@ -71,6 +71,8 @@ fun NavGraphBuilder.preferencesScreen(
     // The user may come back from the system settings.
     LifecycleResumeEffect(viewModel) {
         viewModel.onNotificationAccessChecked(NotificationAccess.isGranted(context))
+        // The per-app language may be changed in the system settings.
+        viewModel.refreshLanguage()
         onPauseOrDispose { }
     }
 

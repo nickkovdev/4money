@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import ua.com.radiokot.money.transfers.view.rememberAppLocale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.Icon
@@ -238,6 +239,7 @@ private fun RuleGroupCard(
                 text = row.rangeText.resolve(),
                 style = MoneyTheme.typography.label,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .width(108.dp)
             )
@@ -490,13 +492,16 @@ private fun RangeEditorContent(
 @Composable
 fun RulesScreen(
     viewModel: RulesScreenViewModel,
-) = RulesScreen(
-    groupList = viewModel.groupList.collectAsState(),
-    onGroupMenuClicked = remember { viewModel::onGroupMenuClicked },
-    onRowClicked = remember { viewModel::onRowClicked },
-    onAddRangeClicked = remember { viewModel::onAddRangeClicked },
-    onCloseClicked = remember { viewModel::onCloseClicked },
-)
+) {
+    val locale = rememberAppLocale()
+    RulesScreen(
+        groupList = viewModel.groupList.collectAsState(),
+        onGroupMenuClicked = remember { viewModel::onGroupMenuClicked },
+        onRowClicked = { group, row -> viewModel.onRowClicked(group, row, locale) },
+        onAddRangeClicked = remember { viewModel::onAddRangeClicked },
+        onCloseClicked = remember { viewModel::onCloseClicked },
+    )
+}
 
 @Preview(
     apiLevel = 34,

@@ -130,6 +130,11 @@ class PreferencesScreenViewModel(
         )
     val language: StateFlow<AppLanguage> = _language.asStateFlow()
 
+    fun refreshLanguage() {
+        _language.value =
+            AppLanguage.fromTags(AppCompatDelegate.getApplicationLocales().toLanguageTags())
+    }
+
     fun onLanguageClicked(language: AppLanguage) {
         if (_language.value == language) {
             return

@@ -25,6 +25,7 @@ import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.draw.clip
+import kotlinx.datetime.LocalDateTime
 import androidx.compose.ui.text.style.TextOverflow
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
@@ -311,12 +312,13 @@ private fun InboxItemRow(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+        val dateText = receivedAtText(item.receivedAt)
         Text(
             text =
                 if (item.isForeignCurrency)
-                    stringResource(R.string.inbox_item_foreign_currency, item.dateText)
+                    stringResource(R.string.inbox_item_foreign_currency, dateText)
                 else
-                    item.dateText,
+                    dateText,
             style = MoneyTheme.typography.caption,
             color =
                 if (item.isForeignCurrency)
@@ -383,14 +385,14 @@ private fun InboxScreenPreview(
         ViewInboxItem(
             title = "DEEPSEERWEA",
             amountText = ViewText.Plain("2,12 USD"),
-            dateText = "2026-10-02 08:06",
+            receivedAt = LocalDateTime(2026, 10, 2, 8, 6),
             isForeignCurrency = true,
             key = "1",
         ),
         ViewInboxItem(
             title = "Jums ir jauns ziņojums internetbankā",
             amountText = null,
-            dateText = "2026-10-02 09:00",
+            receivedAt = LocalDateTime(2026, 10, 2, 9, 0),
             isForeignCurrency = false,
             key = "2",
         ),
@@ -399,7 +401,7 @@ private fun InboxScreenPreview(
         ViewInboxItem(
             title = "CAFE EXAMPLE",
             amountText = ViewText.Plain("4,50 EUR"),
-            dateText = "2026-10-01 13:10",
+            receivedAt = LocalDateTime(2026, 10, 1, 13, 10),
             isForeignCurrency = false,
             key = "3",
         ),
