@@ -30,14 +30,13 @@ object PaymentQuestion {
     const val MAX_ACTIONS = 3
 
     /**
-     * Ask only when the user wants to (an Ask rule) or nothing is known about the payee,
-     * and only for payments that can be recorded with one tap (amount in the account currency).
+     * Ask only when the user wants to (an Ask rule). Payees without a rule just wait in the inbox,
+     * to keep notifications few.
      */
     fun shouldAsk(
         reason: AutoExpenseResolver.PendingReason,
     ): Boolean =
         reason == AutoExpenseResolver.PendingReason.AskRequested
-                || reason == AutoExpenseResolver.PendingReason.NoRule
 
     /**
      * @return up to [MAX_ACTIONS] categories for the action buttons: the suggestion first,

@@ -27,9 +27,9 @@ import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
 class PaymentQuestionTest {
 
     @Test
-    fun asksOnlyForAskRulesAndUnknownPayees() {
+    fun asksOnlyForAskRules() {
         Assert.assertTrue(PaymentQuestion.shouldAsk(PendingReason.AskRequested))
-        Assert.assertTrue(PaymentQuestion.shouldAsk(PendingReason.NoRule))
+        Assert.assertFalse(PaymentQuestion.shouldAsk(PendingReason.NoRule))
         listOf(
             PendingReason.NotParsed,
             PendingReason.NoAccount,

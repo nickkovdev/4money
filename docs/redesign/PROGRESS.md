@@ -52,8 +52,8 @@ To check phases 1–4 on the phone before the migration, build commit **5b60431*
 
 ## Open
 
-- **Owner decision pending:** the "Payments to sort" notification currently fires for every new payee
-  without a rule AND for "Ask me" rules. Recommended: only "Ask me" (fewer notifications). Not changed yet.
+- Decided (owner, 2026-10-02): the "Payments to sort" notification fires only for "Ask me" rules;
+  payees without a rule just wait in the Inbox.
 - Transactions: no daily totals in day headers (needs a per-day sum).
 - Overview bar chart has no axis/gridlines.
 - Ember/Aurora: the first frame shows the Midnight window colour from XML before `MoneyAppTheme` repaints.
