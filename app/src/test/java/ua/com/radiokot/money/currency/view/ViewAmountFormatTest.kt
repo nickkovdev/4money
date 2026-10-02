@@ -285,4 +285,42 @@ class ViewAmountFormatTest {
             )
         )
     }
+
+    @Test
+    fun invoke_UsesConfiguredSignColors() {
+        val positive = androidx.compose.ui.graphics.Color(0xFF00FF00)
+        val negative = androidx.compose.ui.graphics.Color(0xFFFF0000)
+        val zero = androidx.compose.ui.graphics.Color(0xFF0000FF)
+        val format = ViewAmountFormat(
+            locale = Locale.ENGLISH,
+            positiveColor = positive,
+            negativeColor = negative,
+            zeroColor = zero,
+        )
+
+        Assert.assertEquals(
+            positive,
+            format(value = BigInteger("150"), currency = usd).spanStyles.first().item.color,
+        )
+        Assert.assertEquals(
+            negative,
+            format(value = BigInteger("-150"), currency = usd).spanStyles.first().item.color,
+        )
+        Assert.assertEquals(
+            zero,
+            format(value = BigInteger.ZERO, currency = usd).spanStyles.first().item.color,
+        )
+    }
+
+    @Test
+    fun invoke_CustomColorWins() {
+        val custom = androidx.compose.ui.graphics.Color(0xFF123456)
+        val format = ViewAmountFormat(locale = Locale.ENGLISH)
+
+        Assert.assertEquals(
+            custom,
+            format(value = BigInteger("150"), currency = usd, customColor = custom)
+                .spanStyles.first().item.color,
+        )
+    }
 }

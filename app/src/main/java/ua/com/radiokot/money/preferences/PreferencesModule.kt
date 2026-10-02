@@ -28,6 +28,7 @@ import ua.com.radiokot.money.inbox.inboxModule
 import ua.com.radiokot.money.lock.appLockModule
 import ua.com.radiokot.money.preferences.view.PreferencesScreenViewModel
 import ua.com.radiokot.money.syncerrors.syncErrorsModule
+import ua.com.radiokot.money.theme.themeModule
 
 val preferencesModule = module {
 
@@ -36,6 +37,7 @@ val preferencesModule = module {
         syncErrorsModule,
         appLockModule,
         inboxModule,
+        themeModule,
     )
 
     sessionScope {
@@ -49,6 +51,7 @@ val preferencesModule = module {
                 signOutUseCase = get(),
                 appLock = get(),
                 disableAppLockUseCase = get(),
+                themePreferences = get(),
             )
         } bind PreferencesScreenViewModel::class
     }

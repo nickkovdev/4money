@@ -41,12 +41,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 private fun RulesScreen(
@@ -96,7 +96,7 @@ private fun RulesScreen(
         Text(
             text = "No rules yet. Categorize a payment in the inbox " +
                     "with \"Remember\" on to create one.",
-            color = Color.Gray,
+            color = MoneyTheme.colors.onBackgroundSecondary,
             modifier = Modifier
                 .padding(vertical = 16.dp)
         )
@@ -127,7 +127,7 @@ private fun RulesScreen(
                 Text(
                     text = "→ ${item.categoryTitle} · used ${item.hits}×",
                     fontSize = 12.sp,
-                    color = Color.Gray,
+                    color = MoneyTheme.colors.onBackgroundSecondary,
                 )
             }
         }

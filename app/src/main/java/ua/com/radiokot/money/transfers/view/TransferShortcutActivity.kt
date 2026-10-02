@@ -37,6 +37,7 @@ import ua.com.radiokot.money.MoneyAppModalBottomSheetHost
 import ua.com.radiokot.money.auth.logic.UserSessionScope
 import ua.com.radiokot.money.rememberMoneyAppNavController
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 class TransferShortcutActivity : MoneyAppActivity(
     requiresUnlocking = false,
@@ -52,20 +53,22 @@ class TransferShortcutActivity : MoneyAppActivity(
         }
 
         setContent {
-            UserSessionScope {
-                TransferShortcutScreen(
-                    action = when (intent.action) {
-                        "ua.com.radiokot.money.actions.ADD_INCOME" ->
-                            Action.AddIncome
+            MoneyTheme {
+                UserSessionScope {
+                    TransferShortcutScreen(
+                        action = when (intent.action) {
+                            "ua.com.radiokot.money.actions.ADD_INCOME" ->
+                                Action.AddIncome
 
-                        "ua.com.radiokot.money.actions.ADD_EXPENSE" ->
-                            Action.AddExpense
+                            "ua.com.radiokot.money.actions.ADD_EXPENSE" ->
+                                Action.AddExpense
 
-                        else ->
-                            Action.AddOperation
-                    },
-                    finishActivity = ::finish,
-                )
+                            else ->
+                                Action.AddOperation
+                        },
+                        finishActivity = ::finish,
+                    )
+                }
             }
         }
     }

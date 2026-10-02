@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.accounts.data.Account
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun AccountTypeSelectionSheet(
@@ -55,7 +56,7 @@ fun AccountTypeSelectionSheet(
     onTypeClicked: (Account.Type) -> Unit,
 ) = BoxWithConstraints(
     modifier = modifier
-        .background(Color.White)
+        .background(MoneyTheme.colors.surface)
         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
 ) {
 
@@ -113,9 +114,9 @@ fun AccountTypeSelectionSheet(
                     },
 
                     color = if (item == selectedType)
-                        Color(0xfff8efb3)
+                        MoneyTheme.colors.selection
                     else
-                        Color(0xfff8fafd)
+                        MoneyTheme.colors.selectionIdle
                 )
                 .clickable(
                     onClick = {
@@ -173,7 +174,7 @@ private fun AccountTypeItem(
 
         Text(
             text = description,
-            color = Color.Gray,
+            color = MoneyTheme.colors.onBackgroundSecondary,
             modifier = Modifier
                 .padding(
                     top = 4.dp,

@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,7 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,11 +61,12 @@ import ua.com.radiokot.money.currency.view.AmountKeyboard
 import ua.com.radiokot.money.currency.view.AmountKeyboardMainAction
 import ua.com.radiokot.money.currency.view.AnimatedAmountInputText
 import ua.com.radiokot.money.currency.view.ViewAmount
-import ua.com.radiokot.money.currency.view.ViewAmountFormat
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberAmountInputState
+import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.uikit.TextButton
 import java.math.BigInteger
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun AccountActionSheet(
@@ -112,7 +111,7 @@ private fun AccountActionSheet(
     onUnarchiveClicked: () -> Unit,
 ) = BoxWithConstraints(
     modifier = modifier
-        .background(Color(0xFFF9FBE7))
+        .background(MoneyTheme.colors.actionSheet)
         .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
 ) {
 
@@ -131,17 +130,14 @@ private fun AccountActionSheet(
             )
             .verticalScroll(rememberScrollState())
     ) {
-        val locale = LocalConfiguration.current.locales[0]
-        val amountFormat = remember(locale) {
-            ViewAmountFormat(locale)
-        }
+        val amountFormat = rememberViewAmountFormat()
 
         Column(
             modifier = Modifier
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            BasicText(
+            Text(
                 text = title,
                 style = TextStyle(
                     textAlign = TextAlign.Center,
@@ -157,7 +153,7 @@ private fun AccountActionSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            BasicText(
+            Text(
                 text = amountFormat(balance),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -218,7 +214,7 @@ private fun AccountActionSheet(
 private fun AccountActionSheetPreview(
 ) = Column {
     ViewAccountActionSheetMode.entries.forEach { mode ->
-        BasicText(
+        Text(
             text = mode.name + ": ",
             modifier = Modifier.padding(vertical = 12.dp)
         )

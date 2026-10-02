@@ -36,6 +36,9 @@ import java.util.Locale
  */
 class ViewAmountFormat(
     private val locale: Locale,
+    private val positiveColor: Color = Color(0xff50af99),
+    private val negativeColor: Color = Color(0xffd85e8c),
+    private val zeroColor: Color = Color(0xff757575),
 ) {
     private val decimalFormatSymbols = DecimalFormatSymbols.getInstance(locale)
     val minusSign: Char =
@@ -71,9 +74,9 @@ class ViewAmountFormat(
         pushStyle(
             style = SpanStyle(
                 color = customColor ?: when (value.signum()) {
-                    1 -> Color(0xff50af99)
-                    -1 -> Color(0xffd85e8c)
-                    else -> Color(0xff757575)
+                    1 -> positiveColor
+                    -1 -> negativeColor
+                    else -> zeroColor
                 }
             )
         )

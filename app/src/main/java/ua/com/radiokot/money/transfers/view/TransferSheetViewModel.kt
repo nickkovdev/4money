@@ -45,6 +45,7 @@ import ua.com.radiokot.money.accounts.data.AccountRepository
 import ua.com.radiokot.money.categories.data.CategoryRepository
 import ua.com.radiokot.money.categories.view.ViewSelectableSubcategoryListItem
 import ua.com.radiokot.money.colors.data.ItemColorScheme
+import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.coroutineScopeThatCancelsWith
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.eventSharedFlow
@@ -166,6 +167,18 @@ class TransferSheetViewModel(
                 categoryCounterparty.category.colorScheme
             }
         )
+            .stateIn(stateFlowScope, SharingStarted.Lazily, null)
+
+    val subcategoriesIcon: StateFlow<ItemIcon?> =
+        combine(
+            _sourceCounterparty,
+            _destinationCounterparty,
+        ) { source, destination ->
+            ((source as? TransferCounterparty.Category)
+                ?: (destination as? TransferCounterparty.Category))
+                ?.category
+                ?.icon
+        }
             .stateIn(stateFlowScope, SharingStarted.Lazily, null)
 
     val isSourceInputShown: StateFlow<Boolean> =

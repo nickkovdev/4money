@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.uikit.ScaleIndication
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun PasscodeInput(
@@ -110,13 +111,13 @@ private fun InputIndicator(
                 .then(
                     if (passcode.value.length >= dotLength)
                         Modifier.background(
-                            color = Color.DarkGray,
+                            color = MoneyTheme.colors.onBackground,
                             shape = CircleShape,
                         )
                     else
                         Modifier.border(
                             width = 1.dp,
-                            color = Color.LightGray,
+                            color = MoneyTheme.colors.outlineDisabled,
                             shape = CircleShape,
                         )
                 )
@@ -235,7 +236,7 @@ private fun NumberButton(
             )
             .border(
                 width = 1.dp,
-                color = Color.DarkGray,
+                color = MoneyTheme.colors.outline,
                 shape = shape,
             )
     ) {
@@ -269,7 +270,7 @@ private fun ActionButton(
                 },
             )
             .background(
-                color = Color(0xfff3f0f6),
+                color = MoneyTheme.colors.surfaceVariant,
                 shape = shape,
             )
     ) {

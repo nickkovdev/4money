@@ -20,32 +20,46 @@
 package ua.com.radiokot.money.transfers.history.view
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.PagingData
+import com.composeunstyled.Text
 import kotlinx.coroutines.flow.Flow
-import ua.com.radiokot.money.currency.view.ViewAmountFormat
+import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.view.TransferList
 import ua.com.radiokot.money.transfers.view.ViewTransferCounterparty
 import ua.com.radiokot.money.transfers.view.ViewTransferListItem
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun ActivityScreenRoot(
@@ -56,7 +70,11 @@ fun ActivityScreenRoot(
     itemPagingFlow = viewModel.transferItemPagingFlow,
     onTransferItemClicked = remember { viewModel::onTransferItemClicked },
     onTransferItemLongClicked = remember { viewModel::onTransferItemLongClicked },
+    onTransferItemDeleteClicked = remember { viewModel::onTransferItemDeleteClicked },
+    isUndoDeletionVisible = viewModel.isUndoDeletionVisible.collectAsState(),
+    onUndoDeletionClicked = remember { viewModel::onUndoDeletionClicked },
     period = viewModel.viewHistoryStatsPeriod.collectAsState(),
+    historyPeriod = viewModel.historyStatsPeriod.collectAsState(),
     onPeriodClicked = {},
     isPreviousPeriodButtonEnabled = viewModel.isPreviousHistoryStatsPeriodButtonEnabled.collectAsState(),
     onPreviousPeriodClicked = remember { viewModel::onPreviousHistoryStatsPeriodClicked },
@@ -75,8 +93,12 @@ private fun ActivityScreen(
     itemPagingFlow: Flow<PagingData<ViewTransferListItem>>,
     onTransferItemClicked: (ViewTransferListItem.Transfer) -> Unit,
     onTransferItemLongClicked: (ViewTransferListItem.Transfer) -> Unit,
+    onTransferItemDeleteClicked: (ViewTransferListItem.Transfer) -> Unit,
+    isUndoDeletionVisible: State<Boolean>,
+    onUndoDeletionClicked: () -> Unit,
     counterparties: State<List<ViewTransferCounterparty>>,
     period: State<ViewHistoryPeriod>,
+    historyPeriod: State<HistoryPeriod>,
     onPeriodClicked: () -> Unit,
     isNextPeriodButtonEnabled: State<Boolean>,
     onNextPeriodClicked: () -> Unit,
@@ -84,8 +106,18 @@ private fun ActivityScreen(
     onPreviousPeriodClicked: () -> Unit,
     isBackHandlerEnabled: State<Boolean>,
     onBack: () -> Unit,
-) = Column(
+) = Box(
     modifier = modifier,
+) {
+Column(
+    modifier = Modifier
+        .fillMaxSize()
+        .periodSwipe(
+            isPreviousEnabled = isPreviousPeriodButtonEnabled,
+            isNextEnabled = isNextPeriodButtonEnabled,
+            onPrevious = onPreviousPeriodClicked,
+            onNext = onNextPeriodClicked,
+        ),
 ) {
     PeriodBar(
         period = period,
@@ -109,7 +141,7 @@ private fun ActivityScreen(
     }
 
     if (areCounterpartiesShown) {
-        BasicText(
+        Text(
             text = buildString {
                 counterparties.value.forEachIndexed { i, counterparty ->
                     append(counterparty.title)
@@ -135,12 +167,9 @@ private fun ActivityScreen(
 
     val totalIncomeAndExpense = totalIncomeAndExpense.value
     if (totalIncomeAndExpense != null) {
-        val locale = LocalConfiguration.current.locales.get(0)
-        val amountFormat = remember(locale) {
-            ViewAmountFormat(locale)
-        }
+        val amountFormat = rememberViewAmountFormat()
 
-        BasicText(
+        Text(
             text = buildAnnotatedString {
                 if (totalIncomeAndExpense.income.signum() > 0) {
                     append("In ")
@@ -186,19 +215,65 @@ private fun ActivityScreen(
         LazyListState()
     }
 
-    TransferList(
-        itemPagingFlow = itemPagingFlow,
-        onTransferItemClicked = onTransferItemClicked,
-        onTransferItemLongClicked = onTransferItemLongClicked,
-        state = transferListState,
-        modifier = modifier
-            .padding(
-                horizontal = 16.dp,
-            )
-    )
+    PeriodSlideContainer(
+        period = historyPeriod.value,
+        modifier = Modifier
+            .weight(1f)
+    ) {
+        TransferList(
+            itemPagingFlow = itemPagingFlow,
+            onTransferItemClicked = onTransferItemClicked,
+            onTransferItemLongClicked = onTransferItemLongClicked,
+            onTransferItemEditClicked = onTransferItemClicked,
+            onTransferItemDeleteClicked = onTransferItemDeleteClicked,
+            state = transferListState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    horizontal = 16.dp,
+                )
+        )
+    }
 
     BackHandler(
         enabled = isBackHandlerEnabled.value,
         onBack = onBack,
     )
+}
+
+AnimatedVisibility(
+    visible = isUndoDeletionVisible.value,
+    enter = fadeIn() + slideInVertically { it },
+    exit = fadeOut() + slideOutVertically { it },
+    modifier = Modifier
+        .align(Alignment.BottomCenter)
+        .padding(16.dp),
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MoneyTheme.colors.surfaceVariant,
+                shape = RoundedCornerShape(12.dp),
+            )
+            .padding(
+                horizontal = 16.dp,
+                vertical = 12.dp,
+            )
+    ) {
+        Text(
+            text = "Transaction deleted",
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = "Undo",
+            fontWeight = FontWeight.SemiBold,
+            color = MoneyTheme.colors.income,
+            modifier = Modifier
+                .clickable(onClick = onUndoDeletionClicked)
+                .padding(4.dp),
+        )
+    }
+}
 }
