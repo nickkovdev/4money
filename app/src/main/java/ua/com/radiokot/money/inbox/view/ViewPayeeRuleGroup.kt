@@ -25,6 +25,7 @@ import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.inbox.data.AmountRange
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import java.math.BigDecimal
+import ua.com.radiokot.money.uikit.ViewText
 
 /**
  * All rules of one payee pattern: the plain one and the amount ranges.
@@ -50,7 +51,7 @@ data class ViewPayeeRuleRow(
     /**
      * "Any amount" for the plain rule.
      */
-    val rangeText: String,
+    val rangeText: ViewText,
     val targetTitle: String,
     val isAsk: Boolean,
     val colorScheme: ItemColorScheme?,

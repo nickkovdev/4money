@@ -25,6 +25,7 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
+import ua.com.radiokot.money.uikit.ViewText
 
 /**
  * A category an inbox card can be sorted to.
@@ -72,7 +73,7 @@ data class ViewInboxCard(
     /**
      * Why the suggestion, e.g. "Remembered payee → Food".
      */
-    val reasonText: String?,
+    val reasonText: ViewText?,
     val alternatives: List<ViewInboxCardCategory>,
     /**
      * The "Remember" toggle, null when there is nothing to learn

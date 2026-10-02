@@ -69,6 +69,8 @@ import ua.com.radiokot.money.uikit.MoneyDialogContainer
 import ua.com.radiokot.money.uikit.MoneyIconButton
 import ua.com.radiokot.money.uikit.MoneyIconButtonStyle
 import ua.com.radiokot.money.uikit.MoneyTextField
+import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.resolve
 import ua.com.radiokot.money.uikit.theme.MidnightMoneyColors
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
@@ -233,7 +235,7 @@ private fun RuleGroupCard(
                 )
         ) {
             Text(
-                text = row.rangeText,
+                text = row.rangeText.resolve(),
                 style = MoneyTheme.typography.label,
                 maxLines = 1,
                 modifier = Modifier
@@ -527,15 +529,15 @@ private fun RulesScreenPreview() = MoneyTheme(colors = MidnightMoneyColors) {
                     subtitle = "Exact payee · 3 rules · used 14×",
                     rows = listOf(
                         ViewPayeeRuleRow(
-                            "Under 10 €", "Food", false,
+                            ViewText.Plain("Under 10 €"), "Food", false,
                             schemes.getValue("Orange3"), null, rule("a", AmountRange(null, max = BigDecimal("10"))),
                         ),
                         ViewPayeeRuleRow(
-                            "10–35 €", "Ask me", true, null, null,
+                            ViewText.Plain("10–35 €"), "Ask me", true, null, null,
                             rule("b", AmountRange(BigDecimal("10"), max = BigDecimal("35")), PayeeRule.Action.Ask),
                         ),
                         ViewPayeeRuleRow(
-                            "From 35 €", "Car", false,
+                            ViewText.Plain("From 35 €"), "Car", false,
                             schemes.getValue("Blue3"), null, rule("c", AmountRange(BigDecimal("35"), max = null)),
                         ),
                     ),

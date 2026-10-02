@@ -44,6 +44,7 @@ import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.history.data.TransferHistoryRepository
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.text.NumberFormat
 
 /**
  * Posts the app's own "Fuelstop · −18.40 €" notification with up to 3 category buttons
@@ -213,7 +214,13 @@ class PaymentQuestionNotifier(
     }
 
     private fun formatAmount(amount: BigDecimal): String =
-        amount.abs().setScale(2, RoundingMode.HALF_UP).toPlainString()
+        NumberFormat.getNumberInstance(context.resources.configuration.locales[0])
+            .apply {
+                minimumFractionDigits = 2
+                maximumFractionDigits = 2
+                roundingMode = RoundingMode.HALF_UP
+            }
+            .format(amount.abs())
 
     companion object {
         const val CHANNEL_ID = "payments_to_sort"

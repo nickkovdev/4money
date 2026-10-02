@@ -58,6 +58,12 @@ sealed interface ViewText {
         val count: Int,
         val args: List<Any> = listOf(count),
     ) : ViewText
+
+    /**
+     * Text built with the context at resolve time,
+     * e.g. one containing a formatted number.
+     */
+    class Dynamic(val build: (Context) -> String) : ViewText
 }
 
 @Composable
@@ -76,6 +82,9 @@ fun ViewText.resolve(context: Context): String = when (this) {
 
     is ViewText.Plural ->
         context.resources.getQuantityString(id, count, *resolveArgs(context))
+
+    is ViewText.Dynamic ->
+        build(context)
 }
 
 private fun ViewText.Res.resolveArgs(context: Context): Array<Any> =

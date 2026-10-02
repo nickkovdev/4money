@@ -23,4 +23,12 @@
     <string name="history_period_entire_time">За всё время</string>
     <string name="date_picker_previous_month">Предыдущий месяц</string>
     <string name="date_picker_next_month">Следующий месяц</string>
+
+    <!-- Inbox amount ranges -->
+    <string name="inbox_range_between">%1$s–%2$s</string>
+    <string name="inbox_range_up_to">до %1$s</string>
+    <string name="inbox_range_under">меньше %1$s</string>
+    <string name="inbox_range_from">от %1$s</string>
+    <string name="inbox_range_over">больше %1$s</string>
+    <string name="inbox_range_any">Любая сумма</string>
 </resources>
