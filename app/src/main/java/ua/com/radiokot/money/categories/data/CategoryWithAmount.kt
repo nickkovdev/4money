@@ -26,6 +26,10 @@ import java.math.BigInteger
 data class CategoryWithAmount(
     val category: Category,
     val amount: BigInteger,
+    /**
+     * Null if the primary currency doesn't exist.
+     */
+    val amountInPrimaryCurrency: BigInteger? = null,
 )
 
 class CategoriesWithAmountAndTotal(
