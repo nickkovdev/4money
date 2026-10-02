@@ -46,7 +46,7 @@ private fun TransferCounterpartySelectionSheet(
     onCategoryItemClicked: (ViewCategoryListItem) -> Unit,
 ) = BoxWithConstraints(
     modifier = modifier
-        .background(MoneyTheme.colors.surface)
+        .background(MoneyTheme.colors.background)
 ) {
     val maxSheetHeightDp =
         if (maxHeight < 400.dp)
@@ -65,9 +65,6 @@ private fun TransferCounterpartySelectionSheet(
             .fillMaxWidth()
             .heightIn(
                 max = maxSheetHeightDp,
-            )
-            .padding(
-                top = 16.dp,
             )
     )
 }

@@ -19,6 +19,11 @@
 
 package ua.com.radiokot.money.transfers.view
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import ua.com.radiokot.money.uikit.SegmentedControl
+import ua.com.radiokot.money.uikit.SheetHandle
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -88,84 +93,50 @@ fun TransferCounterpartySelector(
     )
     val coroutineScope = rememberCoroutineScope()
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+    SheetHandle()
+
+    val pageTitles = pages.map { page ->
+        when (page) {
+            Page.Income -> "Income"
+            Page.Expense -> "Expense"
+            Page.Account ->
+                if (isForSource == false)
+                    "To account"
+                else
+                    "From account"
+        }
+    }
+
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxWidth()
+            .padding(
+                horizontal = 16.dp,
+                vertical = 4.dp,
+            )
     ) {
-        if (Page.Income in pages) {
-            val pageIndex = pages.indexOf(Page.Income)
-            Text(
-                text = "Income",
-                style = TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration =
-                        if (pagerState.currentPage == pageIndex)
-                            TextDecoration.Underline
-                        else
-                            null,
-                ),
-                modifier = Modifier
-                    .clickable {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(
-                                page = pageIndex,
-                            )
-                        }
+        if (pages.size > 1) {
+            SegmentedControl(
+                options = pageTitles,
+                selectedIndex = pagerState.currentPage,
+                onSelected = { index ->
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(index)
                     }
+                },
             )
-        }
-
-        if (Page.Expense in pages) {
-            val pageIndex = pages.indexOf(Page.Expense)
+        } else {
             Text(
-                text = "Expense",
-                style = TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration =
-                        if (pagerState.currentPage == pageIndex)
-                            TextDecoration.Underline
-                        else
-                            null,
-                ),
+                text = when (pages.firstOrNull()) {
+                    Page.Income -> "Income category"
+                    Page.Expense -> "Expense category"
+                    Page.Account, null -> pageTitles.firstOrNull() ?: ""
+                },
+                style = MoneyTheme.typography.title,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .clickable {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(
-                                page = pageIndex,
-                            )
-                        }
-                    }
-            )
-        }
-
-        if (Page.Account in pages) {
-            val pageIndex = pages.indexOf(Page.Account)
-            Text(
-                text =
-                    if (isForSource == false)
-                        "To account"
-                    else
-                        "From account",
-                style = TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration =
-                        if (pagerState.currentPage == pageIndex)
-                            TextDecoration.Underline
-                        else
-                            null,
-                ),
-                modifier = Modifier
-                    .clickable {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(
-                                page = pageIndex,
-                            )
-                        }
-                    }
+                    .fillMaxWidth()
             )
         }
     }
@@ -192,7 +163,10 @@ fun TransferCounterpartySelector(
                     onItemClicked = onCategoryItemClicked,
                     isAddShown = false,
                     contentPadding = PaddingValues(
-                        all = 6.dp,
+                        start = 10.dp,
+                        end = 10.dp,
+                        top = 6.dp,
+                        bottom = 24.dp,
                     ) + navigationBarsPadding,
                 )
             }
@@ -203,7 +177,10 @@ fun TransferCounterpartySelector(
                     onItemClicked = onCategoryItemClicked,
                     isAddShown = false,
                     contentPadding = PaddingValues(
-                        all = 6.dp,
+                        start = 10.dp,
+                        end = 10.dp,
+                        top = 6.dp,
+                        bottom = 24.dp,
                     ) + navigationBarsPadding,
                 )
             }
@@ -212,8 +189,10 @@ fun TransferCounterpartySelector(
                 AccountList(
                     itemList = accountItemList!!,
                     contentPadding = PaddingValues(
-                        vertical = 8.dp,
-                        horizontal = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = 24.dp,
                     ) + navigationBarsPadding,
                     onAccountItemClicked = onAccountItemClicked,
                 )

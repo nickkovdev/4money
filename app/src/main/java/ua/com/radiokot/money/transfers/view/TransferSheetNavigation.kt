@@ -19,6 +19,11 @@
 
 package ua.com.radiokot.money.transfers.view
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.datetime.LocalDate
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -147,26 +152,7 @@ fun NavGraphBuilder.transferSheet(
             )
         )
     }
-    val activity = checkNotNull(LocalActivity.current as? FragmentActivity) {
-        "This sheet needs activity as a parent"
-    }
-
-    DisposableEffect(activity) {
-        activity.supportFragmentManager.setFragmentResultListener(
-            DatePickerDialogFragment.DATE_REQUEST_KEY,
-            activity,
-        ) { _, bundle ->
-            viewModel.onDatePicked(
-                newDate = DatePickerDialogFragment.getLocalDate(bundle),
-            )
-        }
-
-        onDispose {
-            activity.supportFragmentManager.clearFragmentResultListener(
-                DatePickerDialogFragment.DATE_REQUEST_KEY
-            )
-        }
-    }
+    var datePickerDate by remember { mutableStateOf<LocalDate?>(null) }
 
     LaunchedEffect(route) {
         val selectedSourceId: TransferCounterpartyId? = TransferCounterpartySelectionResult
@@ -193,16 +179,7 @@ fun NavGraphBuilder.transferSheet(
                     }
 
                     is TransferSheetViewModel.Event.ProceedToDatePicker -> {
-                        DatePickerDialogFragment
-                            .newInstance(
-                                bundle = DatePickerDialogFragment.getBundle(
-                                    currentDate = event.currentDate,
-                                )
-                            )
-                            .showSingle(
-                                activity.supportFragmentManager,
-                                DatePickerDialogFragment.TAG
-                            )
+                        datePickerDate = event.currentDate
                     }
 
                     is TransferSheetViewModel.Event.ProceedToCounterpartySelection -> {
@@ -221,4 +198,19 @@ fun NavGraphBuilder.transferSheet(
     TransferSheetRoot(
         viewModel = viewModel,
     )
+
+    datePickerDate?.also { currentDate ->
+        DatePickerDialog(
+            initialDate = currentDate,
+            onDatePicked = { newDate ->
+                datePickerDate = null
+                viewModel.onDatePicked(
+                    newDate = newDate,
+                )
+            },
+            onDismissRequest = {
+                datePickerDate = null
+            },
+        )
+    }
 }
