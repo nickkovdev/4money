@@ -101,7 +101,7 @@ never dump everything into a chat.
 0. **Redesign (current work).** Continue from `docs/redesign/PROGRESS.md` (state, install order,
    next steps, open decisions) and `docs/redesign/BRIEF.md` (requirements). Mockups (private, owner's
    claude.ai): https://claude.ai/artifact/KEA2TwZvtvC6U6qHwGgCzo. Before installing the branch head the
-   migration `20261004000000_money_payee_rule_ranges.sql` must be applied (owner's OK), see PROGRESS.md.
+   migration `20261005000000_money_payee_rule_ranges.sql` must be applied (owner's OK), see PROGRESS.md.
 
 1. **On-device verification** (C/D done; E is superseded by F, so check the remaining items on F):
    - Theme light/dark/system incl. dialogs and date picker; avatars; bottom bar; profile icon → settings.

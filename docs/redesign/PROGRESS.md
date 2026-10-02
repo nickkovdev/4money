@@ -21,7 +21,7 @@ and passes `testDebugUnitTest` (195 tests; only the pre-existing upstream
 | ae75a7d | Inbox (app amount format) and payee rules. |
 | c3175d9 | Editors, account type sheet, currency list (sorted), logo picker, passcode keypad, archived accounts, auth screens; old outlined `TextButton` deleted; item colours keep their shade per theme. |
 | 5b60431 | Phase 4: Inbox swipe cards (`inbox/view/InboxCardsScreen.kt`, `InboxCardsViewModel.kt`, logic `InboxCardSuggester`, `InboxCardAcceptance` + tests), "Sort as cards" in the Inbox. |
-| 1cbf772 | Phase 5 data: migration `supabase/migrations/20261004000000_money_payee_rule_ranges.sql` (**not applied**), sync-config, DbSchema, `saveRangeRule`, `PayeeRule.amountRange/action`, range-aware `PayeeRuleMatcher` (narrowest range containing the amount, else the plain rule), `AutoExpenseResolver` AskRequested. |
+| 1cbf772 | Phase 5 data: migration `supabase/migrations/20261005000000_money_payee_rule_ranges.sql` (**not applied**), sync-config, DbSchema, `saveRangeRule`, `PayeeRule.amountRange/action`, range-aware `PayeeRuleMatcher` (narrowest range containing the amount, else the plain rule), `AutoExpenseResolver` AskRequested. |
 | f130a2a | Phase 5 UI: rules grouped per payee with range rows, range editor (From inclusive / Under exclusive; target Ask me / category / picker). |
 | 3313f76 | Phase 5: "Payments to sort" notification (`inbox/ask/PaymentQuestionNotifier.kt`, `PaymentQuestionReceiver.kt`): up to 3 category buttons record the expense without opening the app; POST_NOTIFICATIONS asked when an Ask range is saved. |
 | 77593b1 | Owner decision: a card suggested from history (no rule yet) has a Remember toggle: on when the payee's history has one category, off when mixed, with a "set up amount rules" link. Undo removes only a rule created by that accept (`LearnedRule`, `CardRememberTest`). |
@@ -31,7 +31,7 @@ and passes `testDebugUnitTest` (195 tests; only the pre-existing upstream
 Builds from **1cbf772 on** write the new `payee_rules` columns. Installing one before the server has
 them makes rule uploads fail into `money.sync_errors`. Order:
 
-1. Owner OK, then apply `supabase/migrations/20261004000000_money_payee_rule_ranges.sql` (command in
+1. Owner OK, then apply `supabase/migrations/20261005000000_money_payee_rule_ranges.sql` (command in
    [../HANDOFF.md](../HANDOFF.md), Infrastructure).
 2. Copy `deploy/powersync/sync-config.yaml` to `~/4money-powersync/`, `docker restart 4money-powersync`,
    check `pg_replication_slots` has exactly one active `powersync_*` slot.
