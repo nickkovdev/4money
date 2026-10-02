@@ -1,4 +1,4 @@
-﻿/* Copyright 2025 Oleg Koretsky
+/* Copyright 2025 Oleg Koretsky
 
    This file is part of the 4Money,
    a budget tracking Android app.
