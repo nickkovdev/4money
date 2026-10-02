@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import ua.com.radiokot.money.R
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
@@ -35,7 +37,7 @@ data class ViewPayeeRuleGroup(
     val key: String,
     val displayPattern: String,
     val matchType: PayeeRule.MatchType,
-    val subtitle: String,
+    val subtitle: ViewText,
     val rows: List<ViewPayeeRuleRow>,
     val colorScheme: ItemColorScheme?,
     val icon: ItemIcon?,
@@ -52,7 +54,7 @@ data class ViewPayeeRuleRow(
      * "Any amount" for the plain rule.
      */
     val rangeText: ViewText,
-    val targetTitle: String,
+    val targetTitle: ViewText,
     val isAsk: Boolean,
     val colorScheme: ItemColorScheme?,
     val icon: ItemIcon?,
@@ -91,8 +93,16 @@ data class ViewRangeDraft(
      */
     val categoryOptions: List<ViewRangeTarget.Category>,
     val isIncome: Boolean,
-    val error: String? = null,
+    val error: ViewText? = null,
 )
+
+/**
+ * A range draft validation failure with the text to show.
+ */
+class RangeDraftException(
+    message: String,
+    @StringRes val textRes: Int,
+) : IllegalArgumentException(message)
 
 /**
  * Validates the range fields of a draft: "From" is inclusive, "Under" is exclusive,
@@ -115,16 +125,16 @@ fun parseRangeDraft(
     val under = parse(underText)
 
     if (fromText.isNotBlank() && from == null || underText.isNotBlank() && under == null) {
-        return Result.failure(IllegalArgumentException("Enter amounts like 10 or 9.99"))
+        return Result.failure(RangeDraftException("Enter amounts like 10 or 9.99", R.string.rules_error_format))
     }
     if (from == null && under == null) {
-        return Result.failure(IllegalArgumentException("Enter at least one of the amounts"))
+        return Result.failure(RangeDraftException("Enter at least one of the amounts", R.string.rules_error_need_one))
     }
     if ((from != null && from.signum() < 0) || (under != null && under.signum() < 0)) {
-        return Result.failure(IllegalArgumentException("Amounts can't be negative"))
+        return Result.failure(RangeDraftException("Amounts can't be negative", R.string.rules_error_negative))
     }
     if (from != null && under != null && from >= under) {
-        return Result.failure(IllegalArgumentException("“From” must be less than “Under”"))
+        return Result.failure(RangeDraftException("“From” must be less than “Under”", R.string.rules_error_order))
     }
 
     return Result.success(

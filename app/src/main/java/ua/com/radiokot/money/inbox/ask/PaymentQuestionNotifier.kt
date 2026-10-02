@@ -19,6 +19,9 @@
 
 package ua.com.radiokot.money.inbox.ask
 
+import androidx.appcompat.app.AppCompatDelegate
+import android.os.LocaleList
+import android.content.res.Configuration
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -133,21 +136,24 @@ class PaymentQuestionNotifier(
         )
         val actionCategories = PaymentQuestion.actionCategories(suggestions)
 
-        ensureChannel()
+        // Resolved now, not cached: a language change applies to the next notification.
+        val localizedContext = getLocalizedContext()
+        ensureChannel(localizedContext)
 
         val payee = item.payee?.let(PayeeNormalizer::displayName)?.takeIf(String::isNotEmpty)
-            ?: "Bank payment"
+            ?: localizedContext.getString(R.string.inbox_private_title)
         val sign = if (isIncoming) "+" else "−"
         val title = PaymentQuestion.notificationTitle(
             payee = payee,
-            signedAmount = "$sign${formatAmount(amount)} ${account.currency.symbol}",
+            signedAmount = "$sign${formatAmount(amount, localizedContext)} ${account.currency.symbol}",
             isPrivate = privacyPreferences.isPrivacyModeEnabled.value,
         )
-        val text =
+        val text = localizedContext.getString(
             if (reason == AutoExpenseResolver.PendingReason.AskRequested)
-                "This amount here can be one of several. Which one?"
+                R.string.ask_text_ask_range
             else
-                "A new payee. Which category?"
+                R.string.ask_text_new_payee
+        )
         val notificationId = notificationIdOf(item.id)
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -197,24 +203,39 @@ class PaymentQuestionNotifier(
         }
     }
 
-    private fun ensureChannel() {
-        val manager = context.getSystemService(NotificationManager::class.java)
-        if (manager.getNotificationChannel(CHANNEL_ID) != null) {
-            return
+    /**
+     * The application context follows the app language set in the Settings
+     * only on Android 13+, so the language is applied explicitly.
+     */
+    private fun getLocalizedContext(): Context {
+        val locales = AppCompatDelegate.getApplicationLocales()
+        if (locales.isEmpty) {
+            return context
         }
+        val configuration = Configuration(context.resources.configuration)
+        configuration.setLocales(LocaleList.forLanguageTags(locales.toLanguageTags()))
+        return context.createConfigurationContext(configuration)
+    }
+
+    /**
+     * Creating a channel again with the same ID updates its name and description,
+     * but keeps the importance the user may have set.
+     */
+    private fun ensureChannel(localizedContext: Context) {
+        val manager = context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_ID,
-                "Payments to sort",
+                localizedContext.getString(R.string.ask_channel_name),
                 NotificationManager.IMPORTANCE_LOW,
             ).apply {
-                description = "Bank payments the app asks you to categorize"
+                description = localizedContext.getString(R.string.ask_channel_description)
             }
         )
     }
 
-    private fun formatAmount(amount: BigDecimal): String =
-        NumberFormat.getNumberInstance(context.resources.configuration.locales[0])
+    private fun formatAmount(amount: BigDecimal, localizedContext: Context): String =
+        NumberFormat.getNumberInstance(localizedContext.resources.configuration.locales[0])
             .apply {
                 minimumFractionDigits = 2
                 maximumFractionDigits = 2
