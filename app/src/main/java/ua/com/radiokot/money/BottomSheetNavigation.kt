@@ -74,9 +74,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Navigator.Name("bottom-sheet")
 class BottomSheetNavigator : Navigator<BottomSheetNavigator.Destination>() {
