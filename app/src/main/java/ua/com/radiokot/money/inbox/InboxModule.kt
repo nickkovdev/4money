@@ -41,6 +41,7 @@ import ua.com.radiokot.money.inbox.logic.SebLatviaNotificationParser
 import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
 import ua.com.radiokot.money.inbox.view.InboxScreenViewModel
 import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
+import ua.com.radiokot.money.transfers.history.data.TransferHistoryRepository
 import ua.com.radiokot.money.transfers.transfersModule
 
 val inboxModule = module {
@@ -110,6 +111,9 @@ val inboxModule = module {
             UndoInboxItemUseCase(
                 inboxRepository = get(),
                 revertTransferUseCase = get(),
+                transferExists = { transferId ->
+                    get<TransferHistoryRepository>().getTransferOrNull(transferId) != null
+                },
             )
         } bind UndoInboxItemUseCase::class
 

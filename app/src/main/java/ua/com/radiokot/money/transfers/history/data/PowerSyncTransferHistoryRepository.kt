@@ -212,6 +212,27 @@ class PowerSyncTransferHistoryRepository(
             ).toLoadResultPage()
     }
 
+    override suspend fun getTransferOrNull(
+        transferId: String,
+    ): Transfer? {
+
+        val counterpartiesById = getCounterpartiesById()
+
+        return database
+            .getOptional(
+                sql = SELECT_BY_ID,
+                parameters = listOf(
+                    transferId,
+                ),
+                mapper = { sqlCursor ->
+                    DbSchema.toTransfer(
+                        sqlCursor = sqlCursor,
+                        counterpartiesById = counterpartiesById,
+                    )
+                }
+            )
+    }
+
     override suspend fun getTransfer(
         transferId: String,
     ): Transfer {

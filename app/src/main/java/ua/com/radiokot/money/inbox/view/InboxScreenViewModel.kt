@@ -158,6 +158,8 @@ class InboxScreenViewModel(
                         "onUndoClicked(): failed to undo:" +
                                 "\nitem=$inboxItem"
                     }
+
+                    _events.emit(Event.ShowUndoError(error.message))
                 }
         }
     }
@@ -239,6 +241,10 @@ class InboxScreenViewModel(
         ) : Event
 
         object ProceedToRules : Event
+
+        class ShowUndoError(
+            val technicalReason: String?,
+        ) : Event
 
         object Close : Event
     }

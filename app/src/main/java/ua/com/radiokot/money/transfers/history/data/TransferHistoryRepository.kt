@@ -44,4 +44,9 @@ interface TransferHistoryRepository {
     ): PagingSource<TransferHistoryPage.Cursor, Transfer>
 
     suspend fun getTransfer(transferId: String): Transfer
+
+    /**
+     * @return the transfer or null if it doesn't exist (e.g. already deleted).
+     */
+    suspend fun getTransferOrNull(transferId: String): Transfer?
 }

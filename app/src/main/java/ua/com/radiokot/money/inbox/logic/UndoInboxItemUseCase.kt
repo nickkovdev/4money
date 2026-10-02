@@ -26,15 +26,19 @@ import ua.com.radiokot.money.transfers.logic.RevertTransferUseCase
 /**
  * Undoes an auto-created (or inbox-created) expense: the transfer is reverted
  * with its balance effect, the item goes back to pending.
+ * If the transfer no longer exists, the item just goes back to pending.
  */
 class UndoInboxItemUseCase(
     private val inboxRepository: InboxRepository,
     private val revertTransferUseCase: RevertTransferUseCase,
+    private val transferExists: suspend (transferId: String) -> Boolean,
 ) {
 
     suspend operator fun invoke(item: InboxItem): Result<Unit> = runCatching {
         val transferId = item.transferId
-        if (transferId != null) {
+        // The transfer may be already deleted (e.g. in the history):
+        // there is nothing to revert then, but the item must still be released.
+        if (transferId != null && transferExists(transferId)) {
             revertTransferUseCase(transferId).getOrThrow()
         }
 
