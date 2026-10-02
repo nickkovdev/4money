@@ -277,4 +277,58 @@
     <string name="ask_channel_description">Банковские платежи, для которых приложение спрашивает категорию</string>
     <string name="ask_text_ask_range">Для этой суммы возможны разные категории. Какая?</string>
     <string name="ask_text_new_payee">Новый получатель. Какая категория?</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_sync_error">Произошла ошибка загрузки данных. Часть ваших изменений была отменена. Приложение скоро исправят, и отменённые изменения будут применены.</string>
+    <string name="settings_appearance">Оформление</string>
+    <string name="settings_theme_system_subtitle">Paper днём, Midnight ночью</string>
+    <string name="settings_theme_paper_subtitle">Светлая, тёплая бумага</string>
+    <string name="settings_theme_midnight_subtitle">Тёмная, холодный синий</string>
+    <string name="settings_theme_ember_subtitle">Тёмная, тёплый янтарь</string>
+    <string name="settings_theme_aurora_subtitle">Тёмная, глубокий бирюзовый</string>
+    <string name="settings_bank_notifications">Банковские уведомления</string>
+    <string name="settings_notification_access">Доступ к уведомлениям</string>
+    <string name="settings_notification_access_granted">Платежи SEB записываются из уведомлений</string>
+    <string name="settings_notification_access_hint">Разрешите, чтобы платежи SEB автоматически становились расходами</string>
+    <string name="settings_granted">Разрешено</string>
+    <string name="settings_allow">Разрешить</string>
+    <plurals name="settings_inbox_to_categorize">
+        <item quantity="one">%d ждёт категории</item>
+        <item quantity="few">%d ждут категории</item>
+        <item quantity="many">%d ждут категории</item>
+        <item quantity="other">%d ждут категории</item>
+    </plurals>
+    <string name="settings_inbox_subtitle">Банковские платежи и правила</string>
+    <string name="settings_currency">Валюта</string>
+    <string name="settings_currency_placeholder">Код основной валюты</string>
+    <string name="settings_currency_primary">Основная</string>
+    <string name="settings_currency_save">Сохранить валюту</string>
+    <string name="settings_security">Безопасность</string>
+    <string name="settings_passcode_lock">Блокировка кодом</string>
+    <string name="settings_passcode_lock_subtitle">Запрашивать код-пароль при открытии приложения</string>
+    <string name="settings_account">Аккаунт</string>
+    <string name="settings_user_id">ID пользователя</string>
+    <string name="settings_copy">Копировать</string>
+    <string name="settings_sign_out">Выйти</string>
+    <string name="settings_sign_out_title">Выйти?</string>
+    <string name="settings_sign_out_text">Чтобы снова увидеть свои данные на этом устройстве, нужно будет пройти аутентификацию.</string>
+
+    <!-- Auth -->
+    <string name="auth_just_authenticate">Просто войти</string>
+    <string name="auth_use_phrase">Войти по фразе восстановления</string>
+    <string name="auth_recovery_phrase">Фраза восстановления</string>
+    <string name="auth_sign_in">Войти</string>
+    <string name="auth_sign_in_failed">Не удалось войти: %1$s</string>
+
+    <!-- Lock -->
+    <string name="lock_biometrics">Биометрия</string>
+    <string name="lock_erase">Стереть</string>
+    <string name="lock_repeat_passcode">Повторите код-пароль</string>
+    <string name="lock_enter_new_passcode">Введите код-пароль</string>
+    <string name="lock_mismatch">Коды не совпадают, попробуйте ещё раз</string>
+    <string name="lock_unlock_title">Разблокировать 4Money</string>
+    <string name="lock_use_passcode">Ввести код-пароль</string>
+    <string name="lock_enter_passcode">Введите код-пароль</string>
+    <string name="lock_incorrect">Неверный код-пароль</string>
 </resources>

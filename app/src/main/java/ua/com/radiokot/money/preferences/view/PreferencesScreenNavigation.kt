@@ -42,6 +42,8 @@ import androidx.navigation.compose.composable
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.compose.viewmodel.koinViewModel
 import ua.com.radiokot.money.inbox.listener.NotificationAccess
+import androidx.compose.ui.res.stringResource
+import ua.com.radiokot.money.R
 
 const val PreferencesScreenRoute = "preferences"
 
@@ -113,9 +115,9 @@ fun NavGraphBuilder.preferencesScreen(
 
     if (isSignOutConfirmationShown) {
         MoneyDialog(
-            title = "Sign out?",
-            text = "You will need to authenticate again to see your data on this device.",
-            confirmText = "Sign out",
+            title = stringResource(R.string.settings_sign_out_title),
+            text = stringResource(R.string.settings_sign_out_text),
+            confirmText = stringResource(R.string.settings_sign_out),
             isDestructive = true,
             onConfirm = {
                 isSignOutConfirmationShown = false
