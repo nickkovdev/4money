@@ -23,9 +23,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
@@ -38,7 +40,12 @@ import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
 import ua.com.radiokot.money.lazyLogger
+import ua.com.radiokot.money.transfers.data.TransferCounterparty
+import ua.com.radiokot.money.transfers.view.TransferCounterpartySelectionResult
 
+/**
+ * Activity-level: also receives the category picker result for a range being edited.
+ */
 class RulesScreenViewModel(
     private val payeeRuleRepository: PayeeRuleRepository,
     categoryRepository: CategoryRepository,
@@ -48,44 +55,267 @@ class RulesScreenViewModel(
     private val _events: MutableSharedFlow<Event> = eventSharedFlow()
     val events = _events.asSharedFlow()
 
-    val ruleItemList: StateFlow<List<ViewPayeeRuleItem>> =
+    private val _rangeDraft = MutableStateFlow<ViewRangeDraft?>(null)
+    val rangeDraft = _rangeDraft.asStateFlow()
+
+    private var categoriesById: Map<String, Category> = emptyMap()
+    private var subcategoriesById: Map<String, Subcategory> = emptyMap()
+
+    val groupList: StateFlow<List<ViewPayeeRuleGroup>> =
         combine(
             payeeRuleRepository.getRulesFlow(),
             categoryRepository.getSubcategoriesByCategoriesFlow(),
         ) { rules, subcategoriesByCategory ->
             val categoriesById = subcategoriesByCategory.keys.associateBy(Category::id)
             val subcategoriesById = subcategoriesByCategory.values.flatten().associateBy(Subcategory::id)
+            this.categoriesById = categoriesById
+            this.subcategoriesById = subcategoriesById
 
             rules
-                .sortedWith(
-                    compareByDescending<PayeeRule> { it.hits }
-                        .thenBy { it.payeePattern }
-                )
-                .map { rule ->
-                    val categoryTitle = categoriesById[rule.categoryId]
-                        ?.let { category ->
-                            val subcategory = rule.subcategoryId?.let(subcategoriesById::get)
-                            if (subcategory != null)
-                                "${category.title} / ${subcategory.title}"
-                            else
-                                category.title
-                        }
-                        ?: "Missing category"
-
-                    ViewPayeeRuleItem(
-                        rule = rule,
-                        categoryTitle = categoryTitle,
-                    )
+                .groupBy { it.matchType to it.payeePattern }
+                .map { (_, groupRules) ->
+                    toViewGroup(groupRules, categoriesById, subcategoriesById)
                 }
+                .sortedWith(
+                    compareByDescending<ViewPayeeRuleGroup> { group ->
+                        groupHits(group)
+                    }.thenBy(ViewPayeeRuleGroup::displayPattern)
+                )
         }
             .flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun onRuleClicked(item: ViewPayeeRuleItem) {
-        val rule = item.source
+    private fun groupHits(group: ViewPayeeRuleGroup): Long =
+        group.rows.sumOf { it.rule.hits }
+
+    private fun toViewGroup(
+        rules: List<PayeeRule>,
+        categoriesById: Map<String, Category>,
+        subcategoriesById: Map<String, Subcategory>,
+    ): ViewPayeeRuleGroup {
+        val first = rules.first()
+        val anyCategory = rules.firstNotNullOfOrNull { rule -> rule.categoryId?.let(categoriesById::get) }
+        val currencyCode = anyCategory?.currency?.code
+
+        val rows = rules
+            .sortedWith(
+                // Ranges from the lowest, the plain rule last.
+                compareBy<PayeeRule, java.math.BigDecimal?>(nullsLast()) { rule ->
+                    rule.amountRange?.let { it.min ?: java.math.BigDecimal.ZERO }
+                }
+            )
+            .map { rule ->
+                val category = rule.categoryId?.let(categoriesById::get)
+                val subcategory = rule.subcategoryId?.let(subcategoriesById::get)
+                ViewPayeeRuleRow(
+                    rangeText = rule.amountRange
+                        ?.let { describeRange(it, currencyCode) }
+                        ?: if (rules.size > 1) "Other amounts" else "Any amount",
+                    targetTitle = when {
+                        rule.action == PayeeRule.Action.Ask -> "Ask me"
+                        category == null -> "Missing category"
+                        subcategory != null -> "${category.title} · ${subcategory.title}"
+                        else -> category.title
+                    },
+                    isAsk = rule.action == PayeeRule.Action.Ask,
+                    colorScheme = category?.colorScheme,
+                    icon = category?.icon,
+                    rule = rule,
+                )
+            }
+        val hits = rules.sumOf(PayeeRule::hits)
+
+        return ViewPayeeRuleGroup(
+            key = first.matchType.slug + ":" + first.payeePattern,
+            displayPattern = first.payeePattern
+                .split(' ')
+                .joinToString(" ") { word -> word.replaceFirstChar(Char::titlecase) },
+            matchType = first.matchType,
+            subtitle = buildString {
+                append(
+                    if (first.matchType == PayeeRule.MatchType.Contains)
+                        "Contains"
+                    else
+                        "Exact payee"
+                )
+                append(" · ")
+                append(rules.size)
+                append(if (rules.size == 1) " rule" else " rules")
+                if (hits > 0) {
+                    append(" · used ")
+                    append(hits)
+                    append("×")
+                }
+            },
+            rows = rows,
+            colorScheme = anyCategory?.colorScheme,
+            icon = anyCategory?.icon,
+            anyRule = first,
+            currencyCode = currencyCode,
+        )
+    }
+
+    fun onGroupMenuClicked(group: ViewPayeeRuleGroup) {
+        _events.tryEmit(Event.ProceedToRuleActions(group.anyRule))
+    }
+
+    fun onRowClicked(
+        group: ViewPayeeRuleGroup,
+        row: ViewPayeeRuleRow,
+    ) {
+        val rule = row.rule
+        val range = rule.amountRange
+
+        if (range == null) {
+            // The plain rule is learned from the inbox, its pattern is edited from the menu.
+            _events.tryEmit(Event.ProceedToRuleActions(rule))
+            return
+        }
+
+        _rangeDraft.value = newDraft(group).copy(
+            ruleId = rule.id,
+            fromText = range.min?.stripTrailingZeros()?.toPlainString().orEmpty(),
+            underText = range.max?.stripTrailingZeros()?.toPlainString().orEmpty(),
+            target = targetOf(rule),
+        )
+    }
+
+    fun onAddRangeClicked(group: ViewPayeeRuleGroup) {
+        _rangeDraft.value = newDraft(group)
+    }
+
+    private fun newDraft(group: ViewPayeeRuleGroup): ViewRangeDraft {
+        val rules = group.rows.map(ViewPayeeRuleRow::rule)
+        val options = rules
+            .mapNotNull(::targetOf)
+            .filterIsInstance<ViewRangeTarget.Category>()
+            .distinct()
+        val isIncome = rules
+            .firstNotNullOfOrNull { rule -> rule.categoryId?.let(categoriesById::get) }
+            ?.isIncome == true
+
+        return ViewRangeDraft(
+            ruleId = null,
+            payeePattern = group.anyRule.payeePattern,
+            matchType = group.matchType,
+            displayPattern = group.displayPattern,
+            currencyCode = group.currencyCode,
+            fromText = "",
+            underText = "",
+            target = null,
+            categoryOptions = options,
+            isIncome = isIncome,
+        )
+    }
+
+    private fun targetOf(rule: PayeeRule): ViewRangeTarget? {
+        if (rule.action == PayeeRule.Action.Ask) {
+            return ViewRangeTarget.Ask
+        }
+        val category = rule.categoryId?.let(categoriesById::get)
+            ?: return null
+        val subcategory = rule.subcategoryId?.let(subcategoriesById::get)
+        return ViewRangeTarget.Category(
+            categoryId = category.id,
+            subcategoryId = subcategory?.id,
+            title =
+                if (subcategory != null)
+                    "${category.title} · ${subcategory.title}"
+                else
+                    category.title,
+        )
+    }
+
+    fun onDraftFromChanged(text: String) =
+        _rangeDraft.value?.let { _rangeDraft.value = it.copy(fromText = text, error = null) }
+
+    fun onDraftUnderChanged(text: String) =
+        _rangeDraft.value?.let { _rangeDraft.value = it.copy(underText = text, error = null) }
+
+    fun onDraftTargetSelected(target: ViewRangeTarget) =
+        _rangeDraft.value?.let { _rangeDraft.value = it.copy(target = target, error = null) }
+
+    fun onDraftPickCategoryClicked() {
+        val draft = _rangeDraft.value
+            ?: return
+        _events.tryEmit(Event.ProceedToCategorySelection(isIncome = draft.isIncome))
+    }
+
+    fun onCounterpartySelected(result: TransferCounterpartySelectionResult) {
+        val category = result.selectedCounterparty as? TransferCounterparty.Category
+            ?: return
+        val draft = _rangeDraft.value
             ?: return
 
-        _events.tryEmit(Event.ProceedToRuleActions(rule))
+        val target = ViewRangeTarget.Category(
+            categoryId = category.category.id,
+            subcategoryId = category.subcategory?.id,
+            title =
+                if (category.subcategory != null)
+                    "${category.category.title} · ${category.subcategory.title}"
+                else
+                    category.category.title,
+        )
+        _rangeDraft.value = draft.copy(
+            target = target,
+            categoryOptions = (draft.categoryOptions + target).distinct(),
+            error = null,
+        )
+    }
+
+    fun onDraftSaveClicked() {
+        val draft = _rangeDraft.value
+            ?: return
+
+        val range = parseRangeDraft(draft.fromText, draft.underText)
+            .getOrElse { error ->
+                _rangeDraft.value = draft.copy(error = error.message)
+                return
+            }
+        val target = draft.target
+        if (target == null) {
+            _rangeDraft.value = draft.copy(error = "Choose a category or Ask me")
+            return
+        }
+
+        _rangeDraft.value = null
+
+        viewModelScope.launch {
+            log.debug {
+                "onDraftSaveClicked(): saving a range rule:" +
+                        "\nruleId=${draft.ruleId}," +
+                        "\nrange=$range," +
+                        "\ntarget=$target"
+            }
+
+            payeeRuleRepository.saveRangeRule(
+                ruleId = draft.ruleId,
+                payeePattern = draft.payeePattern,
+                matchType = draft.matchType,
+                amountRange = range,
+                action =
+                    if (target is ViewRangeTarget.Ask)
+                        PayeeRule.Action.Ask
+                    else
+                        PayeeRule.Action.Record,
+                categoryId = (target as? ViewRangeTarget.Category)?.categoryId,
+                subcategoryId = (target as? ViewRangeTarget.Category)?.subcategoryId,
+            )
+        }
+    }
+
+    fun onDraftDeleteClicked() {
+        val ruleId = _rangeDraft.value?.ruleId
+            ?: return
+        _rangeDraft.value = null
+
+        viewModelScope.launch {
+            payeeRuleRepository.deleteRule(ruleId)
+        }
+    }
+
+    fun onDraftDismissed() {
+        _rangeDraft.value = null
     }
 
     fun onPatternEdited(
@@ -102,7 +332,7 @@ class RulesScreenViewModel(
             return
         }
 
-        updateRule(
+        updateGroup(
             rule = rule,
             payeePattern = pattern,
             matchType = rule.matchType,
@@ -110,7 +340,7 @@ class RulesScreenViewModel(
     }
 
     fun onMatchTypeToggled(rule: PayeeRule) {
-        updateRule(
+        updateGroup(
             rule = rule,
             payeePattern = rule.payeePattern,
             matchType =
@@ -121,23 +351,36 @@ class RulesScreenViewModel(
         )
     }
 
-    private fun updateRule(
+    /**
+     * The pattern belongs to the payee, so all its rules (ranges too) change together.
+     */
+    private fun updateGroup(
         rule: PayeeRule,
         payeePattern: String,
         matchType: PayeeRule.MatchType,
     ) {
         viewModelScope.launch {
-            payeeRuleRepository.updateRule(
-                ruleId = rule.id,
-                payeePattern = payeePattern,
-                matchType = matchType,
-            )
+            payeeRuleRepository
+                .getRules()
+                .filter { it.payeePattern == rule.payeePattern && it.matchType == rule.matchType }
+                .forEach { groupRule ->
+                    payeeRuleRepository.updateRule(
+                        ruleId = groupRule.id,
+                        payeePattern = payeePattern,
+                        matchType = matchType,
+                    )
+                }
         }
     }
 
     fun onDeleteConfirmed(rule: PayeeRule) {
         viewModelScope.launch {
-            payeeRuleRepository.deleteRule(rule.id)
+            payeeRuleRepository
+                .getRules()
+                .filter { it.payeePattern == rule.payeePattern && it.matchType == rule.matchType }
+                .forEach { groupRule ->
+                    payeeRuleRepository.deleteRule(groupRule.id)
+                }
         }
     }
 
@@ -152,6 +395,13 @@ class RulesScreenViewModel(
          */
         class ProceedToRuleActions(
             val rule: PayeeRule,
+        ) : Event
+
+        /**
+         * Pass the result to [onCounterpartySelected].
+         */
+        class ProceedToCategorySelection(
+            val isIncome: Boolean,
         ) : Event
 
         object Close : Event

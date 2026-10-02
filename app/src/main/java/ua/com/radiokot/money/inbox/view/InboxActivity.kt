@@ -82,6 +82,7 @@ private fun Content(
     }
     val inboxViewModel: InboxScreenViewModel = koinViewModel()
     val inboxCardsViewModel: InboxCardsViewModel = koinViewModel()
+    val rulesViewModel: RulesScreenViewModel = koinViewModel()
     val onProceedToCategorySelection = { accountId: TransferCounterpartyId.Account, isIncome: Boolean ->
         navController.navigate(
             route = TransferCounterpartySelectionSheetRoute(
@@ -151,6 +152,17 @@ private fun Content(
         )
 
         rulesScreen(
+            viewModel = rulesViewModel,
+            onProceedToCategorySelection = { isIncome ->
+                navController.navigate(
+                    route = TransferCounterpartySelectionSheetRoute(
+                        isForSource = isIncome,
+                        alreadySelectedCounterpartyId = null,
+                        showAccounts = false,
+                        showCategories = true,
+                    ),
+                )
+            },
             onClose = navController::navigateUp,
         )
 
@@ -160,6 +172,9 @@ private fun Content(
                 val previousDestination = navController.previousBackStackEntry?.destination
                 if (previousDestination?.routeIs<TransferSheetRoute>() == true) {
                     transfersNavigator.proceedToTransfer(result)
+                } else if (previousDestination?.routeIs<RulesScreenRoute>() == true) {
+                    navController.navigateUp()
+                    rulesViewModel.onCounterpartySelected(result)
                 } else if (previousDestination?.routeIs<InboxCardsScreenRoute>() == true) {
                     navController.navigateUp()
                     inboxCardsViewModel.onCounterpartySelected(result)
