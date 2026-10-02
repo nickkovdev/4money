@@ -25,6 +25,7 @@ and passes `testDebugUnitTest` (195 tests; only the pre-existing upstream
 | f130a2a | Phase 5 UI: rules grouped per payee with range rows, range editor (From inclusive / Under exclusive; target Ask me / category / picker). |
 | 3313f76 | Phase 5: "Payments to sort" notification (`inbox/ask/PaymentQuestionNotifier.kt`, `PaymentQuestionReceiver.kt`): up to 3 category buttons record the expense without opening the app; POST_NOTIFICATIONS asked when an Ask range is saved. |
 | 77593b1 | Owner decision: a card suggested from history (no rule yet) has a Remember toggle: on when the payee's history has one category, off when mixed, with a "set up amount rules" link. Undo removes only a rule created by that accept (`LearnedRule`, `CardRememberTest`). |
+| F2 (branch `feature/category-sheet-privacy`) | Category sheet from Overview: tap a category (top list or the inline-expanded "All categories") → sheet in the category colour with N transactions, total, share of the period and the period total, subcategory shares, Expense/Income and Transactions actions. Privacy mode: eye button next to the profile button in every tab header (stored in prefs `privacy`), headline amounts `•••`, the rest as % of the relevant total, no amount in the "Payments to sort" notification. Plan with rulings: `docs/superpowers/plans/2026-10-02-category-sheet-privacy.md`. |
 
 ## Install order (important)
 
@@ -60,9 +61,13 @@ To check phases 1–4 on the phone before the migration, build commit **5b60431*
 
 ## Backlog (owner ideas, later)
 
-- **Privacy mode (anonymization).** One toggle (e.g. an eye button in the tab header, state remembered)
-  that hides all absolute amounts: headline totals and balances show a mask (`•••`), and everywhere else
-  (categories, ring, Overview bars and top list, transactions) amounts are replaced by their percentage
-  of the relevant total (category share of the period expense, transaction share of its day/period).
-  Must also apply to notifications ("Payments to sort") and to screenshots of the app; the transfer sheet
-  keypad stays functional while entering an amount.
+- Privacy mode: done in F2 (see above).
+
+## F2 device checklist
+
+- Overview: tap a top category → sheet; "All categories" expands inline, "Show less" collapses; mode switch collapses.
+- Sheet: header tint readable in Paper and Midnight; count, total, % bar, period row; subcategory rows sorted, "No subcategory" bucket.
+- Sheet "Expense"/"Income" → transfer sheet with the category preselected (or the account picker); "Transactions" → History tab with the category chip, clearing works.
+- Eye button on all four tabs; toggle persists across app restarts; Inbox screens follow it.
+- Private: balances/totals/averages `•••`; categories tiles and transactions as %, transfers between accounts `•••`; Overview day labels and top amounts hidden; transfer keypad still shows the amount being typed.
+- "Payments to sort" notification while private: title is the payee only.
