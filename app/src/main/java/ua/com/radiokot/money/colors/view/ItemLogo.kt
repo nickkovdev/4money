@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -46,7 +47,9 @@ import com.composeunstyled.Text
 import ua.com.radiokot.money.colors.data.DrawableResItemIconRepository
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemColorScheme
+import ua.com.radiokot.money.colors.data.ItemColorSchemeAccents
 import ua.com.radiokot.money.colors.data.ItemIcon
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
 fun ItemLogo(
@@ -55,49 +58,77 @@ fun ItemLogo(
     colorScheme: ItemColorScheme,
     icon: ItemIcon?,
     shape: Shape = RoundedCornerShape(12.dp),
-) = BoxWithConstraints(
-    contentAlignment = Alignment.Center,
-    modifier = modifier
-        .background(
-            color = Color(colorScheme.primary),
-            shape = shape,
-        )
 ) {
-    if (icon != null) {
-        Icon(
-            painter = painterResource(icon.resId),
-            contentDescription = "icon",
-            tint = Color(colorScheme.onPrimary),
-            modifier = Modifier
-                .size((maxWidth * 0.5f))
-        )
-        return@BoxWithConstraints
+    val isDark = MoneyTheme.colors.isDark
+    val (backgroundColor, foregroundColor) = remember(colorScheme, isDark) {
+        if (isDark) {
+            val darkColors = ItemColorSchemeAccents.darkLogoColors(colorScheme)
+            Color(darkColors.background) to Color(darkColors.foreground)
+        } else {
+            Color(colorScheme.primary) to Color(colorScheme.onPrimary)
+        }
     }
 
-    // Fallback to letter (grapheme).
-    val fontSizeSp = (maxWidth * 0.5f).value.sp / LocalDensity.current.fontScale
+    BoxWithConstraints(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .background(
+                color = backgroundColor,
+                // Dark avatars are always circles.
+                shape =
+                    if (isDark)
+                        CircleShape
+                    else
+                        shape,
+            )
+    ) {
+        if (icon != null) {
+            Icon(
+                painter = painterResource(icon.resId),
+                contentDescription = "icon",
+                tint = foregroundColor,
+                modifier = Modifier
+                    .size((maxWidth * 0.5f))
+            )
+            return@BoxWithConstraints
+        }
 
-    val firstGrapheme = remember(title) {
+        // Fallback to letter (grapheme).
+        val fontSizeSp = (maxWidth * 0.5f).value.sp / LocalDensity.current.fontScale
 
-        val firstGraphemeEndIndex =
-            BreakIterator.getCharacterInstance().run {
-                setText(title)
-                next()
-            }
+        val firstGrapheme = remember(title) {
 
-        if (firstGraphemeEndIndex > 0)
-            title.substring(0, firstGraphemeEndIndex)
-        else
-            "…"
-    }
+            val firstGraphemeEndIndex =
+                BreakIterator.getCharacterInstance().run {
+                    setText(title)
+                    next()
+                }
 
-    Text(
-        text = firstGrapheme,
-        style = TextStyle(
-            color = Color(colorScheme.onPrimary),
-            fontSize = fontSizeSp,
+            if (firstGraphemeEndIndex > 0)
+                title.substring(0, firstGraphemeEndIndex)
+            else
+                "…"
+        }
+
+        Text(
+            text = firstGrapheme,
+            style = TextStyle(
+                color = foregroundColor,
+                fontSize = fontSizeSp,
+            )
         )
-    )
+    }
+}
+
+/**
+ * The saturated color of the item for charts, borders and accents.
+ */
+@Composable
+fun itemAccentColor(colorScheme: ItemColorScheme): Color {
+    val isDark = MoneyTheme.colors.isDark
+    return remember(colorScheme, isDark) {
+        Color(ItemColorSchemeAccents.accent(colorScheme, isDark))
+    }
 }
 
 @Preview(
