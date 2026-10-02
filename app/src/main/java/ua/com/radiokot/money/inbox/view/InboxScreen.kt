@@ -38,6 +38,8 @@ import ua.com.radiokot.money.uikit.MoneyIconButton
 import ua.com.radiokot.money.uikit.MoneyIconButtonStyle
 import ua.com.radiokot.money.uikit.RowChevron
 import ua.com.radiokot.money.uikit.SectionHeader
+import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.resolve
 import ua.com.radiokot.money.uikit.listGroupItem
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
@@ -341,7 +343,7 @@ private fun InboxItemRow(
                 if (LocalPrivacyMode.current)
                     PrivacyAmounts.MASK
                 else
-                    item.amountText,
+                    item.amountText.resolve(),
             style = MoneyTheme.typography.bodyStrong,
             maxLines = 1,
         )
@@ -376,7 +378,7 @@ private fun InboxScreenPreview(
     pendingItemList = listOf(
         ViewInboxItem(
             title = "DEEPSEERWEA",
-            amountText = "2,12 USD",
+            amountText = ViewText.Plain("2,12 USD"),
             dateText = "2026-10-02 08:06",
             isForeignCurrency = true,
             key = "1",
@@ -392,7 +394,7 @@ private fun InboxScreenPreview(
     doneItemList = listOf(
         ViewInboxItem(
             title = "CAFE EXAMPLE",
-            amountText = "4,50 EUR",
+            amountText = ViewText.Plain("4,50 EUR"),
             dateText = "2026-10-01 13:10",
             isForeignCurrency = false,
             key = "3",
