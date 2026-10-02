@@ -43,21 +43,32 @@ object ItemColorSchemeAccents {
         HardcodedItemColorSchemeRepository().getItemColorSchemesByName()
     }
 
+    private fun accentSchemeName(scheme: ItemColorScheme, isDark: Boolean): String {
+        val family = scheme.name.trimEnd(Char::isDigit)
+        return if (family == "Black")
+            if (isDark) "Black2" else "Black4"
+        else
+            family + "4"
+    }
+
     fun accent(
         scheme: ItemColorScheme,
         isDark: Boolean,
         schemesByName: Map<String, ItemColorScheme> = defaultSchemesByName,
-    ): Long {
-        val family = scheme.name.trimEnd(Char::isDigit)
-        val accentName =
-            if (family == "Black")
-                if (isDark) "Black2" else "Black4"
-            else
-                family + "4"
-
-        return schemesByName[accentName]?.primary
+    ): Long =
+        schemesByName[accentSchemeName(scheme, isDark)]?.primary
             ?: scheme.primary
-    }
+
+    /**
+     * @return a color readable on top of [accent].
+     */
+    fun onAccent(
+        scheme: ItemColorScheme,
+        isDark: Boolean,
+        schemesByName: Map<String, ItemColorScheme> = defaultSchemesByName,
+    ): Long =
+        schemesByName[accentSchemeName(scheme, isDark)]?.onPrimary
+            ?: scheme.onPrimary
 
     fun darkLogoColors(
         scheme: ItemColorScheme,

@@ -21,8 +21,10 @@ package ua.com.radiokot.money.currency.view
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -41,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
@@ -57,11 +60,14 @@ import kotlin.math.max
 fun AnimatedAmountInputText(
     modifier: Modifier,
     amountInputState: AmountInputState,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = 20.sp,
 ) {
     val textStyle = TextStyle(
         textAlign = TextAlign.End,
-        fontSize = 20.sp,
+        fontSize = fontSize,
         fontWeight = FontWeight.SemiBold,
+        color = color,
     )
     val textFadingEdgeWidth = textStyle.fontSize.value
 
@@ -71,7 +77,7 @@ fun AnimatedAmountInputText(
                 targetState = amountInputState.inputText,
                 transitionSpec = {
                     ContentTransform(
-                        targetContentEnter = EnterTransition.None,
+                        targetContentEnter = fadeIn(tween(100)) + slideInVertically(tween(100)) { it / 4 },
                         initialContentExit = ExitTransition.None,
                     )
                 },

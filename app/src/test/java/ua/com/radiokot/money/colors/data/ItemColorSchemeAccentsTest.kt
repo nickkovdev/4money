@@ -54,6 +54,18 @@ class ItemColorSchemeAccentsTest {
     }
 
     @Test
+    fun onAccent_IsAccentSchemeOnPrimary() {
+        Assert.assertEquals(
+            0xFFFFF6F6,
+            ItemColorSchemeAccents.onAccent(schemesByName.getValue("Red2"), isDark = false, schemesByName),
+        )
+        Assert.assertEquals(
+            0xFF181818,
+            ItemColorSchemeAccents.onAccent(schemesByName.getValue("Black5"), isDark = true, schemesByName),
+        )
+    }
+
+    @Test
     fun blend() {
         Assert.assertEquals(0xFF808080, ItemColorSchemeAccents.blend(0xFFFFFFFF, 0xFF000000, 0.5f))
         Assert.assertEquals(0xFFFFFFFF, ItemColorSchemeAccents.blend(0xFFFFFFFF, 0xFF000000, 1f))
