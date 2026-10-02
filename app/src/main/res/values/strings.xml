@@ -35,4 +35,79 @@
     <string name="inbox_range_from">From %1$s</string>
     <string name="inbox_range_over">Over %1$s</string>
     <string name="inbox_range_any">Any amount</string>
+
+    <!-- Home and privacy -->
+    <string name="home_tab_accounts">Accounts</string>
+    <string name="home_tab_categories">Categories</string>
+    <string name="home_tab_history">History</string>
+    <string name="home_tab_overview">Overview</string>
+    <string name="home_profile_and_settings">Profile and settings</string>
+    <string name="privacy_show_amounts">Show amounts</string>
+    <string name="privacy_hide_amounts">Hide amounts</string>
+
+    <!-- Accounts -->
+    <string name="accounts_tab_accounts">Accounts</string>
+    <string name="accounts_tab_total">Total</string>
+    <string name="accounts_add">Add account</string>
+    <string name="accounts_total_balance">Total balance</string>
+    <string name="accounts_by_currency">By currency</string>
+    <string name="accounts_archived">Archived accounts</string>
+    <string name="accounts_new">New account</string>
+    <string name="accounts_edit">Edit account</string>
+    <string name="accounts_field_title">Title</string>
+    <string name="accounts_field_title_placeholder">Account title</string>
+    <string name="accounts_field_currency">Currency</string>
+    <string name="accounts_currency_locked">The currency of an existing account can\'t be changed</string>
+    <string name="accounts_field_type">Type</string>
+    <string name="accounts_field_archived">Archived</string>
+    <string name="accounts_field_archived_hint">Hidden from the lists, the history stays</string>
+    <string name="accounts_type_title">Account type</string>
+    <string name="accounts_type_regular">Regular</string>
+    <string name="accounts_type_savings">Savings</string>
+    <string name="accounts_type_regular_hint">Cash, bank cards, etc.</string>
+    <string name="accounts_type_savings_hint">Stash, cold wallet, etc.</string>
+    <string name="accounts_current_balance">Current balance %1$s</string>
+    <string name="accounts_new_balance">New balance</string>
+    <string name="accounts_action_expense">Expense</string>
+    <string name="accounts_action_income">Income</string>
+    <string name="accounts_action_transfer">Transfer</string>
+    <string name="accounts_action_activity">Activity</string>
+    <string name="accounts_action_balance">Balance</string>
+    <string name="accounts_action_restore">Restore</string>
+
+    <!-- Currency -->
+    <string name="currency_title">Currency</string>
+    <string name="currency_keyboard_switch">Switch currency</string>
+    <string name="currency_keyboard_erase">Erase</string>
+    <string name="currency_keyboard_date">Date</string>
+    <string name="currency_keyboard_confirm">Confirm</string>
+
+    <!-- Colors and icons -->
+    <string name="colors_icon">Icon</string>
+    <string name="colors_icon_and_color">Icon and color</string>
+    <string name="colors_logo_account">Account logo</string>
+    <string name="colors_logo_category">Category logo</string>
+    <string name="colors_tab_icon">Icon</string>
+    <string name="colors_tab_color">Color</string>
+    <string name="colors_group_letter">Letter</string>
+    <string name="colors_group_care">Care</string>
+    <string name="colors_group_digital">Digital</string>
+    <string name="colors_group_finances">Finances</string>
+    <string name="colors_group_food">Food</string>
+    <string name="colors_group_health">Health</string>
+    <string name="colors_group_hobbies">Hobbies</string>
+    <string name="colors_group_home">Home</string>
+    <string name="colors_group_leisure">Leisure</string>
+    <string name="colors_group_meal">Meals</string>
+    <string name="colors_group_misc">Misc</string>
+    <string name="colors_group_money">Money</string>
+    <string name="colors_group_other">Other</string>
+    <string name="colors_group_people">People</string>
+    <string name="colors_group_services">Services</string>
+    <string name="colors_group_shop">Shopping</string>
+    <string name="colors_group_socializing">Socializing</string>
+    <string name="colors_group_transport">Transport</string>
+    <string name="colors_group_travel">Travel</string>
+    <string name="colors_group_vehicle">Vehicles</string>
+    <string name="colors_group_work">Work</string>
 </resources>

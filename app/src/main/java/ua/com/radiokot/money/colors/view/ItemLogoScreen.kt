@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.colors.view
 
+import androidx.compose.ui.res.stringResource
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.MoneyButton
 import ua.com.radiokot.money.uikit.MoneyButtonStyle
 import ua.com.radiokot.money.uikit.ScreenTopBar
@@ -102,15 +104,15 @@ private fun ItemLogoScreen(
     ScreenTopBar(
         title = when (logoType) {
             ItemLogoType.Account ->
-                "Account logo"
+                stringResource(R.string.colors_logo_account)
 
             ItemLogoType.Category ->
-                "Category logo"
+                stringResource(R.string.colors_logo_category)
         },
         onNavigationClicked = onCloseClicked,
         actions = {
             MoneyButton(
-                text = "Done",
+                text = stringResource(R.string.common_done),
                 style = MoneyButtonStyle.Filled,
                 onClick = onSaveClicked,
                 contentPadding = PaddingValues(
@@ -256,7 +258,7 @@ private fun Pickers(
     val coroutineScope = rememberCoroutineScope()
 
     SegmentedControl(
-        options = listOf("Icon", "Color"),
+        options = listOf(stringResource(R.string.colors_tab_icon), stringResource(R.string.colors_tab_color)),
         selectedIndex = pagerState.currentPage,
         onSelected = { index ->
             coroutineScope.launch {

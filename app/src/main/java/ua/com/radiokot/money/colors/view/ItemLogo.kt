@@ -36,12 +36,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Icon
 import com.composeunstyled.Text
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.colors.data.DrawableResItemIconRepository
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemColorScheme
@@ -71,7 +73,7 @@ fun ItemLogo(
         if (icon != null) {
             Icon(
                 painter = painterResource(icon.resId),
-                contentDescription = "icon",
+                contentDescription = stringResource(R.string.colors_icon),
                 tint = foregroundColor,
                 modifier = Modifier
                     .size((maxWidth * 0.5f))

@@ -45,6 +45,7 @@ import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.eventSharedFlow
 import ua.com.radiokot.money.lazyLogger
 import java.math.BigInteger
+import ua.com.radiokot.money.uikit.ViewText
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccountsViewModel(
@@ -69,7 +70,7 @@ class AccountsViewModel(
                     .flatMap { (type, accountsOfType, totalInPrimaryCurrency) ->
                         listOf(
                             ViewAccountListItem.Header(
-                                title = type.name,
+                                title = ViewText.Res(type.titleRes),
                                 amount = totalInPrimaryCurrency
                                     ?.let(::ViewAmount),
                                 key = type.slug,

@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import androidx.compose.ui.res.stringResource
 import ua.com.radiokot.money.currency.view.formatOrPrivate
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -127,8 +128,8 @@ private fun AccountsScreen(
             SegmentedControl(
                 options = pages.map { page ->
                     when (page) {
-                        Page.All -> "Accounts"
-                        Page.Total -> "Total"
+                        Page.All -> stringResource(R.string.accounts_tab_accounts)
+                        Page.Total -> stringResource(R.string.accounts_tab_total)
                     }
                 },
                 selectedIndex = pagerState.currentPage,
@@ -142,7 +143,7 @@ private fun AccountsScreen(
 
         MoneyIconButton(
             icon = R.drawable.ic_tabler_plus,
-            contentDescription = "Add account",
+            contentDescription = stringResource(R.string.accounts_add),
             style = MoneyIconButtonStyle.Filled,
             onClick = onAddClicked,
         )
@@ -222,7 +223,7 @@ private fun TotalBalanceHeader(
         modifier = modifier,
     ) {
         Text(
-            text = "Total balance",
+            text = stringResource(R.string.accounts_total_balance),
             style = MoneyTheme.typography.labelRegular,
             color = MoneyTheme.colors.ink2,
         )
@@ -243,7 +244,7 @@ private fun ArchiveLink(
     modifier = modifier,
 ) {
     ListRow(
-        title = "Archived accounts",
+        title = stringResource(R.string.accounts_archived),
         leading = {
             IconTile(
                 icon = R.drawable.ic_tabler_archive,
@@ -287,7 +288,7 @@ private fun TotalPage(
     )
 
     SectionHeader(
-        title = "By currency",
+        title = stringResource(R.string.accounts_by_currency),
     )
 
     ListGroup {

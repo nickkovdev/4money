@@ -72,7 +72,9 @@ import ua.com.radiokot.money.uikit.GroupPosition
 import ua.com.radiokot.money.uikit.ListRowTileDividerInset
 import ua.com.radiokot.money.uikit.SectionHeader
 import ua.com.radiokot.money.uikit.ViewAmountPreviewParameterProvider
+import ua.com.radiokot.money.uikit.ViewText
 import ua.com.radiokot.money.uikit.listGroupItem
+import ua.com.radiokot.money.uikit.resolve
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import java.math.BigInteger
@@ -98,7 +100,7 @@ fun AccountList(
         when (item) {
             is ViewAccountListItem.Header -> {
                 HeaderItem(
-                    title = item.title,
+                    title = item.title.resolve(),
                     amount = item.amount,
                     isFirst = index == 0,
                     modifier = Modifier
@@ -210,7 +212,7 @@ fun MovableAccountList(
             when (item) {
                 is ViewAccountListItem.Header -> {
                     HeaderItem(
-                        title = item.title,
+                        title = item.title.resolve(),
                         amount = item.amount,
                         isFirst = index == 0,
                         modifier = Modifier
@@ -290,7 +292,7 @@ private fun AccountListPreview() {
     AccountList(
         itemList = listOf(
             ViewAccountListItem.Header(
-                title = "Accounts",
+                title = ViewText.Plain("Accounts"),
                 amount = ViewAmount(
                     value = BigInteger("10000"),
                     currency = ViewCurrency(
@@ -329,7 +331,7 @@ private fun AccountListPreview() {
                 key = "acc2",
             ),
             ViewAccountListItem.Header(
-                title = "Savings",
+                title = ViewText.Plain("Savings"),
                 amount = ViewAmount(
                     value = BigInteger("9900000"),
                     currency = ViewCurrency(

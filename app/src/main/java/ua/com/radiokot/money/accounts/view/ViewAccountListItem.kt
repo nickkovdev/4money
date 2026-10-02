@@ -24,6 +24,7 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
 import kotlin.random.Random
+import ua.com.radiokot.money.uikit.ViewText
 
 @Immutable
 sealed interface ViewAccountListItem {
@@ -32,7 +33,7 @@ sealed interface ViewAccountListItem {
     val key: Any
 
     class Header(
-        val title: String,
+        val title: ViewText,
         val amount: ViewAmount?,
         override val key: Any,
     ) : ViewAccountListItem {

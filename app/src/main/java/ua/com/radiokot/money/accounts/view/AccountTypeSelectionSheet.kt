@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import androidx.compose.ui.res.stringResource
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.IconTile
 import ua.com.radiokot.money.uikit.ListDivider
 import ua.com.radiokot.money.uikit.ListGroup
@@ -63,7 +65,7 @@ fun AccountTypeSelectionSheet(
     selectedType: Account.Type,
     onTypeClicked: (Account.Type) -> Unit,
 ) = SheetScaffold(
-    title = "Account type",
+    title = stringResource(R.string.accounts_type_title),
     modifier = modifier,
 ) {
     ListGroup {
@@ -73,10 +75,10 @@ fun AccountTypeSelectionSheet(
             }
 
             ListRow(
-                title = type.name,
+                title = stringResource(type.titleRes),
                 subtitle = when (type) {
-                    Account.Type.Regular -> "Cash, bank cards, etc."
-                    Account.Type.Savings -> "Stash, cold wallet, etc."
+                    Account.Type.Regular -> stringResource(R.string.accounts_type_regular_hint)
+                    Account.Type.Savings -> stringResource(R.string.accounts_type_savings_hint)
                 },
                 leading = {
                     IconTile(
