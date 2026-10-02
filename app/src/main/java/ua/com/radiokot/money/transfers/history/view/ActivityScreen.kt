@@ -21,6 +21,7 @@ package ua.com.radiokot.money.transfers.history.view
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
@@ -42,6 +43,7 @@ import androidx.paging.PagingData
 import com.composeunstyled.Text
 import kotlinx.coroutines.flow.Flow
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.view.TransferList
 import ua.com.radiokot.money.transfers.view.ViewTransferCounterparty
 import ua.com.radiokot.money.transfers.view.ViewTransferListItem
@@ -56,6 +58,7 @@ fun ActivityScreenRoot(
     onTransferItemClicked = remember { viewModel::onTransferItemClicked },
     onTransferItemLongClicked = remember { viewModel::onTransferItemLongClicked },
     period = viewModel.viewHistoryStatsPeriod.collectAsState(),
+    historyPeriod = viewModel.historyStatsPeriod.collectAsState(),
     onPeriodClicked = {},
     isPreviousPeriodButtonEnabled = viewModel.isPreviousHistoryStatsPeriodButtonEnabled.collectAsState(),
     onPreviousPeriodClicked = remember { viewModel::onPreviousHistoryStatsPeriodClicked },
@@ -76,6 +79,7 @@ private fun ActivityScreen(
     onTransferItemLongClicked: (ViewTransferListItem.Transfer) -> Unit,
     counterparties: State<List<ViewTransferCounterparty>>,
     period: State<ViewHistoryPeriod>,
+    historyPeriod: State<HistoryPeriod>,
     onPeriodClicked: () -> Unit,
     isNextPeriodButtonEnabled: State<Boolean>,
     onNextPeriodClicked: () -> Unit,
@@ -84,7 +88,13 @@ private fun ActivityScreen(
     isBackHandlerEnabled: State<Boolean>,
     onBack: () -> Unit,
 ) = Column(
-    modifier = modifier,
+    modifier = modifier
+        .periodSwipe(
+            isPreviousEnabled = isPreviousPeriodButtonEnabled,
+            isNextEnabled = isNextPeriodButtonEnabled,
+            onPrevious = onPreviousPeriodClicked,
+            onNext = onNextPeriodClicked,
+        ),
 ) {
     PeriodBar(
         period = period,
@@ -182,16 +192,23 @@ private fun ActivityScreen(
         LazyListState()
     }
 
-    TransferList(
-        itemPagingFlow = itemPagingFlow,
-        onTransferItemClicked = onTransferItemClicked,
-        onTransferItemLongClicked = onTransferItemLongClicked,
-        state = transferListState,
-        modifier = modifier
-            .padding(
-                horizontal = 16.dp,
-            )
-    )
+    PeriodSlideContainer(
+        period = historyPeriod.value,
+        modifier = Modifier
+            .weight(1f)
+    ) {
+        TransferList(
+            itemPagingFlow = itemPagingFlow,
+            onTransferItemClicked = onTransferItemClicked,
+            onTransferItemLongClicked = onTransferItemLongClicked,
+            state = transferListState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    horizontal = 16.dp,
+                )
+        )
+    }
 
     BackHandler(
         enabled = isBackHandlerEnabled.value,
