@@ -19,6 +19,26 @@
 
 package ua.com.radiokot.money.overview.view
 
+import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import com.composeunstyled.Icon
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.home.view.HomeTabHeader
+import ua.com.radiokot.money.uikit.EmptyState
+import ua.com.radiokot.money.uikit.ListDivider
+import ua.com.radiokot.money.uikit.ListGroup
+import ua.com.radiokot.money.uikit.ListRow
+import ua.com.radiokot.money.uikit.RowChevron
+import ua.com.radiokot.money.uikit.SectionHeader
+import ua.com.radiokot.money.uikit.theme.MoneyShapes
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -99,44 +119,52 @@ private fun OverviewScreen(
             onPrevious = onPreviousPeriodClicked,
             onNext = onNextPeriodClicked,
         )
-        .verticalScroll(rememberScrollState())
-        .padding(
-            horizontal = 16.dp,
-            vertical = 16.dp,
-        )
 ) {
-    PeriodBar(
+    HomeTabHeader(
         period = period,
         onPeriodClicked = {},
-        isNextButtonEnabled = isNextPeriodButtonEnabled,
+        isNextPeriodButtonEnabled = isNextPeriodButtonEnabled,
         onNextPeriodClicked = onNextPeriodClicked,
-        isPreviousButtonEnabled = isPreviousPeriodButtonEnabled,
+        isPreviousPeriodButtonEnabled = isPreviousPeriodButtonEnabled,
         onPreviousPeriodClicked = onPreviousPeriodClicked,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 6.dp)
     )
 
-    Spacer(modifier = Modifier.height(16.dp))
-
-    PeriodSlideContainer(period = historyPeriod.value) {
-        when (val currentState = state.value) {
-            OverviewScreenState.Loading ->
-                Unit
-
-            OverviewScreenState.NoPrimaryCurrency ->
-                Text(
-                    text = "Set an existing primary currency in the profile menu to see the overview",
-                    color = MoneyTheme.colors.onBackgroundSecondary,
+    PeriodSlideContainer(
+        period = historyPeriod.value,
+        modifier = Modifier
+            .weight(1f)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    horizontal = MoneySpacing.screen,
                 )
-
-            is OverviewScreenState.Loaded ->
-                OverviewContent(
-                    overview = currentState.overview,
-                    onExpensesCardClicked = onExpensesCardClicked,
-                    onIncomeCardClicked = onIncomeCardClicked,
-                    onMoreCategoriesClicked = onMoreCategoriesClicked,
+                .padding(
+                    top = 4.dp,
+                    bottom = 32.dp,
                 )
+        ) {
+            when (val currentState = state.value) {
+                OverviewScreenState.Loading ->
+                    Unit
+
+                OverviewScreenState.NoPrimaryCurrency ->
+                    EmptyState(
+                        icon = R.drawable.ic_tabler_currency_euro,
+                        title = "No primary currency",
+                        text = "Set an existing primary currency in Settings to see the overview",
+                    )
+
+                is OverviewScreenState.Loaded ->
+                    OverviewContent(
+                        overview = currentState.overview,
+                        onExpensesCardClicked = onExpensesCardClicked,
+                        onIncomeCardClicked = onIncomeCardClicked,
+                        onMoreCategoriesClicked = onMoreCategoriesClicked,
+                    )
+            }
         }
     }
 }
@@ -147,39 +175,53 @@ private fun OverviewContent(
     onExpensesCardClicked: () -> Unit,
     onIncomeCardClicked: () -> Unit,
     onMoreCategoriesClicked: () -> Unit,
-) = Column {
+) = Column(
+    verticalArrangement = Arrangement.spacedBy(12.dp),
+) {
     val colors = MoneyTheme.colors
 
-    Text(
-        text = "Balance",
-        color = colors.onBackgroundSecondary,
-        fontSize = 13.sp,
-    )
-    AnimatedAmountText(
-        amount = overview.balance,
-        style = TextStyle(
-            fontSize = 26.sp,
-            fontWeight = FontWeight.SemiBold,
-        ),
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = Modifier
+            .padding(
+                horizontal = 4.dp,
+            )
+    ) {
+        Text(
+            text = "Income minus expenses",
+            style = MoneyTheme.typography.labelRegular,
+            color = colors.ink2,
+        )
+        AnimatedAmountText(
+            amount = overview.balance,
+            customColor =
+                if (overview.balance.value.signum() < 0)
+                    colors.expense
+                else
+                    colors.ink,
+            style = MoneyTheme.typography.display,
+        )
+    }
 
     Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         TotalCard(
             title = "Expenses",
+            icon = R.drawable.ic_tabler_arrow_up_right,
             amount = overview.expenseTotal,
             color = colors.expense,
+            tint = colors.expenseTint,
             isSelected = !overview.isIncome,
             onClick = onExpensesCardClicked,
             modifier = Modifier.weight(1f),
         )
         TotalCard(
             title = "Income",
+            icon = R.drawable.ic_tabler_arrow_down_left,
             amount = overview.incomeTotal,
             color = colors.income,
+            tint = colors.incomeTint,
             isSelected = overview.isIncome,
             onClick = onIncomeCardClicked,
             modifier = Modifier.weight(1f),
@@ -187,8 +229,6 @@ private fun OverviewContent(
     }
 
     if (overview.bars.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(20.dp))
-
         val isDark = colors.isDark
         val chartOther = colors.chartOther
         val bars = remember(overview, isDark) {
@@ -208,75 +248,94 @@ private fun OverviewContent(
             }
         }
 
-        StackedBarChart(
-            bars = bars,
-            labels = labels,
-            labelColor = colors.onBackgroundSecondary,
-            animationKey = overview.animationKey,
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp),
-        )
+                .clip(MoneyShapes.large)
+                .background(colors.surface)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "By day",
+                style = MoneyTheme.typography.caption,
+                color = colors.ink3,
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            StackedBarChart(
+                bars = bars,
+                labels = labels,
+                labelColor = colors.ink3,
+                animationKey = overview.animationKey,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+            )
+        }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
-
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        StatColumn("Day avg", overview.dayAverage, Modifier.weight(1f))
-        StatColumn("Week avg", overview.weekAverage, Modifier.weight(1f))
-        StatColumn(
-            if (overview.isMonth) "Month total" else "Total",
-            overview.periodTotal,
-            Modifier.weight(1f),
-        )
+    ListGroup {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+        ) {
+            StatColumn("Day avg", overview.dayAverage, Modifier.weight(1f))
+            StatDivider()
+            StatColumn("Week avg", overview.weekAverage, Modifier.weight(1f))
+            StatDivider()
+            StatColumn(
+                if (overview.isMonth) "Month total" else "Total",
+                overview.periodTotal,
+                Modifier.weight(1f),
+            )
+        }
     }
 
     if (overview.topCategories.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(20.dp))
+        SectionHeader(
+            title = "Top categories",
+            modifier = Modifier
+                .padding(top = 8.dp)
+        )
 
-        overview.topCategories.forEach { category ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 6.dp),
-            ) {
-                ItemLogo(
+        ListGroup {
+            overview.topCategories.forEachIndexed { index, category ->
+                if (index > 0) {
+                    ListDivider(startInset = 16.dp + 36.dp + 14.dp)
+                }
+
+                ListRow(
                     title = category.title,
-                    colorScheme = category.colorScheme,
-                    icon = category.icon,
-                    shape = CircleShape,
-                    modifier = Modifier.size(36.dp),
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = category.title,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    text = "${category.percent}%",
-                    color = colors.onBackgroundSecondary,
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                )
-                AnimatedAmountText(
-                    amount = category.amount,
-                    customColor = Color.Unspecified,
+                    subtitle = "${category.percent}%",
+                    leading = {
+                        ItemLogo(
+                            title = category.title,
+                            colorScheme = category.colorScheme,
+                            icon = category.icon,
+                            modifier = Modifier.size(36.dp),
+                        )
+                    },
+                    trailing = {
+                        AnimatedAmountText(
+                            amount = category.amount,
+                            customColor = colors.ink,
+                            style = MoneyTheme.typography.bodyStrong,
+                        )
+                    },
                 )
             }
-        }
 
-        if (overview.hasMoreCategories) {
-            Text(
-                text = "More…",
-                color = colors.onBackgroundSecondary,
-                modifier = Modifier
-                    .clickable(onClick = onMoreCategoriesClicked)
-                    .padding(vertical = 8.dp),
-            )
+            if (overview.hasMoreCategories) {
+                ListDivider()
+                ListRow(
+                    title = "All categories",
+                    titleColor = colors.accent,
+                    trailing = { RowChevron() },
+                    onClick = onMoreCategoriesClicked,
+                )
+            }
         }
     }
 }
@@ -285,53 +344,94 @@ private fun OverviewContent(
 private fun TotalCard(
     modifier: Modifier = Modifier,
     title: String,
+    @DrawableRes
+    icon: Int,
     amount: ViewAmount,
     color: Color,
+    tint: Color,
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(12.dp)
+    val background by animateColorAsState(
+        targetValue =
+            if (isSelected)
+                tint
+            else
+                MoneyTheme.colors.surface,
+        label = "total-card",
+    )
 
     Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier
-            .background(MoneyTheme.colors.surfaceVariant, shape)
-            .border(
-                width = if (isSelected) 1.5.dp else 0.dp,
-                color = if (isSelected) color else Color.Transparent,
-                shape = shape,
-            )
+            .clip(MoneyShapes.large)
+            .background(background)
             .clickable(onClick = onClick)
-            .padding(12.dp),
+            .padding(14.dp),
     ) {
-        Text(
-            text = title,
-            color = MoneyTheme.colors.onBackgroundSecondary,
-            fontSize = 13.sp,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier
+                    .size(16.dp)
+            )
+            Text(
+                text = title,
+                style = MoneyTheme.typography.label,
+                color =
+                    if (isSelected)
+                        color
+                    else
+                        MoneyTheme.colors.ink2,
+            )
+        }
         AnimatedAmountText(
             amount = amount,
             customColor = color,
-            style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
+            style = MoneyTheme.typography.title.copy(
+                fontFeatureSettings = "tnum",
             ),
         )
     }
 }
 
 @Composable
+private fun StatDivider() = Box(
+    modifier = Modifier
+        .padding(vertical = 12.dp)
+        .width(1.dp)
+        .fillMaxHeight()
+        .background(MoneyTheme.colors.line)
+)
+
+@Composable
 private fun StatColumn(
     title: String,
     amount: ViewAmount,
     modifier: Modifier = Modifier,
-) = Column(modifier = modifier) {
+) = Column(
+    verticalArrangement = Arrangement.spacedBy(2.dp),
+    modifier = modifier
+        .padding(
+            horizontal = 12.dp,
+            vertical = 12.dp,
+        )
+) {
     Text(
         text = title,
-        color = MoneyTheme.colors.onBackgroundSecondary,
-        fontSize = 12.sp,
+        style = MoneyTheme.typography.small,
+        color = MoneyTheme.colors.ink3,
     )
     AnimatedAmountText(
         amount = amount,
-        customColor = Color.Unspecified,
+        customColor = MoneyTheme.colors.ink,
+        style = MoneyTheme.typography.label.copy(
+            fontFeatureSettings = "tnum",
+        ),
     )
 }
