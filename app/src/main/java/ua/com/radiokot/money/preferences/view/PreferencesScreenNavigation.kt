@@ -32,10 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.compose.viewmodel.koinViewModel
 import ua.com.radiokot.money.inbox.listener.NotificationAccess
 
 const val PreferencesScreenRoute = "preferences"
+
+private val log = KotlinLogging.logger("PreferencesScreen")
 
 fun NavGraphBuilder.preferencesScreen(
     onProceedToPasscodeSetup: () -> Unit,
@@ -66,7 +69,13 @@ fun NavGraphBuilder.preferencesScreen(
                     try {
                         context.startActivity(NotificationAccess.getSettingsIntent(context))
                     } catch (_: ActivityNotFoundException) {
-                        context.startActivity(NotificationAccess.getFallbackSettingsIntent())
+                        try {
+                            context.startActivity(NotificationAccess.getFallbackSettingsIntent())
+                        } catch (e: ActivityNotFoundException) {
+                            log.error(e) {
+                                "No notification access settings screen"
+                            }
+                        }
                     }
 
                 PreferencesScreenViewModel.Event.ProceedToInbox ->

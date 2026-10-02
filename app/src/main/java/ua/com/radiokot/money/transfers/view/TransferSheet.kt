@@ -114,7 +114,7 @@ fun TransferSheetRoot(
         onSourceClicked = remember { viewModel::onSourceClicked },
         onDestinationClicked = remember { viewModel::onDestinationClicked },
         onSwapCounterpartiesClicked = remember { viewModel::onSwapCounterpartiesClicked },
-        rememberPayee = viewModel.rememberPayee,
+        rememberPayeeDisplayName = viewModel.rememberPayeeDisplayName,
         isRememberPayeeEnabled = viewModel.isRememberPayeeEnabled.collectAsState(),
         onRememberPayeeToggled = remember { viewModel::onRememberPayeeToggled },
     )
@@ -142,7 +142,7 @@ private fun TransferSheet(
     onSourceClicked: () -> Unit,
     onDestinationClicked: () -> Unit,
     onSwapCounterpartiesClicked: () -> Unit,
-    rememberPayee: String? = null,
+    rememberPayeeDisplayName: String? = null,
     isRememberPayeeEnabled: State<Boolean> = remember { mutableStateOf(false) },
     onRememberPayeeToggled: (Boolean) -> Unit = {},
 ) = BoxWithConstraints(
@@ -451,7 +451,7 @@ private fun TransferSheet(
             )
         }
 
-        if (rememberPayee != null) {
+        if (rememberPayeeDisplayName != null) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -465,7 +465,7 @@ private fun TransferSheet(
                     )
             ) {
                 BasicText(
-                    text = "Remember for \u201C$rememberPayee\u201D",
+                    text = "Remember for \u201C$rememberPayeeDisplayName\u201D",
                     modifier = Modifier
                         .weight(1f)
                 )
@@ -579,7 +579,7 @@ private fun TransferSheetPreview(
             onSourceClicked = { },
             onDestinationClicked = { },
             onSwapCounterpartiesClicked = { },
-            rememberPayee = "deepseerwea",
+            rememberPayeeDisplayName = "DEEPSEERWEA",
             modifier = Modifier
                 .heightIn(
                     max = 600.dp,

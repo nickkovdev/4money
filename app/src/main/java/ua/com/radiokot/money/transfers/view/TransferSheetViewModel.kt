@@ -97,6 +97,12 @@ class TransferSheetViewModel(
      * Normalized payee to offer a rule for, when opened from the inbox.
      */
     val rememberPayee: String? = parameters.rememberPayee
+
+    /**
+     * [rememberPayee] as shown to the user.
+     */
+    val rememberPayeeDisplayName: String? = parameters.rememberPayeeDisplayName
+        ?: parameters.rememberPayee
     private val _isRememberPayeeEnabled: MutableStateFlow<Boolean> =
         MutableStateFlow(parameters.rememberPayee != null)
     val isRememberPayeeEnabled = _isRememberPayeeEnabled.asStateFlow()
@@ -601,5 +607,6 @@ class TransferSheetViewModel(
         val dateTime: LocalDateTime?,
         val inboxItemId: String? = null,
         val rememberPayee: String? = null,
+        val rememberPayeeDisplayName: String? = null,
     )
 }
