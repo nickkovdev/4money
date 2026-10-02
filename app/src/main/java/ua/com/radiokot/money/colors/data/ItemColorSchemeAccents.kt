@@ -60,23 +60,30 @@ object ItemColorSchemeAccents {
             ?: scheme.primary
 
     /**
-     * The accent tuned for the theme ground: a bit lighter on dark, a bit deeper on light,
-     * so the icon glyph on its tinted tile, ring segments and bars stay readable.
+     * The scheme color tuned for the theme ground, used for the icon glyph on its tinted tile,
+     * ring segments and bars. Keeps the shade of the scheme, so the 6 levels of a family stay distinct:
+     * on light, pale levels (1, 2) use their saturated "on" color;
+     * on dark, deep levels are lifted (5) or use their light "on" color (6).
      */
     fun themedAccent(
         scheme: ItemColorScheme,
         isDark: Boolean,
-        schemesByName: Map<String, ItemColorScheme> = defaultSchemesByName,
     ): Long {
-        val accent = accent(scheme, isDark, schemesByName)
-        return if (isDark)
-            blend(top = 0xFFFFFFFF, bottom = accent, alpha = THEMED_DARK_LIGHTEN)
-        else
-            blend(top = 0xFF000000, bottom = accent, alpha = THEMED_LIGHT_DEEPEN)
-    }
+        val level = scheme.name.takeLastWhile(Char::isDigit).toIntOrNull()
+            ?: return scheme.primary
 
-    private const val THEMED_DARK_LIGHTEN = 0.2f
-    private const val THEMED_LIGHT_DEEPEN = 0.12f
+        return if (isDark)
+            when {
+                level >= 6 -> scheme.onPrimary
+                level == 5 -> blend(top = 0xFFFFFFFF, bottom = scheme.primary, alpha = 0.35f)
+                else -> scheme.primary
+            }
+        else
+            when {
+                level <= 2 -> scheme.onPrimary
+                else -> blend(top = 0xFF000000, bottom = scheme.primary, alpha = 0.08f)
+            }
+    }
 
     /**
      * @return a color readable on top of [accent].

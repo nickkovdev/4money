@@ -19,6 +19,9 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.uikit.ScreenTopBar
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,7 +49,6 @@ import com.composeunstyled.Text
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
-import ua.com.radiokot.money.uikit.TextButton
 import java.math.BigInteger
 
 @Composable
@@ -60,47 +62,23 @@ private fun ArchivedAccountsScreen(
             WindowInsets.navigationBars
                 .add(WindowInsets.statusBars)
         )
-        .padding(
-            horizontal = 16.dp,
-        )
 ) {
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(
-                min = 56.dp,
-            )
-    ) {
-        val buttonPadding = remember {
-            PaddingValues(6.dp)
-        }
-
-        TextButton(
-            text = "❌",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onCloseClicked,
-                )
-        )
-
-        Text(
-            text = "Archived accounts",
-            fontSize = 16.sp,
-            modifier = Modifier
-                .weight(1f)
-                .padding(
-                    horizontal = 16.dp,
-                )
-        )
-    }
+    ScreenTopBar(
+        title = "Archived accounts",
+        navigationIcon = R.drawable.ic_tabler_arrow_left,
+        navigationContentDescription = "Back",
+        onNavigationClicked = onCloseClicked,
+    )
 
     AccountList(
         itemList = accountItemList,
         onAccountItemClicked = onAccountItemClicked,
+        contentPadding = PaddingValues(
+            start = MoneySpacing.screen,
+            end = MoneySpacing.screen,
+            top = 4.dp,
+            bottom = 24.dp,
+        ),
     )
 }
 

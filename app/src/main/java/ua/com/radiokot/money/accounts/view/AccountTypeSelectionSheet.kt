@@ -19,6 +19,14 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import ua.com.radiokot.money.uikit.IconTile
+import ua.com.radiokot.money.uikit.ListDivider
+import ua.com.radiokot.money.uikit.ListGroup
+import ua.com.radiokot.money.uikit.ListRow
+import ua.com.radiokot.money.uikit.ListRowTileDividerInset
+import ua.com.radiokot.money.uikit.SelectionMark
+import ua.com.radiokot.money.uikit.SheetScaffold
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -54,132 +62,36 @@ fun AccountTypeSelectionSheet(
     modifier: Modifier = Modifier,
     selectedType: Account.Type,
     onTypeClicked: (Account.Type) -> Unit,
-) = BoxWithConstraints(
-    modifier = modifier
-        .background(MoneyTheme.colors.surface)
-        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+) = SheetScaffold(
+    title = "Account type",
+    modifier = modifier,
 ) {
-
-    val maxSheetHeightDp =
-        if (maxHeight < 400.dp)
-            maxHeight
-        else
-            maxHeight * 0.8f
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(
-                max = maxSheetHeightDp,
-            )
-            .padding(16.dp)
-    ) {
-        item {
-            Text(
-                text = "Account type",
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        bottom = 16.dp
-                    )
-            )
-        }
-        itemsIndexed(
-            items = Account.Type.entries,
-        ) { i, item ->
-
-            val itemModifier = Modifier
-                .padding(
-                    bottom = 4.dp,
-                )
-                .background(
-                    shape = when (i) {
-                        0 -> RoundedCornerShape(
-                            topStart = 12.dp,
-                            topEnd = 12.dp,
-                            bottomStart = 6.dp,
-                            bottomEnd = 6.dp
-                        )
-
-                        Account.Type.entries.size - 1 -> RoundedCornerShape(
-                            topStart = 6.dp,
-                            topEnd = 6.dp,
-                            bottomStart = 12.dp,
-                            bottomEnd = 12.dp
-                        )
-
-                        else -> RoundedCornerShape(6.dp)
-                    },
-
-                    color = if (item == selectedType)
-                        MoneyTheme.colors.selection
-                    else
-                        MoneyTheme.colors.selectionIdle
-                )
-                .clickable(
-                    onClick = {
-                        onTypeClicked(item)
-                    }
-                )
-
-            when (item) {
-                Account.Type.Regular ->
-                    AccountTypeItem(
-                        icon = "👛",
-                        title = "Regular",
-                        description = "Cash, bank cards, etc.",
-                        modifier = itemModifier
-                    )
-
-                Account.Type.Savings ->
-                    AccountTypeItem(
-                        icon = "🐹",
-                        title = "Savings",
-                        description = "Stash, cold wallet, etc.",
-                        modifier = itemModifier
-                    )
+    ListGroup {
+        Account.Type.entries.forEachIndexed { index, type ->
+            if (index > 0) {
+                ListDivider(startInset = ListRowTileDividerInset)
             }
+
+            ListRow(
+                title = type.name,
+                subtitle = when (type) {
+                    Account.Type.Regular -> "Cash, bank cards, etc."
+                    Account.Type.Savings -> "Stash, cold wallet, etc."
+                },
+                leading = {
+                    IconTile(
+                        icon = accountTypeIcon(type),
+                        size = MoneySpacing.itemTile,
+                    )
+                },
+                trailing = {
+                    SelectionMark(
+                        isSelected = type == selectedType,
+                    )
+                },
+                onClick = { onTypeClicked(type) },
+            )
         }
-    }
-}
-
-@Composable
-private fun AccountTypeItem(
-    modifier: Modifier = Modifier,
-    icon: String,
-    title: String,
-    description: String,
-) = Row(
-    verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier
-        .padding(12.dp)
-) {
-    Text(
-        text = icon,
-        fontSize = 36.sp,
-    )
-
-    Spacer(modifier = Modifier.width(12.dp))
-
-    Column(
-        modifier = Modifier
-            .weight(1f)
-    ) {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-        )
-
-        Text(
-            text = description,
-            color = MoneyTheme.colors.onBackgroundSecondary,
-            modifier = Modifier
-                .padding(
-                    top = 4.dp,
-                )
-        )
     }
 }
 

@@ -58,7 +58,7 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.R
-import ua.com.radiokot.money.uikit.TextButton
+import ua.com.radiokot.money.uikit.MoneyIconButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -95,13 +95,10 @@ private fun SetUpPasscodeScreen(
             PaddingValues(6.dp)
         }
 
-        TextButton(
-            text = "❌",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onCloseClicked,
-                )
+        MoneyIconButton(
+            icon = R.drawable.ic_tabler_x,
+            contentDescription = "Close",
+            onClick = onCloseClicked,
         )
     }
 

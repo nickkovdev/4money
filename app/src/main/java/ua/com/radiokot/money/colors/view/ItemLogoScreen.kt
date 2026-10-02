@@ -19,6 +19,11 @@
 
 package ua.com.radiokot.money.colors.view
 
+import ua.com.radiokot.money.uikit.MoneyButton
+import ua.com.radiokot.money.uikit.MoneyButtonStyle
+import ua.com.radiokot.money.uikit.ScreenTopBar
+import ua.com.radiokot.money.uikit.SegmentedControl
+import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
@@ -71,7 +76,6 @@ import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.colors.data.ItemIconCategory
 import ua.com.radiokot.money.colors.data.ItemLogoType
 import ua.com.radiokot.money.plus
-import ua.com.radiokot.money.uikit.TextButton
 
 @Composable
 private fun ItemLogoScreen(
@@ -95,56 +99,27 @@ private fun ItemLogoScreen(
         )
 ) {
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(
-                min = 56.dp,
+    ScreenTopBar(
+        title = when (logoType) {
+            ItemLogoType.Account ->
+                "Account logo"
+
+            ItemLogoType.Category ->
+                "Category logo"
+        },
+        onNavigationClicked = onCloseClicked,
+        actions = {
+            MoneyButton(
+                text = "Done",
+                style = MoneyButtonStyle.Filled,
+                onClick = onSaveClicked,
+                contentPadding = PaddingValues(
+                    horizontal = 18.dp,
+                    vertical = 10.dp,
+                ),
             )
-            .padding(
-                horizontal = 16.dp,
-            )
-    ) {
-        val buttonPadding = remember {
-            PaddingValues(6.dp)
-        }
-
-        TextButton(
-            text = "❌",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onCloseClicked,
-                )
-        )
-
-        Text(
-            text = when (logoType) {
-                ItemLogoType.Account ->
-                    "Account logo"
-
-                ItemLogoType.Category ->
-                    "Category logo"
-            },
-            fontSize = 16.sp,
-            modifier = Modifier
-                .weight(1f)
-                .padding(
-                    horizontal = 16.dp,
-                )
-        )
-
-        TextButton(
-            text = "✔️",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onSaveClicked,
-                )
-        )
-    }
+        },
+    )
 
     BoxWithConstraints(
         modifier = Modifier
@@ -244,7 +219,7 @@ private fun TitleAndLogo(
 
         Text(
             text = itemTitle,
-            fontSize = 24.sp,
+            style = MoneyTheme.typography.title,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
@@ -280,59 +255,24 @@ private fun Pickers(
     )
     val coroutineScope = rememberCoroutineScope()
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+    SegmentedControl(
+        options = listOf("Icon", "Color"),
+        selectedIndex = pagerState.currentPage,
+        onSelected = { index ->
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(index)
+            }
+        },
         modifier = Modifier
             .align(Alignment.CenterHorizontally)
-    ) {
-        Text(
-            text = "Icon",
-            style = TextStyle(
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
-                textDecoration =
-                    if (pagerState.currentPage == pages.indexOf(Page.Icon))
-                        TextDecoration.Underline
-                    else
-                        null,
-            ),
-            modifier = Modifier
-                .clickable {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(
-                            page = pages.indexOf(Page.Icon),
-                        )
-                    }
-                }
-        )
-
-        Text(
-            text = "Color",
-            style = TextStyle(
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
-                textDecoration =
-                    if (pagerState.currentPage == pages.indexOf(Page.Color))
-                        TextDecoration.Underline
-                    else
-                        null,
-            ),
-            modifier = Modifier
-                .clickable {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(
-                            page = pages.indexOf(Page.Color),
-                        )
-                    }
-                }
-        )
-    }
+    )
 
     Spacer(modifier = Modifier.height(8.dp))
 
     val pickerContentPadding =
         PaddingValues(
-            vertical = 16.dp,
+            top = 16.dp,
+            bottom = 32.dp,
         ) + WindowInsets
             .navigationBars
             .only(WindowInsetsSides.Bottom)

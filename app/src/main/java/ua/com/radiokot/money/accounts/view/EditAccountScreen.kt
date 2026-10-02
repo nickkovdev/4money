@@ -19,6 +19,22 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.colors.view.EditableItemLogo
+import ua.com.radiokot.money.uikit.FieldLabel
+import ua.com.radiokot.money.uikit.IconTile
+import ua.com.radiokot.money.uikit.ListGroup
+import ua.com.radiokot.money.uikit.ListRow
+import ua.com.radiokot.money.uikit.MoneyButton
+import ua.com.radiokot.money.uikit.MoneyButtonStyle
+import ua.com.radiokot.money.uikit.MoneyPickerField
+import ua.com.radiokot.money.uikit.MoneyTextField
+import ua.com.radiokot.money.uikit.ScreenTopBar
+import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -63,7 +79,6 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.uikit.MoneySwitch
-import ua.com.radiokot.money.uikit.TextButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 
 @Composable
@@ -93,221 +108,40 @@ private fun EditAccountScreen(
                 .only(WindowInsetsSides.Horizontal)
                 .add(WindowInsets.statusBars)
         )
-        .padding(
-            horizontal = 16.dp,
-        )
 ) {
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(
-                min = 56.dp,
-            )
-    ) {
-        val buttonPadding = remember {
-            PaddingValues(6.dp)
-        }
-
-        TextButton(
-            text = "❌",
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    onClick = onCloseClicked,
-                )
-        )
-
-        Text(
-            text =
-                if (isNewAccount)
-                    "New account"
-                else
-                    "Edit account",
-            fontSize = 16.sp,
-            modifier = Modifier
-                .weight(1f)
-                .padding(
-                    horizontal = 16.dp,
-                )
-        )
-
-        TextButton(
-            text = "✔️",
-            isEnabled = isSaveEnabled.value,
-            padding = buttonPadding,
-            modifier = Modifier
-                .clickable(
-                    enabled = isSaveEnabled.value,
-                    onClick = onSaveClicked,
-                )
-        )
-    }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    LogoAndTitleRow(
-        title = title,
-        onTitleChanged = onTitleChanged,
-        colorScheme = colorScheme,
-        icon = icon,
-        onLogoClicked = onLogoClicked,
-        modifier = Modifier
-            .fillMaxWidth()
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    Text(
-        text = "Currency",
-    )
-
-    Spacer(modifier = Modifier.height(6.dp))
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color =
-                    if (isCurrencyChangeEnabled)
-                        MoneyTheme.colors.outline
-                    else
-                        MoneyTheme.colors.onBackgroundSecondary,
-            )
-            .clickable(
-                enabled = isCurrencyChangeEnabled,
-                onClick = onCurrencyClicked,
-            )
-            .padding(12.dp)
-    ) {
-        Text(
-            text = currencyCode.value,
-            color =
-                if (isCurrencyChangeEnabled)
-                    Color.Unspecified
-                else
-                    MoneyTheme.colors.onBackgroundSecondary,
-            modifier = Modifier
-                .weight(1f)
-        )
-
-        if (isCurrencyChangeEnabled) {
-            Text(text = "▶️")
-        }
-    }
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    Text(
-        text = "Type",
-    )
-
-    Spacer(modifier = Modifier.height(6.dp))
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color =
-                    if (isTypeChangeEnabled.value)
-                        MoneyTheme.colors.outline
-                    else
-                        MoneyTheme.colors.onBackgroundSecondary,
-            )
-            .clickable(
-                enabled = isTypeChangeEnabled.value,
-                onClick = onTypeClicked,
-            )
-            .padding(12.dp)
-    ) {
-        Text(
-            text = type.value.name,
-            color = if (isTypeChangeEnabled.value)
-                Color.Unspecified
+    ScreenTopBar(
+        title =
+            if (isNewAccount)
+                "New account"
             else
-                MoneyTheme.colors.onBackgroundSecondary,
-            modifier = Modifier
-                .weight(1f)
-        )
-
-        if (isTypeChangeEnabled.value) {
-            Text(text = "🔽")
-        }
-    }
-
-    if (isArchivedVisible) {
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .clickable(
-                    onClick = onArchivedClicked,
-                )
-                .padding(
-                    vertical = 12.dp,
-                )
-        ) {
-            Text(
-                text = "Archived",
-                modifier = Modifier
-                    .weight(1f)
-            )
-
-            MoneySwitch(
-                isOn = isArchived.value,
-                onToggled = { onArchivedClicked() },
-            )
-        }
-    }
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    TextButton(
-        text = "Save",
-        isEnabled = isSaveEnabled.value,
-        modifier = Modifier
-            .fillMaxWidth(1f)
-            .clickable(
-                enabled = isSaveEnabled.value,
-                onClick = onSaveClicked,
-            )
+                "Edit account",
+        onNavigationClicked = onCloseClicked,
     )
-}
 
-
-@Composable
-private fun LogoAndTitleRow(
-    modifier: Modifier = Modifier,
-    title: State<String>,
-    onTitleChanged: (String) -> Unit,
-    colorScheme: State<ItemColorScheme>,
-    icon: State<ItemIcon?>,
-    onLogoClicked: () -> Unit,
-) = Row(
-    modifier = modifier,
-    verticalAlignment = Alignment.Bottom,
-) {
     Column(
         modifier = Modifier
             .weight(1f)
+            .verticalScroll(rememberScrollState())
+            .padding(
+                horizontal = MoneySpacing.screen,
+            )
     ) {
-        Text(
-            text = "Title",
+        EditableItemLogo(
+            title = title.value,
+            colorScheme = colorScheme.value,
+            icon = icon.value,
+            onClick = onLogoClicked,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        BasicTextField(
+        FieldLabel(text = "Title")
+        MoneyTextField(
             value = title.value,
             onValueChange = onTitleChanged,
-            textStyle = TextStyle(color = MoneyTheme.colors.onBackground),
-            cursorBrush = SolidColor(MoneyTheme.colors.onBackground),
-            singleLine = true,
+            placeholder = "Account title",
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 capitalization = KeyboardCapitalization.Words,
@@ -315,25 +149,90 @@ private fun LogoAndTitleRow(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .border(
-                    width = 1.dp,
-                    color = MoneyTheme.colors.outline,
-                )
-                .padding(12.dp)
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        FieldLabel(text = "Currency")
+        MoneyPickerField(
+            value = currencyCode.value,
+            leadingIcon = R.drawable.ic_tabler_currency_euro,
+            onClick =
+                if (isCurrencyChangeEnabled)
+                    onCurrencyClicked
+                else
+                    null,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+        if (!isCurrencyChangeEnabled) {
+            Text(
+                text = "The currency of an existing account can't be changed",
+                style = MoneyTheme.typography.small,
+                color = MoneyTheme.colors.ink3,
+                modifier = Modifier
+                    .padding(
+                        start = 4.dp,
+                        top = 6.dp,
+                    )
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        FieldLabel(text = "Type")
+        MoneyPickerField(
+            value = type.value.name,
+            leadingIcon = accountTypeIcon(type.value),
+            onClick =
+                if (isTypeChangeEnabled.value)
+                    onTypeClicked
+                else
+                    null,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+
+        if (isArchivedVisible) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ListGroup {
+                ListRow(
+                    title = "Archived",
+                    subtitle = "Hidden from the lists, the history stays",
+                    leading = {
+                        IconTile(
+                            icon = R.drawable.ic_tabler_archive,
+                            tint = MoneyTheme.colors.ink2,
+                            background = MoneyTheme.colors.surface2,
+                        )
+                    },
+                    trailing = {
+                        MoneySwitch(
+                            isOn = isArchived.value,
+                            onToggled = null,
+                        )
+                    },
+                    onClick = onArchivedClicked,
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 
-    ItemLogo(
-        title = title.value,
-        colorScheme = colorScheme.value,
-        icon = icon.value,
+    MoneyButton(
+        text = "Save",
+        style = MoneyButtonStyle.Filled,
+        isEnabled = isSaveEnabled.value,
+        onClick = onSaveClicked,
         modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .imePadding()
             .padding(
-                start = 16.dp,
-            )
-            .size(42.dp)
-            .clickable(
-                onClick = onLogoClicked,
+                horizontal = MoneySpacing.screen,
+                vertical = 12.dp,
             )
     )
 }
@@ -397,3 +296,9 @@ private fun EditAccountScreenPreview(
         onCloseClicked = {},
     )
 }
+
+fun accountTypeIcon(type: Account.Type): Int =
+    when (type) {
+        Account.Type.Savings -> R.drawable.ic_tabler_pig_money
+        else -> R.drawable.ic_tabler_wallet
+    }
