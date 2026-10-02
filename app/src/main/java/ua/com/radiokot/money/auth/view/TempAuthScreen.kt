@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.failureText
 import ua.com.radiokot.money.uikit.resolve
 
 @Composable
@@ -99,8 +100,11 @@ fun TempAuthScreenRoot(
                     Toast
                         .makeText(
                             context,
-                            ViewText.Res(R.string.auth_sign_in_failed, listOf(event.technicalReason))
-                                .resolve(context),
+                            failureText(
+                                withReasonId = R.string.auth_sign_in_failed,
+                                withoutReasonId = R.string.auth_sign_in_failed_no_reason,
+                                reason = event.technicalReason,
+                            ).resolve(context),
                             Toast.LENGTH_LONG,
                         )
                         .show()

@@ -677,23 +677,7 @@ private fun CardContent(
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
-        val locale = rememberAppLocale()
-        val time = remember(card.receivedAt, locale) {
-            ViewDateFormats.time(card.receivedAt, locale)
-        }
-        val today = remember(card.key) {
-            Clock.System.now()
-                .toLocalDateTime(TimeZone.currentSystemDefault())
-                .date
-        }
-        val dayMonthText = remember(card.receivedAt, locale, today) {
-            ViewDateFormats.dayMonth(card.receivedAt.date, locale, today)
-        }
-        val dateTimeText =
-            if (card.receivedAt.date == today)
-                stringResource(R.string.date_today_at, time)
-            else
-                stringResource(R.string.date_at_time, dayMonthText, time)
+        val dateTimeText = receivedAtText(card.receivedAt)
         Text(
             text = listOf(dateTimeText, card.sourceText)
                 .filter(String::isNotEmpty)

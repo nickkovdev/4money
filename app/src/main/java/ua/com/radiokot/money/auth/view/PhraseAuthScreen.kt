@@ -22,6 +22,7 @@ package ua.com.radiokot.money.auth.view
 import androidx.compose.foundation.background
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.failureText
 import ua.com.radiokot.money.uikit.resolve
 import ua.com.radiokot.money.uikit.MoneyButton
 import ua.com.radiokot.money.uikit.MoneyButtonStyle
@@ -177,8 +178,11 @@ fun PhraseAuthScreenRoot(
                     Toast
                         .makeText(
                             context,
-                            ViewText.Res(R.string.auth_sign_in_failed, listOf(event.technicalReason))
-                                .resolve(context),
+                            failureText(
+                                withReasonId = R.string.auth_sign_in_failed,
+                                withoutReasonId = R.string.auth_sign_in_failed_no_reason,
+                                reason = event.technicalReason,
+                            ).resolve(context),
                             Toast.LENGTH_LONG,
                         )
                         .show()

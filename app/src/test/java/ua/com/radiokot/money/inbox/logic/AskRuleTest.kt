@@ -91,10 +91,10 @@ class AskRuleTest {
     )
     private val ruTexts = RangeTexts(
         between = "%1\$s–%2\$s",
-        upTo = "до %1\$s",
-        under = "меньше %1\$s",
-        from = "от %1\$s",
-        over = "больше %1\$s",
+        upTo = "До %1\$s",
+        under = "Меньше %1\$s",
+        from = "От %1\$s",
+        over = "Больше %1\$s",
         any = "Любая сумма",
     )
     private val ru = Locale.forLanguageTag("ru")
@@ -122,11 +122,11 @@ class AskRuleTest {
             describeRange(range, code, ru, ruTexts)
 
         Assert.assertEquals(
-            "до 10,5 €",
+            "До 10,5 €",
             describe(AmountRange(null, max = BigDecimal("10.50"), isMaxInclusive = true), "EUR"),
         )
         Assert.assertEquals(
-            "меньше 10 €",
+            "Меньше 10 €",
             describe(AmountRange(null, max = BigDecimal("10")), "EUR"),
         )
         Assert.assertEquals(
@@ -134,7 +134,7 @@ class AskRuleTest {
             describe(AmountRange(BigDecimal("10"), max = BigDecimal("35.25")), "EUR"),
         )
         Assert.assertEquals(
-            "больше 35 €",
+            "Больше 35 €",
             describe(AmountRange(BigDecimal("35"), isMinInclusive = false, max = null), "EUR"),
         )
     }

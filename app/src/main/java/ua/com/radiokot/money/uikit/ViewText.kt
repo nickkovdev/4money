@@ -66,6 +66,20 @@ sealed interface ViewText {
     class Dynamic(val build: (Context) -> String) : ViewText
 }
 
+/**
+ * A failure message: [withReasonId] takes the [reason] as its argument,
+ * [withoutReasonId] is used when there is no reason, to not end up with a dangling colon.
+ */
+fun failureText(
+    @StringRes withReasonId: Int,
+    @StringRes withoutReasonId: Int,
+    reason: String?,
+): ViewText =
+    if (reason.isNullOrBlank())
+        ViewText.Res(withoutReasonId)
+    else
+        ViewText.Res(withReasonId, listOf(reason))
+
 @Composable
 fun ViewText.resolve(): String {
     // Reading the configuration makes the text recompose on a language change.

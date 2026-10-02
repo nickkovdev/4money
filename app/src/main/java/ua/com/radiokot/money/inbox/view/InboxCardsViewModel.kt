@@ -63,6 +63,7 @@ import ua.com.radiokot.money.transfers.view.TransferCounterpartySelectionResult
 import ua.com.radiokot.money.transfers.view.TransferSheetRoute
 import java.util.UUID
 import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.failureText
 
 /**
  * The inbox as swipe cards: accept the suggestion, skip to the end, or pick a category.
@@ -546,9 +547,10 @@ class InboxCardsViewModel(
                                 "record(): failed to record"
                             }
                             _events.emit(Event.ShowError(
-                                ViewText.Res(
-                                    id = R.string.inbox_cards_record_failed,
-                                    args = listOf(error.message.orEmpty()),
+                                failureText(
+                                    withReasonId = R.string.inbox_cards_record_failed,
+                                    withoutReasonId = R.string.inbox_cards_record_failed_no_reason,
+                                    reason = error.message,
                                 )
                             ))
                         }
@@ -618,9 +620,10 @@ class InboxCardsViewModel(
                                 "onUndoClicked(): failed to undo"
                             }
                             _events.emit(Event.ShowError(
-                                ViewText.Res(
-                                    id = R.string.inbox_undo_failed,
-                                    args = listOf(error.message.orEmpty()),
+                                failureText(
+                                    withReasonId = R.string.inbox_undo_failed,
+                                    withoutReasonId = R.string.inbox_undo_failed_no_reason,
+                                    reason = error.message,
                                 )
                             ))
                         }

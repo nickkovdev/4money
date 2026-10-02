@@ -227,9 +227,11 @@ are `AppCompatActivity`).
 
 **Decisions.**
 - System with a device language other than en/ru: English strings, device number and date formats.
-- Notifications ("Payments to sort", listener label) are built with `getString` at post time. On
-  API 26-32 a process cold-started by a receiver may not know the app language yet and then uses the
-  device language until the app is opened; API 33+ is exact.
+- The "Payments to sort" notification channel name/description and the question texts are built with
+  `getString` at post time. On API 26-32 a process cold-started by a receiver may not know the app
+  language yet and then uses the device language until the app is opened; API 33+ is exact.
+- The listener label is a manifest label (`@string/bank_notification_listener_label`) resolved by the
+  system in the system/device language, not by the app at runtime.
 - Theme names Paper / Midnight / Ember / Aurora stay as proper names in both languages (their subtitles
   are translated); privacy symbols (`•••`, `—`) and `N%` stay as they are.
 - `app_name` and the pure-format `template_category_subcategory` are `translatable="false"`.
