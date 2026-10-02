@@ -1,0 +1,85 @@
+/* Copyright 2025 Oleg Koretsky
+
+   This file is part of the 4Money,
+   a budget tracking Android app.
+
+   4Money is free software: you can redistribute it
+   and/or modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
+
+   4Money is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+   See the GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with 4Money. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+package ua.com.radiokot.money.overview.view
+
+import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.toRoute
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+import ua.com.radiokot.money.bottomSheet
+import ua.com.radiokot.money.categories.data.Category
+import ua.com.radiokot.money.transfers.data.TransferCounterparty
+import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
+
+@Serializable
+data class CategoryStatsSheetRoute(
+    val categoryId: String,
+    val isIncome: Boolean,
+    private val statsPeriodJson: String,
+) {
+    val statsPeriod: HistoryPeriod
+        get() = Json.decodeFromString(statsPeriodJson)
+
+    constructor(
+        categoryId: String,
+        isIncome: Boolean,
+        statsPeriod: HistoryPeriod,
+    ) : this(
+        categoryId = categoryId,
+        isIncome = isIncome,
+        statsPeriodJson = Json.encodeToString(statsPeriod),
+    )
+}
+
+fun NavGraphBuilder.categoryStatsSheet(
+    onProceedToTransfer: (Category) -> Unit,
+    onProceedToFilteredActivity: (TransferCounterparty.Category) -> Unit,
+) = bottomSheet<CategoryStatsSheetRoute> { entry ->
+
+    val route: CategoryStatsSheetRoute = entry.toRoute()
+    val viewModel: CategoryStatsSheetViewModel = koinViewModel {
+        parametersOf(
+            CategoryStatsSheetViewModel.Parameters(
+                categoryId = route.categoryId,
+                isIncome = route.isIncome,
+                statsPeriod = route.statsPeriod,
+            )
+        )
+    }
+
+    LaunchedEffect(route) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is CategoryStatsSheetViewModel.Event.ProceedToTransfer ->
+                    onProceedToTransfer(event.category)
+
+                is CategoryStatsSheetViewModel.Event.ProceedToFilteredActivity ->
+                    onProceedToFilteredActivity(event.categoryCounterparty)
+            }
+        }
+    }
+
+    CategoryStatsSheetRoot(
+        viewModel = viewModel,
+    )
+}

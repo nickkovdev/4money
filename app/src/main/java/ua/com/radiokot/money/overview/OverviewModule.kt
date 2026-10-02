@@ -25,6 +25,7 @@ import org.koin.dsl.module
 import ua.com.radiokot.money.auth.logic.sessionScope
 import ua.com.radiokot.money.categories.categoriesModule
 import ua.com.radiokot.money.overview.logic.GetOverviewStatsUseCase
+import ua.com.radiokot.money.overview.view.CategoryStatsSheetViewModel
 import ua.com.radiokot.money.overview.view.OverviewScreenViewModel
 
 val overviewModule = module {
@@ -52,5 +53,14 @@ val overviewModule = module {
                 getOverviewStatsUseCase = get(),
             )
         } bind OverviewScreenViewModel::class
+
+        viewModel { parameters ->
+            CategoryStatsSheetViewModel(
+                parameters = parameters.get(),
+                getCategoryAmountsBySubcategoryUseCase = get(),
+                historyStatsRepository = get(),
+                getOverviewStatsUseCase = get(),
+            )
+        } bind CategoryStatsSheetViewModel::class
     }
 }

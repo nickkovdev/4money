@@ -113,7 +113,9 @@ import ua.com.radiokot.money.categories.view.categoriesScreen
 import ua.com.radiokot.money.categories.view.categoryActionSheet
 import ua.com.radiokot.money.inbox.view.InboxActivity
 import ua.com.radiokot.money.lock.view.SetUpPasscodeActivity
+import ua.com.radiokot.money.overview.view.CategoryStatsSheetRoute
 import ua.com.radiokot.money.overview.view.OverviewScreenRoute
+import ua.com.radiokot.money.overview.view.categoryStatsSheet
 import ua.com.radiokot.money.overview.view.overviewScreen
 import ua.com.radiokot.money.preferences.view.PreferencesScreenRoute
 import ua.com.radiokot.money.preferences.view.preferencesScreen
@@ -306,7 +308,33 @@ private fun HomeScreen(
 
             overviewScreen(
                 homeViewModel = viewModel,
-                onProceedToCategories = { navController.navigateToTab(CategoriesScreenRoute) },
+                onProceedToCategoryStats = { navController.navigate(it) },
+            )
+
+            categoryStatsSheet(
+                onProceedToTransfer = { category ->
+                    transfersNavigator.proceedToTransfer(
+                        category = category,
+                        navOptions = navOptions {
+                            popUpTo<CategoryStatsSheetRoute> {
+                                inclusive = true
+                            }
+                        },
+                    )
+                },
+                onProceedToFilteredActivity = { categoryCounterparty ->
+                    viewModel.filterActivityByCounterparty(
+                        counterparty = categoryCounterparty,
+                    )
+                    navController.navigate(
+                        route = ActivityScreenRoute,
+                        navOptions = navOptions {
+                            popUpTo(OverviewScreenRoute) {
+                                inclusive = true
+                            }
+                        }
+                    )
+                },
             )
 
             preferencesScreen(

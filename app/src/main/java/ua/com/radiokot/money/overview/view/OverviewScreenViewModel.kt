@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.stateIn
 import ua.com.radiokot.money.eventSharedFlow
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.overview.logic.GetOverviewStatsUseCase
+import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.history.view.HistoryStatsPeriodViewModel
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,6 +52,8 @@ class OverviewScreenViewModel(
     private val log by lazyLogger("OverviewScreenVM")
     private val _isIncome: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isIncome = _isIncome.asStateFlow()
+    private val _isExpanded: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val isExpanded = _isExpanded.asStateFlow()
     private val _events: MutableSharedFlow<Event> = eventSharedFlow()
     val events = _events.asSharedFlow()
 
@@ -92,18 +95,34 @@ class OverviewScreenViewModel(
     fun onExpensesCardClicked() {
         log.debug { "onExpensesCardClicked(): switching to expenses" }
         _isIncome.value = false
+        _isExpanded.value = false
     }
 
     fun onIncomeCardClicked() {
         log.debug { "onIncomeCardClicked(): switching to income" }
         _isIncome.value = true
+        _isExpanded.value = false
     }
 
     fun onMoreCategoriesClicked() {
-        _events.tryEmit(Event.ProceedToCategories)
+        _isExpanded.value = !_isExpanded.value
+    }
+
+    fun onCategoryClicked(key: String) {
+        _events.tryEmit(
+            Event.ProceedToCategoryStats(
+                categoryId = key,
+                isIncome = isIncome.value,
+                statsPeriod = historyStatsPeriod.value,
+            )
+        )
     }
 
     sealed interface Event {
-        object ProceedToCategories : Event
+        class ProceedToCategoryStats(
+            val categoryId: String,
+            val isIncome: Boolean,
+            val statsPeriod: HistoryPeriod,
+        ) : Event
     }
 }
