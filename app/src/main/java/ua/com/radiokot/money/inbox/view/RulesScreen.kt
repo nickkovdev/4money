@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -102,12 +103,12 @@ private fun RulesScreen(
     ) {
         MoneyIconButton(
             icon = R.drawable.ic_tabler_arrow_left,
-            contentDescription = "Back",
+            contentDescription = stringResource(R.string.common_back),
             onClick = onCloseClicked,
         )
 
         Text(
-            text = "Payee rules",
+            text = stringResource(R.string.rules_title),
             style = MoneyTheme.typography.headline,
             modifier = Modifier
                 .weight(1f)
@@ -117,8 +118,8 @@ private fun RulesScreen(
     if (groupList.value.isEmpty()) {
         EmptyState(
             icon = R.drawable.ic_tabler_adjustments_horizontal,
-            title = "No rules yet",
-            text = "Categorize a payment from the inbox with Remember on to create one.",
+            title = stringResource(R.string.rules_empty_title),
+            text = stringResource(R.string.rules_empty_text),
         )
     }
 
@@ -134,8 +135,7 @@ private fun RulesScreen(
     ) {
         item(key = "hint") {
             Text(
-                text = "Amounts in an “Ask me” range wait for you: " +
-                        "a notification with your top categories for the payee, one tap from the shade.",
+                text = stringResource(R.string.rules_hint),
                 style = MoneyTheme.typography.caption,
                 color = MoneyTheme.colors.ink2,
                 modifier = Modifier
@@ -205,7 +205,7 @@ private fun RuleGroupCard(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = group.subtitle,
+                text = group.subtitle.resolve(),
                 style = MoneyTheme.typography.caption,
                 color = colors.ink3,
             )
@@ -213,7 +213,7 @@ private fun RuleGroupCard(
 
         MoneyIconButton(
             icon = R.drawable.ic_tabler_dots,
-            contentDescription = "Rule actions",
+            contentDescription = stringResource(R.string.rules_actions_description),
             style = MoneyIconButtonStyle.Plain,
             size = 40.dp,
             onClick = onMenuClicked,
@@ -257,7 +257,7 @@ private fun RuleGroupCard(
                 )
             } else if (row.colorScheme != null) {
                 ItemLogo(
-                    title = row.targetTitle,
+                    title = row.targetTitle.resolve(),
                     colorScheme = row.colorScheme,
                     icon = row.icon,
                     modifier = Modifier
@@ -266,7 +266,7 @@ private fun RuleGroupCard(
             }
 
             Text(
-                text = row.targetTitle,
+                text = row.targetTitle.resolve(),
                 style = MoneyTheme.typography.labelRegular,
                 color =
                     if (row.isAsk)
@@ -302,7 +302,7 @@ private fun RuleGroupCard(
                 .size(18.dp)
         )
         Text(
-            text = "Add amount range",
+            text = stringResource(R.string.rules_add_range),
             style = MoneyTheme.typography.label,
             color = colors.accent,
         )
@@ -363,10 +363,12 @@ private fun RangeEditorContent(
     ) {
         Text(
             text =
-                if (draft.ruleId == null)
-                    "New amount range"
-                else
-                    "Amount range",
+                stringResource(
+                    if (draft.ruleId == null)
+                        R.string.rules_range_new
+                    else
+                        R.string.rules_range_title
+                ),
             style = MoneyTheme.typography.title,
         )
         Text(
@@ -380,8 +382,8 @@ private fun RangeEditorContent(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         listOf(
-            Triple("From (incl.)", draft.fromText, onFromChanged),
-            Triple("Under", draft.underText, onUnderChanged),
+            Triple(stringResource(R.string.rules_range_from), draft.fromText, onFromChanged),
+            Triple(stringResource(R.string.rules_range_under), draft.underText, onUnderChanged),
         ).forEach { (label, value, onChanged) ->
             Column(
                 modifier = Modifier
@@ -391,7 +393,7 @@ private fun RangeEditorContent(
                 MoneyTextField(
                     value = value,
                     onValueChange = onChanged,
-                    placeholder = "Any",
+                    placeholder = stringResource(R.string.rules_range_any),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal,
                     ),
@@ -416,7 +418,7 @@ private fun RangeEditorContent(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            text = "THEN",
+            text = stringResource(R.string.rules_then),
             style = MoneyTheme.typography.overline,
             color = colors.ink3,
         )
@@ -425,7 +427,7 @@ private fun RangeEditorContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             MoneyChip(
-                text = "Ask me",
+                text = stringResource(R.string.rules_ask_me),
                 icon = R.drawable.ic_tabler_message_question,
                 isSelected = draft.target == ViewRangeTarget.Ask,
                 onClick = { onTargetSelected(ViewRangeTarget.Ask) },
@@ -438,7 +440,7 @@ private fun RangeEditorContent(
                 )
             }
             MoneyChip(
-                text = "Other category",
+                text = stringResource(R.string.rules_other_category),
                 icon = R.drawable.ic_tabler_layout_grid,
                 isMuted = true,
                 onClick = onPickCategoryClicked,
@@ -448,7 +450,7 @@ private fun RangeEditorContent(
 
     if (draft.error != null) {
         Text(
-            text = draft.error,
+            text = draft.error.resolve(),
             style = MoneyTheme.typography.caption,
             color = colors.expense,
         )
@@ -463,20 +465,20 @@ private fun RangeEditorContent(
         if (draft.ruleId != null) {
             MoneyIconButton(
                 icon = R.drawable.ic_tabler_trash,
-                contentDescription = "Delete the range",
+                contentDescription = stringResource(R.string.rules_delete_range),
                 tint = colors.expense,
                 size = 48.dp,
                 onClick = onDeleteClicked,
             )
         }
         MoneyButton(
-            text = "Cancel",
+            text = stringResource(R.string.common_cancel),
             onClick = onDismissRequest,
             modifier = Modifier
                 .weight(1f)
         )
         MoneyButton(
-            text = "Save",
+            text = stringResource(R.string.common_save),
             style = MoneyButtonStyle.Filled,
             onClick = onSaveClicked,
             modifier = Modifier
@@ -526,18 +528,18 @@ private fun RulesScreenPreview() = MoneyTheme(colors = MidnightMoneyColors) {
                     key = "1",
                     displayPattern = "Fuelstop",
                     matchType = PayeeRule.MatchType.Exact,
-                    subtitle = "Exact payee · 3 rules · used 14×",
+                    subtitle = ViewText.Plain("Exact payee · 3 rules · used 14×"),
                     rows = listOf(
                         ViewPayeeRuleRow(
-                            ViewText.Plain("Under 10 €"), "Food", false,
+                            ViewText.Plain("Under 10 €"), ViewText.Plain("Food"), false,
                             schemes.getValue("Orange3"), null, rule("a", AmountRange(null, max = BigDecimal("10"))),
                         ),
                         ViewPayeeRuleRow(
-                            ViewText.Plain("10–35 €"), "Ask me", true, null, null,
+                            ViewText.Plain("10–35 €"), ViewText.Plain("Ask me"), true, null, null,
                             rule("b", AmountRange(BigDecimal("10"), max = BigDecimal("35")), PayeeRule.Action.Ask),
                         ),
                         ViewPayeeRuleRow(
-                            ViewText.Plain("From 35 €"), "Car", false,
+                            ViewText.Plain("From 35 €"), ViewText.Plain("Car"), false,
                             schemes.getValue("Blue3"), null, rule("c", AmountRange(BigDecimal("35"), max = null)),
                         ),
                     ),

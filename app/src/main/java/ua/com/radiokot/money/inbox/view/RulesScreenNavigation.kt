@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import androidx.compose.ui.res.stringResource
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -155,10 +156,9 @@ fun NavGraphBuilder.rulesScreen(
 
         is RuleDialog.ConfirmDelete ->
             MoneyDialog(
-                title = "Delete the rules?",
-                text = "All rules for “${currentDialog.rule.payeePattern}” are deleted, " +
-                        "its payments will wait in the inbox again.",
-                confirmText = "Delete",
+                title = stringResource(R.string.rules_delete_title),
+                text = stringResource(R.string.rules_delete_text, currentDialog.rule.payeePattern),
+                confirmText = stringResource(R.string.common_delete),
                 isDestructive = true,
                 onConfirm = {
                     dialog = null
@@ -198,23 +198,24 @@ private fun RuleActionsDialog(
 
         ListGroup {
             ListRow(
-                title = "Edit pattern",
+                title = stringResource(R.string.rules_edit_pattern),
                 leading = { IconTile(icon = R.drawable.ic_tabler_pencil) },
                 onClick = onEditPattern,
             )
             ListDivider()
             ListRow(
-                title =
+                title = stringResource(
                     if (rule.matchType == PayeeRule.MatchType.Exact)
-                        "Match payees containing it"
+                        R.string.rules_match_contains
                     else
-                        "Match the exact payee only",
+                        R.string.rules_match_exact
+                ),
                 leading = { IconTile(icon = R.drawable.ic_tabler_filter) },
                 onClick = onToggleMatchType,
             )
             ListDivider()
             ListRow(
-                title = "Delete",
+                title = stringResource(R.string.common_delete),
                 titleColor = MoneyTheme.colors.expense,
                 leading = {
                     IconTile(
@@ -245,7 +246,7 @@ private fun PatternEditorDialog(
             .padding(24.dp)
     ) {
         Text(
-            text = "Payee pattern",
+            text = stringResource(R.string.rules_pattern_title),
             style = MoneyTheme.typography.title,
         )
 
@@ -265,13 +266,13 @@ private fun PatternEditorDialog(
                 .fillMaxWidth()
         ) {
             MoneyButton(
-                text = "Cancel",
+                text = stringResource(R.string.common_cancel),
                 onClick = onDismissRequest,
                 modifier = Modifier
                     .weight(1f)
             )
             MoneyButton(
-                text = "Save",
+                text = stringResource(R.string.common_save),
                 style = MoneyButtonStyle.Filled,
                 isEnabled = pattern.isNotBlank(),
                 onClick = { onSave(pattern) },

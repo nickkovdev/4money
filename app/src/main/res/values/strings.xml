@@ -232,4 +232,47 @@
     </plurals>
     <string name="inbox_reason_most_used">New payee: your most used category</string>
     <string name="inbox_reason_range">%1$s at %2$s → %3$s</string>
+
+    <!-- Payee rules -->
+    <string name="rules_title">Payee rules</string>
+    <string name="rules_empty_title">No rules yet</string>
+    <string name="rules_empty_text">Categorize a payment from the inbox with Remember on to create one.</string>
+    <string name="rules_hint">Amounts in an “Ask me” range wait for you: a notification with your top categories for the payee, one tap from the shade.</string>
+    <string name="rules_actions_description">Rule actions</string>
+    <string name="rules_add_range">Add amount range</string>
+    <string name="rules_range_new">New amount range</string>
+    <string name="rules_range_title">Amount range</string>
+    <string name="rules_range_from">From (incl.)</string>
+    <string name="rules_range_under">Under</string>
+    <string name="rules_range_any">Any</string>
+    <string name="rules_then">THEN</string>
+    <string name="rules_ask_me">Ask me</string>
+    <string name="rules_other_category">Other category</string>
+    <string name="rules_delete_range">Delete the range</string>
+    <string name="rules_other_amounts">Other amounts</string>
+    <string name="rules_missing_category">Missing category</string>
+    <string name="rules_subtitle_exact">Exact payee</string>
+    <string name="rules_subtitle_contains">Contains</string>
+    <plurals name="rules_rule_count">
+        <item quantity="one">%d rule</item>
+        <item quantity="other">%d rules</item>
+    </plurals>
+    <string name="rules_used">used %d×</string>
+    <string name="rules_error_format">Enter amounts like 10 or 9.99</string>
+    <string name="rules_error_need_one">Enter at least one of the amounts</string>
+    <string name="rules_error_negative">Amounts can\'t be negative</string>
+    <string name="rules_error_order">“From” must be less than “Under”</string>
+    <string name="rules_error_no_target">Choose a category or Ask me</string>
+    <string name="rules_delete_title">Delete the rules?</string>
+    <string name="rules_delete_text">All rules for “%1$s” are deleted, its payments will wait in the inbox again.</string>
+    <string name="rules_edit_pattern">Edit pattern</string>
+    <string name="rules_match_contains">Match payees containing it</string>
+    <string name="rules_match_exact">Match the exact payee only</string>
+    <string name="rules_pattern_title">Payee pattern</string>
+
+    <!-- Payment question notification -->
+    <string name="ask_channel_name">Payments to sort</string>
+    <string name="ask_channel_description">Bank payments the app asks you to categorize</string>
+    <string name="ask_text_ask_range">This amount here can be one of several. Which one?</string>
+    <string name="ask_text_new_payee">A new payee. Which category?</string>
 </resources>

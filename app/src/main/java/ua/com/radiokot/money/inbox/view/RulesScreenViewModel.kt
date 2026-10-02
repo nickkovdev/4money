@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import ua.com.radiokot.money.uikit.resolve
+import ua.com.radiokot.money.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -111,12 +113,17 @@ class RulesScreenViewModel(
                 ViewPayeeRuleRow(
                     rangeText = rule.amountRange
                         ?.let { ViewText.Dynamic(describeRangeText(it, currencyCode)) }
-                        ?: ViewText.Plain(if (rules.size > 1) "Other amounts" else "Any amount"),
+                        ?: ViewText.Res(
+                            if (rules.size > 1)
+                                R.string.rules_other_amounts
+                            else
+                                R.string.inbox_range_any
+                        ),
                     targetTitle = when {
-                        rule.action == PayeeRule.Action.Ask -> "Ask me"
-                        category == null -> "Missing category"
-                        subcategory != null -> "${category.title} · ${subcategory.title}"
-                        else -> category.title
+                        rule.action == PayeeRule.Action.Ask -> ViewText.Res(R.string.rules_ask_me)
+                        category == null -> ViewText.Res(R.string.rules_missing_category)
+                        subcategory != null -> ViewText.Plain("${category.title} · ${subcategory.title}")
+                        else -> ViewText.Plain(category.title)
                     },
                     isAsk = rule.action == PayeeRule.Action.Ask,
                     colorScheme = category?.colorScheme,
@@ -132,21 +139,18 @@ class RulesScreenViewModel(
                 .split(' ')
                 .joinToString(" ") { word -> word.replaceFirstChar(Char::titlecase) },
             matchType = first.matchType,
-            subtitle = buildString {
-                append(
-                    if (first.matchType == PayeeRule.MatchType.Contains)
-                        "Contains"
-                    else
-                        "Exact payee"
-                )
-                append(" · ")
-                append(rules.size)
-                append(if (rules.size == 1) " rule" else " rules")
-                if (hits > 0) {
-                    append(" · used ")
-                    append(hits)
-                    append("×")
-                }
+            subtitle = ViewText.Dynamic { context ->
+                listOfNotNull(
+                    ViewText.Res(
+                        if (first.matchType == PayeeRule.MatchType.Contains)
+                            R.string.rules_subtitle_contains
+                        else
+                            R.string.rules_subtitle_exact
+                    ),
+                    ViewText.Plural(R.plurals.rules_rule_count, rules.size),
+                    ViewText.Res(R.string.rules_used, listOf(hits))
+                        .takeIf { hits > 0 },
+                ).joinToString(" · ") { it.resolve(context) }
             },
             rows = rows,
             colorScheme = anyCategory?.colorScheme,
@@ -302,12 +306,16 @@ class RulesScreenViewModel(
 
         val range = parseRangeDraft(draft.fromText, draft.underText)
             .getOrElse { error ->
-                _rangeDraft.value = draft.copy(error = error.message)
+                _rangeDraft.value = draft.copy(
+                    error = (error as? RangeDraftException)
+                        ?.let { ViewText.Res(it.textRes) }
+                        ?: ViewText.Plain(error.message.orEmpty())
+                )
                 return
             }
         val target = draft.target
         if (target == null) {
-            _rangeDraft.value = draft.copy(error = "Choose a category or Ask me")
+            _rangeDraft.value = draft.copy(error = ViewText.Res(R.string.rules_error_no_target))
             return
         }
 

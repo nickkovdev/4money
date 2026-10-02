@@ -232,4 +232,49 @@
     </plurals>
     <string name="inbox_reason_most_used">Новый получатель: ваша самая частая категория</string>
     <string name="inbox_reason_range">%1$s в %2$s → %3$s</string>
+
+    <!-- Payee rules -->
+    <string name="rules_title">Правила получателей</string>
+    <string name="rules_empty_title">Правил пока нет</string>
+    <string name="rules_empty_text">Распределите платёж из входящих с включённым «Запомнить», чтобы создать правило.</string>
+    <string name="rules_hint">Суммы из диапазона «Спросить» ждут вашего решения: уведомление с самыми частыми категориями получателя, один тап прямо из шторки.</string>
+    <string name="rules_actions_description">Действия с правилом</string>
+    <string name="rules_add_range">Добавить диапазон сумм</string>
+    <string name="rules_range_new">Новый диапазон сумм</string>
+    <string name="rules_range_title">Диапазон сумм</string>
+    <string name="rules_range_from">От (включая)</string>
+    <string name="rules_range_under">Меньше</string>
+    <string name="rules_range_any">Любая</string>
+    <string name="rules_then">ТОГДА</string>
+    <string name="rules_ask_me">Спросить</string>
+    <string name="rules_other_category">Другая категория</string>
+    <string name="rules_delete_range">Удалить диапазон</string>
+    <string name="rules_other_amounts">Остальные суммы</string>
+    <string name="rules_missing_category">Категория не найдена</string>
+    <string name="rules_subtitle_exact">Точный получатель</string>
+    <string name="rules_subtitle_contains">Содержит</string>
+    <plurals name="rules_rule_count">
+        <item quantity="one">%d правило</item>
+        <item quantity="few">%d правила</item>
+        <item quantity="many">%d правил</item>
+        <item quantity="other">%d правила</item>
+    </plurals>
+    <string name="rules_used">использовано %d×</string>
+    <string name="rules_error_format">Введите сумму, например 10 или 9,99</string>
+    <string name="rules_error_need_one">Укажите хотя бы одну сумму</string>
+    <string name="rules_error_negative">Сумма не может быть отрицательной</string>
+    <string name="rules_error_order">Значение «От» должно быть меньше значения «Меньше»</string>
+    <string name="rules_error_no_target">Выберите категорию или «Спросить»</string>
+    <string name="rules_delete_title">Удалить правила?</string>
+    <string name="rules_delete_text">Все правила для «%1$s» будут удалены, его платежи снова будут ждать во входящих.</string>
+    <string name="rules_edit_pattern">Изменить шаблон</string>
+    <string name="rules_match_contains">Искать получателей, содержащих шаблон</string>
+    <string name="rules_match_exact">Только точный получатель</string>
+    <string name="rules_pattern_title">Шаблон получателя</string>
+
+    <!-- Payment question notification -->
+    <string name="ask_channel_name">Платежи для сортировки</string>
+    <string name="ask_channel_description">Банковские платежи, для которых приложение спрашивает категорию</string>
+    <string name="ask_text_ask_range">Для этой суммы возможны разные категории. Какая?</string>
+    <string name="ask_text_new_payee">Новый получатель. Какая категория?</string>
 </resources>
