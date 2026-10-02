@@ -162,3 +162,41 @@ Icons come from Tabler Icons (MIT), attributed in the repo.
 - Import: counts and per-category monthly sums against 1Money.
 - C/D: unit tests for parsers (from real sample texts), payee normalization and rule matching;
   manual end-to-end with a real payment.
+
+## F2. Category sheet from Overview + privacy mode (designed 2026-10-02, approved by the owner)
+
+Plan: `docs/superpowers/plans/2026-10-02-category-sheet-privacy.md` (rulings recorded there).
+
+**1. Category sheet from Overview (reference: 1Money).** Tapping a category in the Overview top list
+(and in its "More…" expanded list) opens a bottom sheet for that category and the current period/mode
+(expense or income):
+- Header in the category colour with its icon badge (like the transfer sheet header style), category
+  title, "N transactions" (count in period), total amount, a progress bar = share of the period's total
+  expense (or income) with the % text, then a row "<Period label, e.g. October 2026>" + the period's
+  total of that direction.
+- List of the category's subcategories (plus "no subcategory" bucket if non-zero) with icon, title,
+  amount and a % bar (share of the category total), sorted desc.
+- Bottom actions: "Expense" (or "Income" for income categories) → opens the regular transfer sheet with
+  this category preselected as destination (source for income), using the existing transfer sheet
+  route/params; "Transactions" → switches to the Transactions tab with the existing category filter chip
+  applied (reuse the filter chip mechanism).
+- Reuse existing data: `GetCategoryAmountsBySubcategoryUseCase` /
+  `HistoryStatsRepository.getCategoryAmountsBySubcategoryFlow`, transfer counts (count query added),
+  primary-currency conversion helpers already used by Overview.
+
+**2. Privacy (anonymity) mode.**
+- Toggle: an eye / eye-off icon button in the tab header next to the profile button (all four tabs),
+  state persisted in preferences (like `ThemePreferences`), reactive app-wide through one central place
+  (a CompositionLocal consumed by the amount formatting layer: `AnimatedAmountText` / `ViewAmountFormat`).
+- Mask `•••` (no currency symbol) for headline/absolute numbers: account balances and the accounts
+  total, Overview Balance / Expenses / Income cards, day/week/month averages and totals, category-sheet
+  header amounts, account action sheet balance, Inbox/notification amounts.
+- Everywhere else amounts become a percentage of the relevant total: categories grid/ring = share of the
+  period total of that direction; transactions rows (and day header sums, if any) = share of the period
+  total of the same direction (expense/income; transfers between accounts show •••); subcategory rows =
+  share of the category total; Overview bar chart axis labels hidden (bars stay); top categories already
+  show % — their amounts are hidden.
+- "Payments to sort" notification shows no amounts while privacy is on.
+- The keypad/amount being typed in the transfer sheet stays visible. No `FLAG_SECURE` (the point is to
+  allow sharing screenshots).
+- Pure, unit-tested logic for percentage computation/rounding (0 total → "—") and mask decisions.
