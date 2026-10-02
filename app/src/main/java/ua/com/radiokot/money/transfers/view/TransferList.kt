@@ -19,12 +19,17 @@
 
 package ua.com.radiokot.money.transfers.view
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,8 +41,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +57,7 @@ import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.composeunstyled.Icon
 import com.composeunstyled.Text
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -58,6 +66,7 @@ import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.datetime.format.DayOfWeekNames
 import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.char
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewAmountFormat
@@ -71,6 +80,8 @@ fun TransferList(
     itemPagingFlow: Flow<PagingData<ViewTransferListItem>>,
     onTransferItemClicked: (ViewTransferListItem.Transfer) -> Unit,
     onTransferItemLongClicked: (ViewTransferListItem.Transfer) -> Unit,
+    onTransferItemEditClicked: ((ViewTransferListItem.Transfer) -> Unit)? = null,
+    onTransferItemDeleteClicked: ((ViewTransferListItem.Transfer) -> Unit)? = null,
 ) {
     val locale = LocalConfiguration.current.locales.get(0)
     val amountFormat = rememberViewAmountFormat()
@@ -127,14 +138,40 @@ fun TransferList(
                         )
                     }
 
-                    TransferItem(
-                        item = item,
-                        amountFormat = amountFormat,
-                        modifier = clickableModifier
-                            .padding(
-                                bottom = 16.dp
+                    SwipeRevealRow(
+                        isSwipeEnabled = onTransferItemDeleteClicked != null,
+                        actions = { close ->
+                            RevealAction(
+                                icon = R.drawable.ic_tabler_pencil,
+                                contentDescription = "Edit",
+                                tint = MoneyTheme.colors.onBackground,
+                                background = MoneyTheme.colors.surfaceVariant,
+                                onClick = {
+                                    close()
+                                    onTransferItemEditClicked?.invoke(item)
+                                },
                             )
-                    )
+                            RevealAction(
+                                icon = R.drawable.ic_tabler_trash,
+                                contentDescription = "Delete",
+                                tint = MoneyTheme.colors.onWarning,
+                                background = MoneyTheme.colors.expense,
+                                onClick = {
+                                    onTransferItemDeleteClicked?.invoke(item)
+                                },
+                            )
+                        },
+                        modifier = Modifier
+                            .padding(
+                                bottom = 16.dp,
+                            )
+                    ) {
+                        TransferItem(
+                            item = item,
+                            amountFormat = amountFormat,
+                            modifier = clickableModifier
+                        )
+                    }
                 }
 
                 null ->
@@ -328,4 +365,27 @@ private fun TransferItem(
             )
         }
     }
+}
+
+@Composable
+private fun RevealAction(
+    @DrawableRes icon: Int,
+    contentDescription: String,
+    tint: Color,
+    background: Color,
+    onClick: () -> Unit,
+) = Box(
+    contentAlignment = Alignment.Center,
+    modifier = Modifier
+        .fillMaxHeight()
+        .width(64.dp)
+        .background(background)
+        .clickable(onClick = onClick)
+) {
+    Icon(
+        painter = painterResource(icon),
+        contentDescription = contentDescription,
+        tint = tint,
+        modifier = Modifier.size(22.dp),
+    )
 }
