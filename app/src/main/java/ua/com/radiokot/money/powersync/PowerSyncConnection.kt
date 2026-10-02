@@ -31,7 +31,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -42,6 +45,7 @@ import ua.com.radiokot.money.BuildConfig
 import ua.com.radiokot.money.lazyLogger
 import java.io.Closeable
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
@@ -60,6 +64,7 @@ class PowerSyncConnection(
     private val control: Control,
     private val idleDisconnectTimeout: Duration = 30.seconds,
     private val dispatcher: CoroutineContext = Dispatchers.Default,
+    private val clock: Clock = Clock.System,
 ) : Closeable {
 
     enum class Holder {
@@ -94,9 +99,15 @@ class PowerSyncConnection(
     @Volatile
     private var isClosed = false
 
-    @Volatile
-    var isConnected = false
-        private set
+    private val connectedAtFlow = MutableStateFlow<Instant?>(null)
+
+    /**
+     * When the stream was last opened, null if it is closed.
+     */
+    val connectedAt: StateFlow<Instant?> = connectedAtFlow.asStateFlow()
+
+    val isConnected: Boolean
+        get() = connectedAtFlow.value != null
 
     init {
         convergeJob = coroutineScope.launch {
@@ -157,11 +168,28 @@ class PowerSyncConnection(
     }
 
     /**
-     * Suspends until a full sync completed at or after [since]
+     * Suspends until the stream is open, a full sync completed
+     * at or after [since] or since the stream was opened, whichever is earlier,
      * and the local upload queue is empty.
+     *
+     * A stream that was already open and synced returns at once,
+     * as an idle stream gets no new checkpoints.
+     * A freshly opened stream waits for its first sync.
      */
-    suspend fun awaitSyncedAndUploaded(since: Instant) =
-        control.awaitSyncedAndUploaded(since)
+    suspend fun awaitSyncedAndUploaded(since: Instant) {
+        val connectedAt = connectedAtFlow.filterNotNull().first()
+        // lastSyncedAt may be truncated to seconds.
+        val effectiveSince = minOf(since, connectedAt - SYNC_TIME_MARGIN)
+
+        log.debug {
+            "awaitSyncedAndUploaded(): waiting:" +
+                    "\nsince=$since," +
+                    "\nconnectedAt=$connectedAt," +
+                    "\neffectiveSince=$effectiveSince"
+        }
+
+        control.awaitSyncedAndUploaded(effectiveSince)
+    }
 
     /**
      * Stops serving requests and disconnects the stream if it is open.
@@ -179,6 +207,10 @@ class PowerSyncConnection(
         }
     }
 
+    private companion object {
+        val SYNC_TIME_MARGIN = 2.seconds
+    }
+
     private suspend fun connectIfNeeded() {
         if (isConnected) {
             return
@@ -190,7 +222,7 @@ class PowerSyncConnection(
 
         try {
             control.connect()
-            isConnected = true
+            connectedAtFlow.value = clock.now()
         } catch (e: Exception) {
             log.error(e) {
                 "connectIfNeeded(): failed"
@@ -209,7 +241,7 @@ class PowerSyncConnection(
 
         // Cleared first: even after a failed disconnect,
         // the next connect re-creates the stream.
-        isConnected = false
+        connectedAtFlow.value = null
         try {
             control.disconnect()
         } catch (e: Exception) {
