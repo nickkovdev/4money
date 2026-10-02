@@ -63,6 +63,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
+import ua.com.radiokot.money.uikit.EmptyState
+import androidx.paging.LoadState
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.composeunstyled.Icon
@@ -119,6 +121,27 @@ fun TransferList(
         state = state,
         modifier = modifier,
     ) {
+        if (lazyPagingItems.itemCount == 0
+            && lazyPagingItems.loadState.refresh is LoadState.NotLoading
+        ) {
+            item(
+                key = "empty",
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillParentMaxHeight(0.7f)
+                        .fillMaxWidth(),
+                ) {
+                    EmptyState(
+                        icon = R.drawable.ic_tabler_receipt,
+                        title = "No transactions",
+                        text = "Nothing recorded in this period yet",
+                    )
+                }
+            }
+        }
+
         items(
             lazyPagingItems.itemCount,
             key = lazyPagingItems.itemKey(ViewTransferListItem::key),

@@ -44,6 +44,13 @@ sealed interface HistoryPeriod {
     operator fun contains(dateTime: LocalDateTime): Boolean =
         dateTime >= startInclusive && dateTime < endExclusive
 
+    /**
+     * @return true if there is a next period and it has already started by [now],
+     * so the history doesn't lead into empty future periods.
+     */
+    fun hasNextUpTo(now: LocalDateTime): Boolean =
+        getNext()?.let { it.startInclusive <= now } == true
+
     @Serializable
     class Day(
         val localDay: LocalDate = Clock.System
