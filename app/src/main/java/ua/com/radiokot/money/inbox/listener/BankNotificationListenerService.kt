@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.inbox.listener
 
+import ua.com.radiokot.money.inbox.ask.PaymentQuestionNotifier
 import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -112,6 +113,21 @@ class BankNotificationListenerService :
                 .onSuccess { outcome ->
                     log.info {
                         "Bank notification processed: $outcome"
+                    }
+
+                    if (outcome is ProcessBankNotificationUseCase.Outcome.Pending) {
+                        runCatching {
+                            sessionScope
+                                .get<PaymentQuestionNotifier>()
+                                .ask(
+                                    itemId = outcome.itemId,
+                                    reason = outcome.reason,
+                                )
+                        }.onFailure { error ->
+                            log.error(error) {
+                                "processNotification(): failed to ask"
+                            }
+                        }
                     }
                 }
                 .onFailure { error ->

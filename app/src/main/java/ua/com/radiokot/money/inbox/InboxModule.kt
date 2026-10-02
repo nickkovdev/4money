@@ -39,6 +39,7 @@ import ua.com.radiokot.money.inbox.logic.DefaultCardAccountResolver
 import ua.com.radiokot.money.inbox.logic.ProcessBankNotificationUseCase
 import ua.com.radiokot.money.inbox.logic.SebLatviaNotificationParser
 import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
+import ua.com.radiokot.money.inbox.ask.PaymentQuestionNotifier
 import ua.com.radiokot.money.inbox.view.InboxCardsViewModel
 import ua.com.radiokot.money.inbox.view.InboxScreenViewModel
 import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
@@ -100,6 +101,17 @@ val inboxModule = module {
                 transferFundsUseCase = get(),
             )
         } bind ProcessBankNotificationUseCase::class
+
+        scoped {
+            PaymentQuestionNotifier(
+                context = androidContext(),
+                inboxRepository = get(),
+                payeeRuleRepository = get(),
+                accountRepository = get(),
+                categoryRepository = get(),
+                transferHistoryRepository = get(),
+            )
+        } bind PaymentQuestionNotifier::class
 
         factory {
             CompleteInboxItemUseCase(

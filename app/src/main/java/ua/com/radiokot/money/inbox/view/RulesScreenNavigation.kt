@@ -19,6 +19,13 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -93,6 +100,12 @@ fun NavGraphBuilder.rulesScreen(
         viewModel = viewModel,
     )
 
+    val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = {},
+    )
+
     val rangeDraft = viewModel.rangeDraft.collectAsState().value
     if (rangeDraft != null) {
         RangeEditorDialog(
@@ -101,7 +114,17 @@ fun NavGraphBuilder.rulesScreen(
             onUnderChanged = viewModel::onDraftUnderChanged,
             onTargetSelected = viewModel::onDraftTargetSelected,
             onPickCategoryClicked = viewModel::onDraftPickCategoryClicked,
-            onSaveClicked = viewModel::onDraftSaveClicked,
+            onSaveClicked = {
+                // "Ask me" needs the app's own notifications.
+                if (rangeDraft.target == ViewRangeTarget.Ask
+                    && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                    && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED
+                ) {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+                viewModel.onDraftSaveClicked()
+            },
             onDeleteClicked = viewModel::onDraftDeleteClicked,
             onDismissRequest = viewModel::onDraftDismissed,
         )
