@@ -39,6 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastFilter
 import com.composeunstyled.Text
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
+import java.math.BigInteger
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.animateAmountValueAsState
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
@@ -60,6 +63,11 @@ fun CategoryGrid(
     isAddShown: Boolean,
     onAddClicked: (() -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(6.dp),
+    /**
+     * Total of the shown mode in the primary currency,
+     * the denominator of the shares shown in the privacy mode.
+     */
+    currentModeTotal: BigInteger? = null,
 ) {
     val gridState = rememberLazyGridState()
     val spaceBy = 6.dp
@@ -91,6 +99,7 @@ fun CategoryGrid(
             itemList = visibleItemList,
             onItemClicked = onItemClicked,
             onItemLongClicked = onItemLongClicked,
+            currentModeTotal = currentModeTotal,
         )
 
         if (isAddShown) {
@@ -121,6 +130,7 @@ fun CategoryGrid(
                     itemList = archiveItemList,
                     onItemClicked = onItemClicked,
                     onItemLongClicked = onItemLongClicked,
+                    currentModeTotal = currentModeTotal,
                 )
             }
         }
@@ -142,6 +152,7 @@ private fun LazyGridScope.categoryItems(
     itemList: State<List<ViewCategoryListItem>>,
     onItemClicked: ((ViewCategoryListItem) -> Unit)?,
     onItemLongClicked: ((ViewCategoryListItem) -> Unit)?,
+    currentModeTotal: BigInteger?,
 ) {
     items(
         items = itemList.value,
@@ -149,6 +160,7 @@ private fun LazyGridScope.categoryItems(
     ) { item ->
         CategoryListItem(
             item = item,
+            currentModeTotal = currentModeTotal,
             modifier = Modifier
                 .combinedClickable(
                     onClick = {
@@ -216,6 +228,7 @@ internal fun ArchiveHeader(
 internal fun CategoryListItem(
     modifier: Modifier = Modifier,
     item: ViewCategoryListItem,
+    currentModeTotal: BigInteger? = null,
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -261,16 +274,31 @@ internal fun CategoryListItem(
         )
         val isZero = animatedAmountValue.value.signum() == 0
 
+        val amountColor =
+            if (isZero)
+                MoneyTheme.colors.ink3
+            else
+                MoneyTheme.colors.ink2
+
         Text(
-            text = amountFormat(
-                value = animatedAmountValue.value,
-                currency = amount.currency,
-                customColor =
-                    if (isZero)
-                        MoneyTheme.colors.ink3
-                    else
-                        MoneyTheme.colors.ink2,
-            ),
+            text =
+                if (LocalPrivacyMode.current)
+                    // The share of the period total instead of the amount,
+                    // no currency symbol.
+                    amountFormat.privateText(
+                        text = PrivacyAmounts.shareText(
+                            part = item.amountInPrimaryCurrency ?: BigInteger.ZERO,
+                            total = currentModeTotal,
+                        ),
+                        value = animatedAmountValue.value,
+                        customColor = amountColor,
+                    )
+                else
+                    amountFormat(
+                        value = animatedAmountValue.value,
+                        currency = amount.currency,
+                        customColor = amountColor,
+                    ),
             style = MoneyTheme.typography.small,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,

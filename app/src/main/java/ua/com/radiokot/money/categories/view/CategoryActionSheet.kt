@@ -59,7 +59,9 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
+import ua.com.radiokot.money.currency.view.formatOrPrivate
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
+import ua.com.radiokot.money.privacy.logic.PrivateAmountDisplay
 import ua.com.radiokot.money.transfers.history.view.ViewHistoryPeriod
 import ua.com.radiokot.money.transfers.view.ViewDate
 import java.math.BigInteger
@@ -222,7 +224,7 @@ private fun Header(
         }
 
         Text(
-            text = amountFormat(
+            text = amountFormat.formatOrPrivate(
                 amount = statsAmount.value,
                 customColor = MoneyTheme.colors.ink,
             ),
@@ -268,9 +270,10 @@ private fun Header(
                             )
 
                             Text(
-                                text = amountFormat(
+                                text = amountFormat.formatOrPrivate(
                                     amount = amount,
                                     customColor = MoneyTheme.colors.ink,
+                                    privateAs = PrivateAmountDisplay.ShareOf(total),
                                 ),
                                 style = MoneyTheme.typography.bodyStrong,
                                 maxLines = 1,
