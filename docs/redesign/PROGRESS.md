@@ -57,3 +57,12 @@ To check phases 1–4 on the phone before the migration, build commit **5b60431*
 - Transactions: no daily totals in day headers (needs a per-day sum).
 - Overview bar chart has no axis/gridlines.
 - Ember/Aurora: the first frame shows the Midnight window colour from XML before `MoneyAppTheme` repaints.
+
+## Backlog (owner ideas, later)
+
+- **Privacy mode (anonymization).** One toggle (e.g. an eye button in the tab header, state remembered)
+  that hides all absolute amounts: headline totals and balances show a mask (`•••`), and everywhere else
+  (categories, ring, Overview bars and top list, transactions) amounts are replaced by their percentage
+  of the relevant total (category share of the period expense, transaction share of its day/period).
+  Must also apply to notifications ("Payments to sort") and to screenshots of the app; the transfer sheet
+  keypad stays functional while entering an amount.
