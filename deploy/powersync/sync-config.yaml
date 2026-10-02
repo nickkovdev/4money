@@ -23,3 +23,12 @@ bucket_definitions:
         SELECT id
         FROM money.sync_errors AS sync_errors
         WHERE user_id = bucket.user_id
+      - >-
+        SELECT id, payee_pattern, match_type, category_id, subcategory_id, account_id, hits, last_used_at
+        FROM money.payee_rules AS payee_rules
+        WHERE user_id = bucket.user_id
+      - >-
+        SELECT id, received_at, source_package, raw_text, amount, currency_code, payee, card_last4,
+               account_id, status, transfer_id, dedup_hash
+        FROM money.inbox_items AS inbox_items
+        WHERE user_id = bucket.user_id
