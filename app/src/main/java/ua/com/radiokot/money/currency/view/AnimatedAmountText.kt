@@ -25,6 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import com.composeunstyled.Text
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
+import ua.com.radiokot.money.privacy.logic.PrivateAmountDisplay
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 
 /**
  * An amount that counts to the new value when it changes.
@@ -36,8 +39,23 @@ fun AnimatedAmountText(
     style: TextStyle = TextStyle.Default,
     customColor: Color? = null,
     maxLines: Int = 1,
+    privateAs: PrivateAmountDisplay = PrivateAmountDisplay.Mask,
 ) {
     val amountFormat = rememberViewAmountFormat()
+
+    if (LocalPrivacyMode.current) {
+        Text(
+            text = amountFormat.privateText(
+                text = PrivacyAmounts.textOf(amount.value, privateAs),
+                value = amount.value,
+                customColor = customColor,
+            ),
+            style = style,
+            maxLines = maxLines,
+            modifier = modifier,
+        )
+        return
+    }
 
     // animateAmountValueAsState remembers the precision of the first currency.
     key(amount.currency) {

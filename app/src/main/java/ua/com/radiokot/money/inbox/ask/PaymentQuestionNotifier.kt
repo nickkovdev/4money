@@ -38,6 +38,7 @@ import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
 import ua.com.radiokot.money.inbox.view.InboxActivity
 import ua.com.radiokot.money.lazyLogger
+import ua.com.radiokot.money.privacy.data.PrivacyPreferences
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.history.data.TransferHistoryRepository
@@ -57,6 +58,7 @@ class PaymentQuestionNotifier(
     private val accountRepository: AccountRepository,
     private val categoryRepository: CategoryRepository,
     private val transferHistoryRepository: TransferHistoryRepository,
+    private val privacyPreferences: PrivacyPreferences,
 ) {
     private val log by lazyLogger("PaymentQuestionNotifier")
 
@@ -135,7 +137,11 @@ class PaymentQuestionNotifier(
         val payee = item.payee?.let(PayeeNormalizer::displayName)?.takeIf(String::isNotEmpty)
             ?: "Bank payment"
         val sign = if (isIncoming) "+" else "−"
-        val title = "$payee · $sign${formatAmount(amount)} ${account.currency.symbol}"
+        val title = PaymentQuestion.notificationTitle(
+            payee = payee,
+            signedAmount = "$sign${formatAmount(amount)} ${account.currency.symbol}",
+            isPrivate = privacyPreferences.isPrivacyModeEnabled.value,
+        )
         val text =
             if (reason == AutoExpenseResolver.PendingReason.AskRequested)
                 "This amount here can be one of several. Which one?"

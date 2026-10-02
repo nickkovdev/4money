@@ -39,6 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastFilter
 import com.composeunstyled.Text
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
+import java.math.BigInteger
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.animateAmountValueAsState
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
@@ -216,6 +219,12 @@ internal fun ArchiveHeader(
 internal fun CategoryListItem(
     modifier: Modifier = Modifier,
     item: ViewCategoryListItem,
+    /**
+     * Whether the shares of the period total can be shown in the privacy mode.
+     * If not, the amount is masked.
+     */
+    isShareAvailable: Boolean = false,
+    currentModeTotal: BigInteger? = null,
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -261,16 +270,35 @@ internal fun CategoryListItem(
         )
         val isZero = animatedAmountValue.value.signum() == 0
 
+        val amountColor =
+            if (isZero)
+                MoneyTheme.colors.ink3
+            else
+                MoneyTheme.colors.ink2
+
         Text(
-            text = amountFormat(
-                value = animatedAmountValue.value,
-                currency = amount.currency,
-                customColor =
-                    if (isZero)
-                        MoneyTheme.colors.ink3
-                    else
-                        MoneyTheme.colors.ink2,
-            ),
+            text =
+                if (LocalPrivacyMode.current)
+                    // The share of the period total instead of the amount,
+                    // no currency symbol.
+                    amountFormat.privateText(
+                        text =
+                            if (isShareAvailable)
+                                PrivacyAmounts.shareText(
+                                    part = item.amountInPrimaryCurrency ?: BigInteger.ZERO,
+                                    total = currentModeTotal,
+                                )
+                            else
+                                PrivacyAmounts.MASK,
+                        value = animatedAmountValue.value,
+                        customColor = amountColor,
+                    )
+                else
+                    amountFormat(
+                        value = animatedAmountValue.value,
+                        currency = amount.currency,
+                        customColor = amountColor,
+                    ),
             style = MoneyTheme.typography.small,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,

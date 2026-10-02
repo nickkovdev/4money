@@ -23,6 +23,8 @@ import android.content.Context
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import ua.com.radiokot.money.privacy.data.PrivacyPreferences
+import ua.com.radiokot.money.privacy.data.PrivacyPreferencesOnPrefs
 import ua.com.radiokot.money.theme.data.ThemePreferences
 import ua.com.radiokot.money.theme.data.ThemePreferencesOnPrefs
 
@@ -36,4 +38,13 @@ val themeModule = module {
             )
         )
     } bind ThemePreferences::class
+
+    single {
+        PrivacyPreferencesOnPrefs(
+            sharedPreferences = androidApplication().getSharedPreferences(
+                "privacy",
+                Context.MODE_PRIVATE,
+            )
+        )
+    } bind PrivacyPreferences::class
 }

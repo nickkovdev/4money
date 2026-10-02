@@ -19,6 +19,9 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import ua.com.radiokot.money.currency.view.formatOrPrivate
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.draw.clip
@@ -293,7 +296,11 @@ private fun InboxItemRow(
             .weight(1f)
     ) {
         Text(
-            text = item.title,
+            text =
+                if (item.isTitleRawText && LocalPrivacyMode.current)
+                    PRIVATE_TITLE
+                else
+                    item.title,
             style = MoneyTheme.typography.bodyStrong,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -317,7 +324,7 @@ private fun InboxItemRow(
     if (amount != null) {
         val amountFormat = rememberViewAmountFormat()
         Text(
-            text = amountFormat(
+            text = amountFormat.formatOrPrivate(
                 amount = amount,
                 customColor =
                     if (item.isIncoming)
@@ -330,7 +337,11 @@ private fun InboxItemRow(
         )
     } else if (item.amountText != null) {
         Text(
-            text = item.amountText,
+            text =
+                if (LocalPrivacyMode.current)
+                    PrivacyAmounts.MASK
+                else
+                    item.amountText,
             style = MoneyTheme.typography.bodyStrong,
             maxLines = 1,
         )

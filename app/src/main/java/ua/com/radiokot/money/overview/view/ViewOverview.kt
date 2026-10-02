@@ -24,6 +24,8 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
+import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
+import ua.com.radiokot.money.overview.logic.OverviewCategoryShare
 import ua.com.radiokot.money.overview.logic.OverviewData
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import java.math.BigInteger
@@ -47,6 +49,10 @@ class ViewOverview(
     val weekAverage: ViewAmount,
     val periodTotal: ViewAmount,
     val topCategories: List<ViewOverviewTopCategory>,
+    /**
+     * Every category with a positive total, shown when expanded.
+     */
+    val allCategories: List<ViewOverviewTopCategory>,
     val hasMoreCategories: Boolean,
     /**
      * Changes when the chart must re-animate: period or mode.
@@ -65,6 +71,20 @@ class ViewOverview(
                     data.income
                 else
                     data.expense
+            fun toTopCategory(share: OverviewCategoryShare): ViewOverviewTopCategory? {
+                val category = data.categoriesById[share.categoryId]
+                    ?: return null
+
+                return ViewOverviewTopCategory(
+                    key = category.id,
+                    title = category.title,
+                    colorScheme = category.colorScheme,
+                    icon = category.icon,
+                    amount = amount(share.amount),
+                    percent = share.percent,
+                    shareText = PrivacyAmounts.shareText(share.amount, stats.total),
+                )
+            }
 
             return ViewOverview(
                 isIncome = isIncome,
@@ -88,19 +108,8 @@ class ViewOverview(
                 dayAverage = amount(stats.dayAverage),
                 weekAverage = amount(stats.weekAverage),
                 periodTotal = amount(stats.total),
-                topCategories = stats.topCategories.mapNotNull { share ->
-                    val category = data.categoriesById[share.categoryId]
-                        ?: return@mapNotNull null
-
-                    ViewOverviewTopCategory(
-                        key = category.id,
-                        title = category.title,
-                        colorScheme = category.colorScheme,
-                        icon = category.icon,
-                        amount = amount(share.amount),
-                        percent = share.percent,
-                    )
-                },
+                topCategories = stats.topCategories.mapNotNull(::toTopCategory),
+                allCategories = stats.categories.mapNotNull(::toTopCategory),
                 hasMoreCategories = stats.categoryCount > stats.topCategories.size,
                 animationKey = data.period.startInclusive to isIncome,
             )
@@ -131,4 +140,8 @@ class ViewOverviewTopCategory(
     val icon: ItemIcon?,
     val amount: ViewAmount,
     val percent: Int,
+    /**
+     * "33%", "<1%" for a tiny non-zero share.
+     */
+    val shareText: String,
 )

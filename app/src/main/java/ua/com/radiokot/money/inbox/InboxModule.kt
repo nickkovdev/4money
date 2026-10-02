@@ -110,6 +110,7 @@ val inboxModule = module {
                 accountRepository = get(),
                 categoryRepository = get(),
                 transferHistoryRepository = get(),
+                privacyPreferences = get(),
             )
         } bind PaymentQuestionNotifier::class
 

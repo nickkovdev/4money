@@ -100,7 +100,7 @@ UI_ICONS = [
     # Redesign: controls, action sheets, settings, inbox, rules.
     "plus", "minus", "x", "arrow-left", "chevron-down", "chevron-up", "settings", "adjustments-horizontal",
     "layout-grid", "arrow-down-left", "arrow-up-right", "scale", "arrow-back-up", "inbox", "archive",
-    "circle", "circle-check", "sun", "moon", "device-mobile", "palette", "lock",
+    "eye", "eye-off", "circle", "circle-check", "sun", "moon", "device-mobile", "palette", "lock",
     "bell", "logout", "copy", "info-circle", "filter", "clock", "notes", "help-circle", "cards",
     "credit-card", "pig-money", "currency-euro", "fingerprint", "alert-triangle", "search",
     "divide", "math-function", "equal", "receipt", "message-question", "grip-vertical", "id",

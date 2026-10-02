@@ -33,6 +33,10 @@ import kotlin.random.Random
 class ViewCategoryListItem(
     val title: String,
     val amount: ViewAmount,
+    /**
+     * Null if the primary currency doesn't exist or for incognito items.
+     */
+    val amountInPrimaryCurrency: BigInteger? = null,
     val isIncognito: Boolean,
     val colorScheme: ItemColorScheme,
     val icon: ItemIcon?,
@@ -51,6 +55,7 @@ class ViewCategoryListItem(
     constructor(
         category: Category,
         amount: BigInteger,
+        amountInPrimaryCurrency: BigInteger? = null,
         isIncognito: Boolean,
         period: HistoryPeriod?,
     ) : this(
@@ -59,6 +64,7 @@ class ViewCategoryListItem(
             value = amount,
             currency = category.currency,
         ),
+        amountInPrimaryCurrency = amountInPrimaryCurrency,
         colorScheme = category.colorScheme,
         icon = category.icon,
         isArchived = category.isArchived,
@@ -73,6 +79,7 @@ class ViewCategoryListItem(
 
         if (title != other.title) return false
         if (amount != other.amount) return false
+        if (amountInPrimaryCurrency != other.amountInPrimaryCurrency) return false
         if (isIncognito != other.isIncognito) return false
         if (colorScheme != other.colorScheme) return false
         if (icon != other.icon) return false
@@ -85,6 +92,7 @@ class ViewCategoryListItem(
     override fun hashCode(): Int {
         var result = title.hashCode()
         result = 31 * result + amount.hashCode()
+        result = 31 * result + (amountInPrimaryCurrency?.hashCode() ?: 0)
         result = 31 * result + isIncognito.hashCode()
         result = 31 * result + colorScheme.hashCode()
         result = 31 * result + (icon?.hashCode() ?: 0)
@@ -116,10 +124,11 @@ fun List<CategoryWithAmount>.toSortedViewItemList(
 ): List<ViewCategoryListItem> =
     filter { includeArchived || !it.category.isArchived }
         .sortedWith(categoryWithAmountComparator)
-        .map { (category, amount) ->
+        .map { (category, amount, amountInPrimaryCurrency) ->
             ViewCategoryListItem(
                 category = category,
                 amount = amount,
+                amountInPrimaryCurrency = amountInPrimaryCurrency,
                 isIncognito = false,
                 period = period,
             )

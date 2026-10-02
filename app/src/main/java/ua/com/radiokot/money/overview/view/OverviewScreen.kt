@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.overview.view
 
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Box
@@ -35,7 +36,6 @@ import ua.com.radiokot.money.uikit.EmptyState
 import ua.com.radiokot.money.uikit.ListDivider
 import ua.com.radiokot.money.uikit.ListGroup
 import ua.com.radiokot.money.uikit.ListRow
-import ua.com.radiokot.money.uikit.RowChevron
 import ua.com.radiokot.money.uikit.SectionHeader
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
@@ -94,7 +94,9 @@ fun OverviewScreenRoot(
     onNextPeriodClicked = remember { viewModel::onNextHistoryStatsPeriodClicked },
     onExpensesCardClicked = remember { viewModel::onExpensesCardClicked },
     onIncomeCardClicked = remember { viewModel::onIncomeCardClicked },
+    isExpanded = viewModel.isExpanded.collectAsState(),
     onMoreCategoriesClicked = remember { viewModel::onMoreCategoriesClicked },
+    onCategoryClicked = remember { viewModel::onCategoryClicked },
     modifier = modifier,
 )
 
@@ -110,7 +112,9 @@ private fun OverviewScreen(
     onNextPeriodClicked: () -> Unit,
     onExpensesCardClicked: () -> Unit,
     onIncomeCardClicked: () -> Unit,
+    isExpanded: State<Boolean>,
     onMoreCategoriesClicked: () -> Unit,
+    onCategoryClicked: (key: String) -> Unit,
 ) = Column(
     modifier = modifier
         .periodSwipe(
@@ -162,7 +166,9 @@ private fun OverviewScreen(
                         overview = currentState.overview,
                         onExpensesCardClicked = onExpensesCardClicked,
                         onIncomeCardClicked = onIncomeCardClicked,
+                        isExpanded = isExpanded.value,
                         onMoreCategoriesClicked = onMoreCategoriesClicked,
+                        onCategoryClicked = onCategoryClicked,
                     )
             }
         }
@@ -174,7 +180,9 @@ private fun OverviewContent(
     overview: ViewOverview,
     onExpensesCardClicked: () -> Unit,
     onIncomeCardClicked: () -> Unit,
+    isExpanded: Boolean,
     onMoreCategoriesClicked: () -> Unit,
+    onCategoryClicked: (key: String) -> Unit,
 ) = Column(
     verticalArrangement = Arrangement.spacedBy(12.dp),
 ) {
@@ -240,10 +248,11 @@ private fun OverviewContent(
                 }
             }
         }
-        val labels = remember(overview) {
+        val isPrivate = LocalPrivacyMode.current
+        val labels = remember(overview, isPrivate) {
             overview.bars.map { bar ->
                 bar.dayOfMonth
-                    .takeIf { it == 1 || it % 5 == 0 || overview.bars.size <= 7 }
+                    .takeIf { !isPrivate && (it == 1 || it % 5 == 0 || overview.bars.size <= 7) }
                     ?.toString()
             }
         }
@@ -294,6 +303,8 @@ private fun OverviewContent(
     }
 
     if (overview.topCategories.isNotEmpty()) {
+        val isPrivate = LocalPrivacyMode.current
+
         SectionHeader(
             title = "Top categories",
             modifier = Modifier
@@ -301,14 +312,20 @@ private fun OverviewContent(
         )
 
         ListGroup {
-            overview.topCategories.forEachIndexed { index, category ->
+            val categories =
+                if (isExpanded)
+                    overview.allCategories
+                else
+                    overview.topCategories
+
+            categories.forEachIndexed { index, category ->
                 if (index > 0) {
                     ListDivider(startInset = 16.dp + 36.dp + 14.dp)
                 }
 
                 ListRow(
                     title = category.title,
-                    subtitle = "${category.percent}%",
+                    subtitle = category.shareText,
                     leading = {
                         ItemLogo(
                             title = category.title,
@@ -317,22 +334,44 @@ private fun OverviewContent(
                             modifier = Modifier.size(36.dp),
                         )
                     },
-                    trailing = {
-                        AnimatedAmountText(
-                            amount = category.amount,
-                            customColor = colors.ink,
-                            style = MoneyTheme.typography.bodyStrong,
-                        )
-                    },
+                    onClick = { onCategoryClicked(category.key) },
+                    trailing =
+                        if (isPrivate)
+                            null
+                        else
+                            ({
+                                AnimatedAmountText(
+                                    amount = category.amount,
+                                    customColor = colors.ink,
+                                    style = MoneyTheme.typography.bodyStrong,
+                                )
+                            }),
                 )
             }
 
             if (overview.hasMoreCategories) {
                 ListDivider()
                 ListRow(
-                    title = "All categories",
+                    title =
+                        if (isExpanded)
+                            "Show less"
+                        else
+                            "All categories",
                     titleColor = colors.accent,
-                    trailing = { RowChevron() },
+                    trailing = {
+                        Icon(
+                            painter = painterResource(
+                                if (isExpanded)
+                                    R.drawable.ic_tabler_chevron_up
+                                else
+                                    R.drawable.ic_tabler_chevron_down
+                            ),
+                            contentDescription = null,
+                            tint = colors.ink3,
+                            modifier = Modifier
+                                .size(MoneySpacing.iconSmall)
+                        )
+                    },
                     onClick = onMoreCategoriesClicked,
                 )
             }

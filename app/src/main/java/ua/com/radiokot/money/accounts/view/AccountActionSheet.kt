@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import ua.com.radiokot.money.currency.view.formatOrPrivate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -182,9 +183,9 @@ private fun AccountActionSheet(
                 Text(
                     text =
                         if (isBalanceMode)
-                            AnnotatedString("Current balance " + amountFormat(balance).text)
+                            AnnotatedString("Current balance " + amountFormat.formatOrPrivate(balance).text)
                         else
-                            amountFormat(
+                            amountFormat.formatOrPrivate(
                                 amount = balance,
                                 customColor = balanceColor(balance.value),
                             ),

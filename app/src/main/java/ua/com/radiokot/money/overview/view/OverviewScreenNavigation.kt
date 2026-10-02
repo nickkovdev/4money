@@ -32,7 +32,7 @@ const val OverviewScreenRoute = "overview"
 
 fun NavGraphBuilder.overviewScreen(
     homeViewModel: HomeViewModel,
-    onProceedToCategories: () -> Unit,
+    onProceedToCategoryStats: (CategoryStatsSheetRoute) -> Unit,
 ) = composable(OverviewScreenRoute) {
 
     val viewModel = koinViewModel<OverviewScreenViewModel> {
@@ -44,8 +44,14 @@ fun NavGraphBuilder.overviewScreen(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                OverviewScreenViewModel.Event.ProceedToCategories ->
-                    onProceedToCategories()
+                is OverviewScreenViewModel.Event.ProceedToCategoryStats ->
+                    onProceedToCategoryStats(
+                        CategoryStatsSheetRoute(
+                            categoryId = event.categoryId,
+                            isIncome = event.isIncome,
+                            statsPeriod = event.statsPeriod,
+                        )
+                    )
             }
         }
     }

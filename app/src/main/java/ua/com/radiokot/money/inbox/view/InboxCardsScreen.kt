@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import ua.com.radiokot.money.currency.view.formatOrPrivate
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -82,6 +83,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ua.com.radiokot.money.R
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.ViewAmount
@@ -651,7 +653,11 @@ private fun CardContent(
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
-            text = card.title,
+            text =
+                if (card.isTitleRawText && LocalPrivacyMode.current)
+                    PRIVATE_TITLE
+                else
+                    card.title,
             style = MoneyTheme.typography.title,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -667,7 +673,7 @@ private fun CardContent(
     if (amount != null) {
         val amountFormat = rememberViewAmountFormat()
         Text(
-            text = amountFormat(
+            text = amountFormat.formatOrPrivate(
                 amount = amount,
                 customColor =
                     if (card.isIncoming)

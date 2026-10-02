@@ -23,12 +23,15 @@ import android.app.Activity
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import org.koin.compose.koinInject
+import ua.com.radiokot.money.privacy.data.PrivacyPreferences
+import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import ua.com.radiokot.money.theme.data.ThemeMode
 import ua.com.radiokot.money.theme.data.ThemePreferences
 import ua.com.radiokot.money.uikit.theme.AuroraMoneyColors
@@ -67,10 +70,15 @@ fun MoneyAppTheme(
         }
     }
 
-    MoneyTheme(
-        colors = colors,
-        content = content,
-    )
+    val privacyPreferences = koinInject<PrivacyPreferences>()
+    val isPrivate by privacyPreferences.isPrivacyModeEnabled.collectAsState()
+
+    CompositionLocalProvider(LocalPrivacyMode provides isPrivate) {
+        MoneyTheme(
+            colors = colors,
+            content = content,
+        )
+    }
 }
 
 /**
