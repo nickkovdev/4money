@@ -32,8 +32,9 @@ interface PayeeRuleRepository {
     fun getRulesFlow(): Flow<List<PayeeRule>>
 
     /**
-     * Creates a rule or, if one with the same pattern and match type exists,
-     * points it to the new category/account.
+     * Creates a plain rule (no amount range) or, if one with the same pattern
+     * and match type exists, points it to the new category/account.
+     * Range rules of the payee are left as is.
      */
     suspend fun saveRuleForPayee(
         payeePattern: String,
@@ -47,6 +48,21 @@ interface PayeeRuleRepository {
         ruleId: String,
         payeePattern: String,
         matchType: PayeeRule.MatchType,
+    )
+
+    /**
+     * Creates (null [ruleId]) or replaces a rule for the payee amounts in [amountRange].
+     *
+     * @param categoryId required for [PayeeRule.Action.Record], ignored for [PayeeRule.Action.Ask]
+     */
+    suspend fun saveRangeRule(
+        ruleId: String?,
+        payeePattern: String,
+        matchType: PayeeRule.MatchType,
+        amountRange: AmountRange,
+        action: PayeeRule.Action,
+        categoryId: String?,
+        subcategoryId: String?,
     )
 
     suspend fun deleteRule(ruleId: String)

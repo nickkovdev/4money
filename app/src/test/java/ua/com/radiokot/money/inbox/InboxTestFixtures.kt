@@ -108,7 +108,9 @@ class FakePayeeRuleRepository(
         subcategoryId: String?,
         accountId: String?,
     ) {
-        val existing = rules.value.find { it.payeePattern == payeePattern && it.matchType == matchType }
+        val existing = rules.value.find {
+            it.payeePattern == payeePattern && it.matchType == matchType && it.amountRange == null
+        }
         rules.value =
             if (existing != null)
                 rules.value.map {
@@ -133,6 +135,30 @@ class FakePayeeRuleRepository(
         rules.value = rules.value.map {
             if (it.id == ruleId) it.copy(payeePattern = payeePattern, matchType = matchType) else it
         }
+    }
+
+    override suspend fun saveRangeRule(
+        ruleId: String?,
+        payeePattern: String,
+        matchType: PayeeRule.MatchType,
+        amountRange: ua.com.radiokot.money.inbox.data.AmountRange,
+        action: PayeeRule.Action,
+        categoryId: String?,
+        subcategoryId: String?,
+    ) {
+        val rule = PayeeRule(
+            payeePattern = payeePattern,
+            matchType = matchType,
+            categoryId = categoryId.takeIf { action == PayeeRule.Action.Record },
+            subcategoryId = subcategoryId,
+            accountId = null,
+            hits = 0,
+            lastUsedAt = null,
+            id = ruleId ?: java.util.UUID.randomUUID().toString(),
+            amountRange = amountRange,
+            action = action,
+        )
+        rules.value = rules.value.filterNot { it.id == rule.id } + rule
     }
 
     override suspend fun deleteRule(ruleId: String) {

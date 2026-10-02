@@ -24,7 +24,8 @@ bucket_definitions:
         FROM money.sync_errors AS sync_errors
         WHERE user_id = bucket.user_id
       - >-
-        SELECT id, payee_pattern, match_type, category_id, subcategory_id, account_id, hits, last_used_at
+        SELECT id, payee_pattern, match_type, category_id, subcategory_id, account_id, hits, last_used_at,
+               min_amount, max_amount, range_bounds, action
         FROM money.payee_rules AS payee_rules
         WHERE user_id = bucket.user_id
       - >-

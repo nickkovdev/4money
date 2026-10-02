@@ -73,6 +73,7 @@ object InboxCardSuggester {
      * @param rules rules of the card direction (expense or income)
      * @param history recent transfers of the card direction, newest first
      * @param isUsable whether a category still exists and is not archived
+     * @param amount the payment amount for amount range rules, null if unknown
      */
     fun suggest(
         normalizedPayee: String,
@@ -80,7 +81,8 @@ object InboxCardSuggester {
         history: List<HistoryEntry>,
         isUsable: (CategoryKey) -> Boolean = { true },
         maxAlternatives: Int = 3,
-        ruleMatcher: (normalizedPayee: String, rules: List<PayeeRule>) -> PayeeRule? =
+        amount: java.math.BigDecimal? = null,
+        ruleMatcher: (normalizedPayee: String, rules: List<PayeeRule>, amount: java.math.BigDecimal?) -> PayeeRule? =
             PayeeRuleMatcher::match,
     ): Result {
         val payeeRanking = rank(
@@ -95,9 +97,12 @@ object InboxCardSuggester {
                 .filter(isUsable)
         )
 
-        val rule = ruleMatcher(normalizedPayee, rules)
+        // An Ask rule has no category to suggest: the history decides then.
+        val rule = ruleMatcher(normalizedPayee, rules, amount)
+            ?.takeIf { it.action == PayeeRule.Action.Record }
         val ruleCategory = rule
-            ?.let { CategoryKey(it.categoryId, it.subcategoryId) }
+            ?.categoryId
+            ?.let { CategoryKey(it, rule.subcategoryId) }
             ?.takeIf(isUsable)
 
         val suggestion: Suggestion? = when {
