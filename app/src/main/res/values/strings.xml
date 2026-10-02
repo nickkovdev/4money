@@ -19,4 +19,12 @@
     <string name="settings_language_system">Follow the system</string>
     <string name="language_english" translatable="false">English</string>
     <string name="language_russian" translatable="false">Русский</string>
+
+    <!-- Dates -->
+    <string name="date_today">Today</string>
+    <string name="date_yesterday">Yesterday</string>
+    <string name="date_today_at">Today %1$s</string>
+    <string name="history_period_entire_time">The entire time</string>
+    <string name="date_picker_previous_month">Previous month</string>
+    <string name="date_picker_next_month">Next month</string>
 </resources>

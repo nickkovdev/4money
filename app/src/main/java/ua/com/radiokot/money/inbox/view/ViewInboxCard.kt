@@ -20,6 +20,7 @@
 package ua.com.radiokot.money.inbox.view
 
 import androidx.compose.runtime.Immutable
+import kotlinx.datetime.LocalDateTime
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
@@ -61,10 +62,12 @@ data class ViewInboxCard(
     val amount: ViewAmount?,
     val isIncoming: Boolean,
     val isForeignCurrency: Boolean,
+    val receivedAt: LocalDateTime,
+    val isReceivedToday: Boolean,
     /**
-     * Time and account, e.g. "Today 11:55 · Card".
+     * The account or the card, e.g. "Card"; shown after the time of receiving.
      */
-    val metaText: String,
+    val sourceText: String,
     val suggestion: ViewInboxCardCategory?,
     /**
      * Why the suggestion, e.g. "Remembered payee → Food".

@@ -35,7 +35,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import ua.com.radiokot.money.inbox.logic.LearnedRule
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import ua.com.radiokot.money.accounts.data.Account
@@ -268,8 +267,9 @@ class InboxCardsViewModel(
             isForeignCurrency = account != null
                     && item.currencyCode != null
                     && !item.currencyCode.equals(account.currency.code, ignoreCase = true),
-            metaText = listOfNotNull(
-                formatTime(item.receivedAt, today),
+            receivedAt = item.receivedAt,
+            isReceivedToday = item.receivedAt.date == today,
+            sourceText = listOfNotNull(
                 account?.title,
                 item.cardLast4?.let { "•$it" }.takeIf { account == null },
             ).joinToString(" · "),
@@ -297,17 +297,6 @@ class InboxCardsViewModel(
                 ?.takeIf { normalizedPayee.isNotEmpty() },
             isAmountRulesHinted = result.isPayeeHistoryMixed && normalizedPayee.isNotEmpty(),
         )
-    }
-
-    private fun formatTime(
-        dateTime: LocalDateTime,
-        today: kotlinx.datetime.LocalDate,
-    ): String {
-        val time = dateTime.time.toString().take(5)
-        return when (dateTime.date) {
-            today -> "Today $time"
-            else -> "${dateTime.date} $time"
-        }
     }
 
     private fun itemOf(card: ViewInboxCard): InboxItem? =

@@ -51,8 +51,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LastBaseline
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -71,11 +71,6 @@ import com.composeunstyled.Icon
 import com.composeunstyled.Text
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.format.DateTimeFormat
-import kotlinx.datetime.format.DayOfWeekNames
-import kotlinx.datetime.format.MonthNames
-import kotlinx.datetime.format.char
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.colors.view.ItemLogo
 import ua.com.radiokot.money.currency.view.ViewAmount
@@ -85,6 +80,7 @@ import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
 import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import java.util.Locale
 
 @Composable
 fun TransferList(
@@ -97,20 +93,8 @@ fun TransferList(
     onTransferItemDeleteClicked: ((ViewTransferListItem.Transfer) -> Unit)? = null,
     privacyTotals: ViewPrivacyTotals? = null,
 ) {
-    val locale = LocalConfiguration.current.locales.get(0)
+    val locale = rememberAppLocale()
     val amountFormat = rememberViewAmountFormat()
-    val dayFormat = remember(locale) {
-        LocalDate.Format {
-            dayOfWeek(DayOfWeekNames.ENGLISH_FULL)
-        }
-    }
-    val monthYearFormat = remember(locale) {
-        LocalDate.Format {
-            monthName(MonthNames.ENGLISH_FULL)
-            char(' ')
-            year()
-        }
-    }
     val lazyPagingItems = itemPagingFlow.collectAsLazyPagingItems()
 
     LazyColumn(
@@ -151,8 +135,7 @@ fun TransferList(
                 is ViewTransferListItem.Header -> {
                     HeaderItem(
                         item = item,
-                        dayFormat = dayFormat,
-                        monthYearFormat = monthYearFormat,
+                        locale = locale,
                         modifier = Modifier
                             .padding(
                                 top =
@@ -253,20 +236,21 @@ private fun TransferListPreview(
 private fun HeaderItem(
     modifier: Modifier = Modifier,
     item: ViewTransferListItem.Header,
-    dayFormat: DateTimeFormat<LocalDate>,
-    monthYearFormat: DateTimeFormat<LocalDate>,
+    locale: Locale,
 ) = SectionHeader(
     // The period bar already says the month, so the header names only the day.
     title =
         when (item.date.specificType) {
             ViewDate.SpecificType.Today ->
-                "Today"
+                stringResource(R.string.date_today)
 
             ViewDate.SpecificType.Yesterday ->
-                "Yesterday"
+                stringResource(R.string.date_yesterday)
 
             null ->
-                dayFormat.format(item.date.localDate) + ", " + item.date.localDate.day
+                remember(item.date.localDate, locale) {
+                    ViewDateFormats.weekdayDay(item.date.localDate, locale)
+                }
         },
     modifier = modifier,
 )
