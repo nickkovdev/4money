@@ -1,5 +1,6 @@
 package ua.com.radiokot.money.categories.view
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -185,7 +186,7 @@ internal fun ArchiveHeader(
             .fillMaxWidth()
     ) {
         Text(
-            text = "ARCHIVED",
+            text = stringResource(R.string.categories_archived_header),
             style = MoneyTheme.typography.overline,
             color = MoneyTheme.colors.ink3,
             modifier = Modifier
@@ -200,10 +201,12 @@ internal fun ArchiveHeader(
                     R.drawable.ic_tabler_chevron_down
             ),
             contentDescription =
-                if (isArchiveExpanded.value)
-                    "Collapse"
-                else
-                    "Expand",
+                stringResource(
+                    if (isArchiveExpanded.value)
+                        R.string.common_collapse
+                    else
+                        R.string.common_expand
+                ),
             tint = MoneyTheme.colors.ink3,
             modifier = Modifier
                 .size(18.dp)
@@ -350,7 +353,7 @@ internal fun AddItem(
     }
 
     Text(
-        text = "Add",
+        text = stringResource(R.string.categories_add),
         style = MoneyTheme.typography.caption,
         fontWeight = FontWeight.Medium,
         color = MoneyTheme.colors.ink2,
