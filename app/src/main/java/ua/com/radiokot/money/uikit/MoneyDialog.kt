@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.Dialog
@@ -42,6 +43,7 @@ import com.composeunstyled.DialogProperties
 import com.composeunstyled.Scrim
 import com.composeunstyled.Text
 import com.composeunstyled.rememberDialogState
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.theme.MidnightMoneyColors
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
@@ -103,7 +105,7 @@ fun MoneyDialog(
     text: String? = null,
     confirmText: String,
     onConfirm: () -> Unit,
-    dismissText: String = "Cancel",
+    dismissText: String = stringResource(R.string.common_cancel),
     onDismissRequest: () -> Unit,
     isDestructive: Boolean = false,
 ) = MoneyDialogContainer(

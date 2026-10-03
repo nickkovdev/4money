@@ -26,6 +26,7 @@ and passes `testDebugUnitTest` (195 tests; only the pre-existing upstream
 | 3313f76 | Phase 5: "Payments to sort" notification (`inbox/ask/PaymentQuestionNotifier.kt`, `PaymentQuestionReceiver.kt`): up to 3 category buttons record the expense without opening the app; POST_NOTIFICATIONS asked when an Ask range is saved. |
 | 77593b1 | Owner decision: a card suggested from history (no rule yet) has a Remember toggle: on when the payee's history has one category, off when mixed, with a "set up amount rules" link. Undo removes only a rule created by that accept (`LearnedRule`, `CardRememberTest`). |
 | F2 (branch `feature/category-sheet-privacy`) | Category sheet from Overview: tap a category (top list or the inline-expanded "All categories") → sheet in the category colour with N transactions, total, share of the period and the period total, subcategory shares, Expense/Income and Transactions actions. Privacy mode: eye button next to the profile button in every tab header (stored in prefs `privacy`), headline amounts `•••`, the rest as % of the relevant total, no amount in the "Payments to sort" notification. Plan with rulings: `docs/superpowers/plans/2026-10-02-category-sheet-privacy.md`. |
+| F3 (branch `feature/localization-ru`) | Localization: English base + complete Russian, Settings → Language (System / English / Русский) via per-app locales, locale-aware dates (nominative month headers, genitive day lines) and amounts (ru: "1 234,56 €", comma keypad), plurals, notifications. Plan with rulings: `docs/superpowers/plans/2026-10-03-localization-ru.md`. |
 
 ## Install order (important)
 
@@ -73,3 +74,14 @@ To check phases 1–4 on the phone before the migration, build commit **5b60431*
 - Eye button on all four tabs; toggle persists across app restarts; Inbox screens follow it.
 - Private: balances/totals/averages `•••`; categories tiles and transactions as %, transfers between accounts `•••`; Overview day labels and top amounts hidden; transfer keypad still shows the amount being typed.
 - "Payments to sort" notification while private: title is the payee only.
+
+## F3 device checklist
+
+- Settings → Language: switch System / English / Русский and back; every open screen recreates in the new language.
+- In Russian walk all four tabs, Settings, Inbox list and cards, Rules, the transfer sheet, the date picker and the category sheet: nothing left in English except user data and theme names.
+- Month headers read "Октябрь 2026", day lines like "1 октября".
+- Amounts show "1 234,56 €" (comma decimal); the keypad decimal key is "," and typing "1234,5" gives 1 234,50.
+- Plurals: 1 / 3 / 5 / 21 → операция / операции / операций / операция (category sheet transaction count, Rules rule count, Settings Inbox row, inbox card reasons).
+- "Payments to sort" notification arrives in Russian.
+- Privacy mode in Russian: `•••` and % as before.
+- System with a device language other than English or Russian (e.g. Latvian): English strings, no crash.

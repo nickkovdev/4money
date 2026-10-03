@@ -19,6 +19,9 @@
 
 package ua.com.radiokot.money.overview.view
 
+import ua.com.radiokot.money.uikit.resolve
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -121,10 +124,12 @@ private fun CategoryStatsSheet(
     ) {
         MoneyButton(
             text =
-                if (currentStats.isIncome)
-                    "Income"
-                else
-                    "Expense",
+                stringResource(
+                    if (currentStats.isIncome)
+                        R.string.accounts_action_income
+                    else
+                        R.string.accounts_action_expense
+                ),
             icon = R.drawable.ic_tabler_plus,
             style = MoneyButtonStyle.Filled,
             onClick = onProceedToTransferClicked,
@@ -133,7 +138,7 @@ private fun CategoryStatsSheet(
         )
 
         MoneyButton(
-            text = "Transactions",
+            text = stringResource(R.string.overview_transactions),
             icon = R.drawable.ic_tabler_list_details,
             style = MoneyButtonStyle.Tonal,
             onClick = onTransactionsClicked,
@@ -181,11 +186,11 @@ private fun Header(
             )
 
             Text(
-                text =
-                    if (stats.transferCount == 1)
-                        "1 transaction"
-                    else
-                        "${stats.transferCount} transactions",
+                text = pluralStringResource(
+                    R.plurals.transaction_count,
+                    stats.transferCount,
+                    stats.transferCount,
+                ),
                 style = MoneyTheme.typography.caption,
                 color = MoneyTheme.colors.ink3,
             )
@@ -254,6 +259,8 @@ private fun Subcategories(
     ListGroup {
         stats.subcategories.forEachIndexed { i, subcategory ->
             key(subcategory.key) {
+                val subcategoryTitle = subcategory.title.resolve()
+
                 if (i != 0) {
                     ListDivider(startInset = MoneySpacing.rowHorizontal + 36.dp + 14.dp)
                 }
@@ -269,7 +276,7 @@ private fun Subcategories(
                         )
                 ) {
                     ItemLogo(
-                        title = subcategory.title,
+                        title = subcategoryTitle,
                         colorScheme = stats.colorScheme,
                         icon =
                             if (subcategory.isUncategorized)
@@ -289,7 +296,7 @@ private fun Subcategories(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                text = subcategory.title,
+                                text = subcategoryTitle,
                                 style = MoneyTheme.typography.body,
                                 color =
                                     if (subcategory.isUncategorized)

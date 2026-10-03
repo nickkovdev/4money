@@ -78,6 +78,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -491,10 +492,10 @@ private fun BottomNavigation(
     }
 
     listOf(
-        Triple("Accounts", R.drawable.ic_tabler_wallet, AccountsScreenRoute),
-        Triple("Categories", R.drawable.ic_tabler_chart_donut, CategoriesScreenRoute),
-        Triple("History", R.drawable.ic_tabler_list_details, ActivityScreenRoute),
-        Triple("Overview", R.drawable.ic_tabler_chart_bar, OverviewScreenRoute),
+        Triple(stringResource(R.string.home_tab_accounts), R.drawable.ic_tabler_wallet, AccountsScreenRoute),
+        Triple(stringResource(R.string.home_tab_categories), R.drawable.ic_tabler_chart_donut, CategoriesScreenRoute),
+        Triple(stringResource(R.string.home_tab_history), R.drawable.ic_tabler_list_details, ActivityScreenRoute),
+        Triple(stringResource(R.string.home_tab_overview), R.drawable.ic_tabler_chart_bar, OverviewScreenRoute),
     ).forEach { (text, icon, route) ->
         BottomNavigationEntry(
             text = text,

@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import androidx.compose.ui.res.stringResource
 import ua.com.radiokot.money.currency.view.formatOrPrivate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -183,7 +184,12 @@ private fun AccountActionSheet(
                 Text(
                     text =
                         if (isBalanceMode)
-                            AnnotatedString("Current balance " + amountFormat.formatOrPrivate(balance).text)
+                            AnnotatedString(
+                                stringResource(
+                                    R.string.accounts_current_balance,
+                                    amountFormat.formatOrPrivate(balance).text,
+                                )
+                            )
                         else
                             amountFormat.formatOrPrivate(
                                 amount = balance,
@@ -303,7 +309,7 @@ private fun DefaultActionsModeContent(
     ) {
         ActionTile(
             icon = R.drawable.ic_tabler_arrow_up_right,
-            label = "Expense",
+            label = stringResource(R.string.accounts_action_expense),
             tint = colors.expense,
             tileBackground = colors.expenseTint,
             onClick = onExpenseClicked,
@@ -313,7 +319,7 @@ private fun DefaultActionsModeContent(
 
         ActionTile(
             icon = R.drawable.ic_tabler_arrow_down_left,
-            label = "Income",
+            label = stringResource(R.string.accounts_action_income),
             tint = colors.income,
             tileBackground = colors.incomeTint,
             onClick = onIncomeClicked,
@@ -323,7 +329,7 @@ private fun DefaultActionsModeContent(
 
         ActionTile(
             icon = R.drawable.ic_tabler_arrows_exchange,
-            label = "Transfer",
+            label = stringResource(R.string.accounts_action_transfer),
             tint = colors.ink,
             tileBackground = colors.surface2,
             onClick = onTransferClicked,
@@ -337,7 +343,7 @@ private fun DefaultActionsModeContent(
     ) {
         ActionTile(
             icon = R.drawable.ic_tabler_list_details,
-            label = "Activity",
+            label = stringResource(R.string.accounts_action_activity),
             onClick = onActivityClicked,
             modifier = Modifier
                 .weight(1f)
@@ -345,7 +351,7 @@ private fun DefaultActionsModeContent(
 
         ActionTile(
             icon = R.drawable.ic_tabler_scale,
-            label = "Balance",
+            label = stringResource(R.string.accounts_action_balance),
             onClick = onBalanceClicked,
             modifier = Modifier
                 .weight(1f)
@@ -353,7 +359,7 @@ private fun DefaultActionsModeContent(
 
         ActionTile(
             icon = R.drawable.ic_tabler_pencil,
-            label = "Edit",
+            label = stringResource(R.string.common_edit),
             onClick = onEditClicked,
             modifier = Modifier
                 .weight(1f)
@@ -375,7 +381,7 @@ private fun ArchivedActionsModeContent(
 ) {
     ActionTile(
         icon = R.drawable.ic_tabler_arrow_back_up,
-        label = "Restore",
+        label = stringResource(R.string.accounts_action_restore),
         onClick = onUnarchiveClicked,
         modifier = Modifier
             .weight(1f)
@@ -383,7 +389,7 @@ private fun ArchivedActionsModeContent(
 
     ActionTile(
         icon = R.drawable.ic_tabler_scale,
-        label = "Balance",
+        label = stringResource(R.string.accounts_action_balance),
         onClick = onBalanceClicked,
         modifier = Modifier
             .weight(1f)
@@ -391,7 +397,7 @@ private fun ArchivedActionsModeContent(
 
     ActionTile(
         icon = R.drawable.ic_tabler_pencil,
-        label = "Edit",
+        label = stringResource(R.string.common_edit),
         onClick = onEditClicked,
         modifier = Modifier
             .weight(1f)
@@ -425,7 +431,7 @@ private fun BalanceModeContent(
     }
 
     Text(
-        text = "New balance",
+        text = stringResource(R.string.accounts_new_balance),
         style = MoneyTheme.typography.labelRegular,
         color = MoneyTheme.colors.ink2,
         textAlign = TextAlign.Center,

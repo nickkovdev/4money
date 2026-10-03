@@ -60,6 +60,7 @@ import com.composeunstyled.Text
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.MoneyIconButton
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import androidx.compose.ui.res.stringResource
 
 @Composable
 private fun SetUpPasscodeScreen(
@@ -97,7 +98,7 @@ private fun SetUpPasscodeScreen(
 
         MoneyIconButton(
             icon = R.drawable.ic_tabler_x,
-            contentDescription = "Close",
+            contentDescription = stringResource(R.string.common_close),
             onClick = onCloseClicked,
         )
     }
@@ -124,9 +125,9 @@ private fun SetUpPasscodeScreen(
         Text(
             text =
                 if (isRepeating.value)
-                    "Repeat the passcode"
+                    stringResource(R.string.lock_repeat_passcode)
                 else
-                    "Enter a passcode",
+                    stringResource(R.string.lock_enter_new_passcode),
             textAlign = TextAlign.Center,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,

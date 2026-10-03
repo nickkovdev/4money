@@ -51,6 +51,7 @@ import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import ua.com.radiokot.money.theme.view.MoneyAppTheme
+import androidx.compose.ui.res.stringResource
 
 class UnlockActivity : MoneyAppActivity(
     requiresUnlocking = false,
@@ -96,8 +97,8 @@ class UnlockActivity : MoneyAppActivity(
         )
         prompt.authenticate(
             BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Unlock 4Money")
-                .setNegativeButtonText("Use passcode")
+                .setTitle(getString(R.string.lock_unlock_title))
+                .setNegativeButtonText(getString(R.string.lock_use_passcode))
                 .build()
         )
     }
@@ -136,7 +137,7 @@ class UnlockActivity : MoneyAppActivity(
                 }
 
                 Text(
-                    text = "Enter the passcode",
+                    text = stringResource(R.string.lock_enter_passcode),
                     textAlign = TextAlign.Center,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -161,7 +162,7 @@ class UnlockActivity : MoneyAppActivity(
                                 Toast
                                     .makeText(
                                         this@UnlockActivity,
-                                        "Incorrect passcode",
+                                        getString(R.string.lock_incorrect),
                                         Toast.LENGTH_SHORT,
                                     )
                                     .show()

@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.transfers.view
 
+import ua.com.radiokot.money.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import ua.com.radiokot.money.uikit.SegmentedControl
@@ -97,13 +99,13 @@ fun TransferCounterpartySelector(
 
     val pageTitles = pages.map { page ->
         when (page) {
-            Page.Income -> "Income"
-            Page.Expense -> "Expense"
+            Page.Income -> stringResource(R.string.transfers_kind_income)
+            Page.Expense -> stringResource(R.string.transfers_kind_expense)
             Page.Account ->
                 if (isForSource == false)
-                    "To account"
+                    stringResource(R.string.transfers_to_account)
                 else
-                    "From account"
+                    stringResource(R.string.transfers_from_account)
         }
     }
 
@@ -129,8 +131,8 @@ fun TransferCounterpartySelector(
         } else {
             Text(
                 text = when (pages.firstOrNull()) {
-                    Page.Income -> "Income category"
-                    Page.Expense -> "Expense category"
+                    Page.Income -> stringResource(R.string.transfers_income_category)
+                    Page.Expense -> stringResource(R.string.transfers_expense_category)
                     Page.Account, null -> pageTitles.firstOrNull() ?: ""
                 },
                 style = MoneyTheme.typography.title,

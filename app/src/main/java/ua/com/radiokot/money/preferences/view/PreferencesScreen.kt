@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -54,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import com.composeunstyled.Icon
 import com.composeunstyled.Text
 import ua.com.radiokot.money.R
+import ua.com.radiokot.money.preferences.logic.AppLanguage
 import ua.com.radiokot.money.theme.data.ThemeMode
 import ua.com.radiokot.money.theme.view.moneyColorsOf
 import ua.com.radiokot.money.uikit.IconTile
@@ -73,6 +75,7 @@ import ua.com.radiokot.money.uikit.theme.MoneyColors
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import androidx.compose.ui.res.pluralStringResource
 
 @Composable
 private fun PreferencesScreen(
@@ -80,6 +83,8 @@ private fun PreferencesScreen(
     onBack: () -> Unit,
     themeMode: State<ThemeMode>,
     onThemeModeClicked: (ThemeMode) -> Unit,
+    language: State<AppLanguage>,
+    onLanguageClicked: (AppLanguage) -> Unit,
     primaryCurrencyCode: State<String>,
     onPrimaryCurrencyCodeChanged: (String) -> Unit,
     isSaveCurrencyPreferencesEnabled: State<Boolean>,
@@ -110,12 +115,12 @@ private fun PreferencesScreen(
     ) {
         MoneyIconButton(
             icon = R.drawable.ic_tabler_arrow_left,
-            contentDescription = "Back",
+            contentDescription = stringResource(R.string.common_back),
             onClick = onBack,
         )
 
         Text(
-            text = "Settings",
+            text = stringResource(R.string.settings_title),
             style = MoneyTheme.typography.headline,
         )
     }
@@ -147,9 +152,7 @@ private fun PreferencesScreen(
                         .size(22.dp)
                 )
                 Text(
-                    text = "There is a data upload error. " +
-                            "Some of the changes you made have been reverted. " +
-                            "The app will be fixed soon, then the reverted changes will be applied.",
+                    text = stringResource(R.string.settings_sync_error),
                     style = MoneyTheme.typography.labelRegular,
                     color = colors.ink,
                 )
@@ -158,7 +161,7 @@ private fun PreferencesScreen(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        SectionHeader(title = "Appearance")
+        SectionHeader(title = stringResource(R.string.settings_appearance))
 
         ListGroup {
             ThemeMode.entries.forEachIndexed { index, mode ->
@@ -167,20 +170,24 @@ private fun PreferencesScreen(
                 }
 
                 ListRow(
-                    title = when (mode) {
-                        ThemeMode.System -> "Follow the system"
-                        ThemeMode.Light -> "Paper"
-                        ThemeMode.Dark -> "Midnight"
-                        ThemeMode.Ember -> "Ember"
-                        ThemeMode.Aurora -> "Aurora"
-                    },
-                    subtitle = when (mode) {
-                        ThemeMode.System -> "Paper by day, Midnight at night"
-                        ThemeMode.Light -> "Light, warm paper"
-                        ThemeMode.Dark -> "Dark, cool blue"
-                        ThemeMode.Ember -> "Dark, warm amber"
-                        ThemeMode.Aurora -> "Dark, deep teal"
-                    },
+                    title = stringResource(
+                        when (mode) {
+                            ThemeMode.System -> R.string.settings_language_system
+                            ThemeMode.Light -> R.string.settings_theme_paper
+                            ThemeMode.Dark -> R.string.settings_theme_midnight
+                            ThemeMode.Ember -> R.string.settings_theme_ember
+                            ThemeMode.Aurora -> R.string.settings_theme_aurora
+                        }
+                    ),
+                    subtitle = stringResource(
+                        when (mode) {
+                            ThemeMode.System -> R.string.settings_theme_system_subtitle
+                            ThemeMode.Light -> R.string.settings_theme_paper_subtitle
+                            ThemeMode.Dark -> R.string.settings_theme_midnight_subtitle
+                            ThemeMode.Ember -> R.string.settings_theme_ember_subtitle
+                            ThemeMode.Aurora -> R.string.settings_theme_aurora_subtitle
+                        }
+                    ),
                     leading = {
                         PaletteSwatch(
                             mode = mode,
@@ -197,19 +204,49 @@ private fun PreferencesScreen(
         }
 
         SectionHeader(
-            title = "Bank notifications",
+            title = stringResource(R.string.settings_language),
+            modifier = Modifier
+                .padding(top = MoneySpacing.section)
+        )
+
+        ListGroup {
+            AppLanguage.entries.forEachIndexed { index, appLanguage ->
+                if (index > 0) {
+                    ListDivider(startInset = MoneySpacing.rowHorizontal)
+                }
+
+                ListRow(
+                    title = stringResource(
+                        when (appLanguage) {
+                            AppLanguage.System -> R.string.settings_language_system
+                            AppLanguage.English -> R.string.language_english
+                            AppLanguage.Russian -> R.string.language_russian
+                        }
+                    ),
+                    trailing = {
+                        SelectionMark(
+                            isSelected = language.value == appLanguage,
+                        )
+                    },
+                    onClick = { onLanguageClicked(appLanguage) },
+                )
+            }
+        }
+
+        SectionHeader(
+            title = stringResource(R.string.settings_bank_notifications),
             modifier = Modifier
                 .padding(top = MoneySpacing.section)
         )
 
         ListGroup {
             ListRow(
-                title = "Notification access",
+                title = stringResource(R.string.settings_notification_access),
                 subtitle =
                     if (isNotificationAccessGranted.value)
-                        "SEB payments are recorded from notifications"
+                        stringResource(R.string.settings_notification_access_granted)
                     else
-                        "Allow it so SEB payments become expenses automatically",
+                        stringResource(R.string.settings_notification_access_hint),
                 leading = {
                     IconTile(icon = R.drawable.ic_tabler_bell)
                 },
@@ -218,7 +255,7 @@ private fun PreferencesScreen(
                         {
                             Icon(
                                 painter = painterResource(R.drawable.ic_tabler_circle_check),
-                                contentDescription = "Granted",
+                                contentDescription = stringResource(R.string.settings_granted),
                                 tint = colors.income,
                                 modifier = Modifier
                                     .size(22.dp)
@@ -227,7 +264,7 @@ private fun PreferencesScreen(
                     } else {
                         {
                             MoneyButton(
-                                text = "Allow",
+                                text = stringResource(R.string.settings_allow),
                                 style = MoneyButtonStyle.Filled,
                                 onClick = onNotificationAccessClicked,
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -249,12 +286,16 @@ private fun PreferencesScreen(
             ListDivider(startInset = 16.dp + 36.dp + 14.dp)
 
             ListRow(
-                title = "Inbox",
+                title = stringResource(R.string.inbox_title),
                 subtitle =
                     if (pendingInboxCount.value > 0)
-                        "${pendingInboxCount.value} to categorize"
+                        pluralStringResource(
+                            R.plurals.settings_inbox_to_categorize,
+                            pendingInboxCount.value.toInt(),
+                            pendingInboxCount.value.toInt(),
+                        )
                     else
-                        "Bank payments and rules",
+                        stringResource(R.string.settings_inbox_subtitle),
                 leading = {
                     IconTile(icon = R.drawable.ic_tabler_inbox)
                 },
@@ -287,7 +328,7 @@ private fun PreferencesScreen(
         }
 
         SectionHeader(
-            title = "Currency",
+            title = stringResource(R.string.settings_currency),
             modifier = Modifier
                 .padding(top = MoneySpacing.section)
         )
@@ -298,7 +339,7 @@ private fun PreferencesScreen(
             MoneyTextField(
                 value = primaryCurrencyCode.value,
                 onValueChange = onPrimaryCurrencyCodeChanged,
-                placeholder = "Primary currency code",
+                placeholder = stringResource(R.string.settings_currency_placeholder),
                 leadingIcon = R.drawable.ic_tabler_currency_euro,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -314,7 +355,7 @@ private fun PreferencesScreen(
                 ),
                 trailing = {
                     Text(
-                        text = "Primary",
+                        text = stringResource(R.string.settings_currency_primary),
                         style = MoneyTheme.typography.caption,
                         color = colors.ink3,
                     )
@@ -326,7 +367,7 @@ private fun PreferencesScreen(
             // Only offered when there is something to save.
             if (isSaveCurrencyPreferencesEnabled.value) {
                 MoneyButton(
-                    text = "Save currency",
+                    text = stringResource(R.string.settings_currency_save),
                     style = MoneyButtonStyle.Filled,
                     onClick = onSaveCurrencyPreferencesClicked,
                     modifier = Modifier
@@ -336,15 +377,15 @@ private fun PreferencesScreen(
         }
 
         SectionHeader(
-            title = "Security",
+            title = stringResource(R.string.settings_security),
             modifier = Modifier
                 .padding(top = MoneySpacing.section)
         )
 
         ListGroup {
             ListRow(
-                title = "Passcode lock",
-                subtitle = "Ask for a passcode when opening the app",
+                title = stringResource(R.string.settings_passcode_lock),
+                subtitle = stringResource(R.string.settings_passcode_lock_subtitle),
                 leading = {
                     IconTile(icon = R.drawable.ic_tabler_lock)
                 },
@@ -359,7 +400,7 @@ private fun PreferencesScreen(
         }
 
         SectionHeader(
-            title = "Account",
+            title = stringResource(R.string.settings_account),
             modifier = Modifier
                 .padding(top = MoneySpacing.section)
         )
@@ -368,7 +409,7 @@ private fun PreferencesScreen(
 
         ListGroup {
             ListRow(
-                title = "User ID",
+                title = stringResource(R.string.settings_user_id),
                 subtitle = shortUserId(userId.value),
                 leading = {
                     IconTile(
@@ -380,7 +421,7 @@ private fun PreferencesScreen(
                 trailing = {
                     Icon(
                         painter = painterResource(R.drawable.ic_tabler_copy),
-                        contentDescription = "Copy",
+                        contentDescription = stringResource(R.string.settings_copy),
                         tint = colors.ink3,
                         modifier = Modifier
                             .size(18.dp)
@@ -394,7 +435,7 @@ private fun PreferencesScreen(
             ListDivider(startInset = 16.dp + 36.dp + 14.dp)
 
             ListRow(
-                title = "Sign out",
+                title = stringResource(R.string.settings_sign_out),
                 titleColor = colors.expense,
                 leading = {
                     IconTile(
@@ -497,6 +538,8 @@ fun PreferencesScreen(
     onBack = onBack,
     themeMode = viewModel.themeMode.collectAsState(),
     onThemeModeClicked = remember { viewModel::onThemeModeClicked },
+    language = viewModel.language.collectAsState(),
+    onLanguageClicked = remember { viewModel::onLanguageClicked },
     primaryCurrencyCode = viewModel.primaryCurrencyCodeValue.collectAsState(),
     onPrimaryCurrencyCodeChanged = remember { viewModel::onPrimaryCurrencyCodeChanged },
     isSaveCurrencyPreferencesEnabled = viewModel.isSaveCurrencyPreferencesEnabled.collectAsState(),
@@ -525,6 +568,8 @@ private fun PreferencesScreenPreview(
         onBack = {},
         themeMode = ThemeMode.System.let(::mutableStateOf),
         onThemeModeClicked = {},
+        language = AppLanguage.System.let(::mutableStateOf),
+        onLanguageClicked = {},
         primaryCurrencyCode = "USD".let(::mutableStateOf),
         onPrimaryCurrencyCodeChanged = {},
         isSaveCurrencyPreferencesEnabled = true.let(::mutableStateOf),

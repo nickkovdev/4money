@@ -21,6 +21,9 @@ package ua.com.radiokot.money.auth.view
 
 import androidx.compose.foundation.background
 import ua.com.radiokot.money.R
+import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.failureText
+import ua.com.radiokot.money.uikit.resolve
 import ua.com.radiokot.money.uikit.MoneyButton
 import ua.com.radiokot.money.uikit.MoneyButtonStyle
 import ua.com.radiokot.money.uikit.MoneyIconButton
@@ -70,6 +73,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import androidx.compose.ui.res.stringResource
 
 @Composable
 private fun PhraseAuthScreen(
@@ -101,7 +105,7 @@ private fun PhraseAuthScreen(
     ) {
         MoneyIconButton(
             icon = R.drawable.ic_tabler_x,
-            contentDescription = "Close",
+            contentDescription = stringResource(R.string.common_close),
             onClick = onCloseClicked,
         )
     }
@@ -109,7 +113,7 @@ private fun PhraseAuthScreen(
     Spacer(modifier = Modifier.height(24.dp))
 
     Text(
-        text = "Recovery phrase",
+        text = stringResource(R.string.auth_recovery_phrase),
         style = MoneyTheme.typography.headline,
     )
 
@@ -149,7 +153,7 @@ private fun PhraseAuthScreen(
     Spacer(modifier = Modifier.height(24.dp))
 
     MoneyButton(
-        text = "Sign in",
+        text = stringResource(R.string.auth_sign_in),
         style = MoneyButtonStyle.Filled,
         isEnabled = isSignInEnabled.value,
         onClick = onSignInClicked,
@@ -174,7 +178,11 @@ fun PhraseAuthScreenRoot(
                     Toast
                         .makeText(
                             context,
-                            "Sign in failed: ${event.technicalReason}",
+                            failureText(
+                                withReasonId = R.string.auth_sign_in_failed,
+                                withoutReasonId = R.string.auth_sign_in_failed_no_reason,
+                                reason = event.technicalReason,
+                            ).resolve(context),
                             Toast.LENGTH_LONG,
                         )
                         .show()

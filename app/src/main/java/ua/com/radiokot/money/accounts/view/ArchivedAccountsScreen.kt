@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import androidx.compose.ui.res.stringResource
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.uikit.ScreenTopBar
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
@@ -64,9 +65,9 @@ private fun ArchivedAccountsScreen(
         )
 ) {
     ScreenTopBar(
-        title = "Archived accounts",
+        title = stringResource(R.string.accounts_archived),
         navigationIcon = R.drawable.ic_tabler_arrow_left,
-        navigationContentDescription = "Back",
+        navigationContentDescription = stringResource(R.string.common_back),
         onNavigationClicked = onCloseClicked,
     )
 

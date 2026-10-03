@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.transfers.history.view
 
+import androidx.compose.ui.res.stringResource
 import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
 import androidx.compose.foundation.layout.Arrangement
@@ -201,7 +202,7 @@ Column(
                 )
                 Icon(
                     painter = painterResource(R.drawable.ic_tabler_x),
-                    contentDescription = "Clear filter",
+                    contentDescription = stringResource(R.string.history_clear_filter),
                     tint = MoneyTheme.colors.accent,
                     modifier = Modifier
                         .size(16.dp)
@@ -229,8 +230,16 @@ Column(
                 )
         ) {
             listOf(
-                Triple("In", totalIncomeAndExpense.income, MoneyTheme.colors.income),
-                Triple("Out", totalIncomeAndExpense.expense, MoneyTheme.colors.expense),
+                Triple(
+                    stringResource(R.string.history_in),
+                    totalIncomeAndExpense.income,
+                    MoneyTheme.colors.income,
+                ),
+                Triple(
+                    stringResource(R.string.history_out),
+                    totalIncomeAndExpense.expense,
+                    MoneyTheme.colors.expense,
+                ),
             ).forEach { (label, value, color) ->
                 Column(
                     verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -325,12 +334,12 @@ AnimatedVisibility(
             )
     ) {
         Text(
-            text = "Transaction deleted",
+            text = stringResource(R.string.history_deleted),
             style = MoneyTheme.typography.labelRegular,
             modifier = Modifier.weight(1f),
         )
         MoneyButton(
-            text = "Undo",
+            text = stringResource(R.string.common_undo),
             style = MoneyButtonStyle.Text,
             icon = R.drawable.ic_tabler_arrow_back_up,
             onClick = onUndoDeletionClicked,

@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.categories.view
 
+import ua.com.radiokot.money.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -131,7 +133,10 @@ private fun CategoriesScreen(
             currentModeTotal = currentModeTotal.value,
             modeSwitch = {
                 SegmentedControl(
-                    options = listOf("Expenses", "Income"),
+                    options = listOf(
+                        stringResource(R.string.categories_expenses),
+                        stringResource(R.string.categories_income),
+                    ),
                     selectedIndex =
                         if (isIncome.value)
                             1
@@ -175,10 +180,12 @@ private fun RingCenter(
 
     Text(
         text =
-            if (isIncome.value)
-                "Income"
-            else
-                "Expenses",
+            stringResource(
+                if (isIncome.value)
+                    R.string.categories_income
+                else
+                    R.string.categories_expenses
+            ),
         style = MoneyTheme.typography.caption,
         color = colors.ink2,
     )

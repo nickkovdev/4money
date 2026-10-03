@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.Text
@@ -45,7 +46,7 @@ fun ScreenTopBar(
     onNavigationClicked: () -> Unit,
     @DrawableRes
     navigationIcon: Int = R.drawable.ic_tabler_x,
-    navigationContentDescription: String = "Close",
+    navigationContentDescription: String = stringResource(R.string.common_close),
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,

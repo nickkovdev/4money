@@ -19,10 +19,12 @@
 
 package ua.com.radiokot.money.accounts.view
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.res.stringResource
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.colors.view.EditableItemLogo
 import ua.com.radiokot.money.uikit.FieldLabel
@@ -112,9 +114,9 @@ private fun EditAccountScreen(
     ScreenTopBar(
         title =
             if (isNewAccount)
-                "New account"
+                stringResource(R.string.accounts_new)
             else
-                "Edit account",
+                stringResource(R.string.accounts_edit),
         onNavigationClicked = onCloseClicked,
     )
 
@@ -137,11 +139,11 @@ private fun EditAccountScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        FieldLabel(text = "Title")
+        FieldLabel(text = stringResource(R.string.accounts_field_title))
         MoneyTextField(
             value = title.value,
             onValueChange = onTitleChanged,
-            placeholder = "Account title",
+            placeholder = stringResource(R.string.accounts_field_title_placeholder),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 capitalization = KeyboardCapitalization.Words,
@@ -153,7 +155,7 @@ private fun EditAccountScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        FieldLabel(text = "Currency")
+        FieldLabel(text = stringResource(R.string.accounts_field_currency))
         MoneyPickerField(
             value = currencyCode.value,
             leadingIcon = R.drawable.ic_tabler_currency_euro,
@@ -167,7 +169,7 @@ private fun EditAccountScreen(
         )
         if (!isCurrencyChangeEnabled) {
             Text(
-                text = "The currency of an existing account can't be changed",
+                text = stringResource(R.string.accounts_currency_locked),
                 style = MoneyTheme.typography.small,
                 color = MoneyTheme.colors.ink3,
                 modifier = Modifier
@@ -180,9 +182,9 @@ private fun EditAccountScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        FieldLabel(text = "Type")
+        FieldLabel(text = stringResource(R.string.accounts_field_type))
         MoneyPickerField(
-            value = type.value.name,
+            value = stringResource(type.value.titleRes),
             leadingIcon = accountTypeIcon(type.value),
             onClick =
                 if (isTypeChangeEnabled.value)
@@ -198,8 +200,8 @@ private fun EditAccountScreen(
 
             ListGroup {
                 ListRow(
-                    title = "Archived",
-                    subtitle = "Hidden from the lists, the history stays",
+                    title = stringResource(R.string.accounts_field_archived),
+                    subtitle = stringResource(R.string.accounts_field_archived_hint),
                     leading = {
                         IconTile(
                             icon = R.drawable.ic_tabler_archive,
@@ -222,7 +224,7 @@ private fun EditAccountScreen(
     }
 
     MoneyButton(
-        text = "Save",
+        text = stringResource(R.string.common_save),
         style = MoneyButtonStyle.Filled,
         isEnabled = isSaveEnabled.value,
         onClick = onSaveClicked,
@@ -296,6 +298,13 @@ private fun EditAccountScreenPreview(
         onCloseClicked = {},
     )
 }
+
+@get:StringRes
+val Account.Type.titleRes: Int
+    get() = when (this) {
+        Account.Type.Regular -> R.string.accounts_type_regular
+        Account.Type.Savings -> R.string.accounts_type_savings
+    }
 
 fun accountTypeIcon(type: Account.Type): Int =
     when (type) {

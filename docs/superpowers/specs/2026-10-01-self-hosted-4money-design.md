@@ -200,3 +200,38 @@ Plan: `docs/superpowers/plans/2026-10-02-category-sheet-privacy.md` (rulings rec
 - The keypad/amount being typed in the transfer sheet stays visible. No `FLAG_SECURE` (the point is to
   allow sharing screenshots).
 - Pure, unit-tested logic for percentage computation/rounding (0 total → "—") and mask decisions.
+
+## F3. Localization (en + ru) and app language
+
+Plan: `docs/superpowers/plans/2026-10-03-localization-ru.md` (branch `feature/localization-ru`).
+
+**What.** English is the base language, Russian is complete. Settings has a Language section: System /
+English / Русский (language names shown in their own language). The choice goes through
+`AppCompatDelegate.setApplicationLocales`; an empty tag means System. `AppLocalesMetadataHolderService`
+(`autoStoreLocales=true`) persists it, `androidResources { generateLocaleConfig = true }` with
+`res/resources.properties` (`unqualifiedResLocale=en`) feeds the system per-app language screen, and
+`resConfigs "en", "ru"` trims the rest. Changing the language recreates every open screen (all activities
+are `AppCompatActivity`).
+
+**Where.**
+- All user-visible text lives in `res/values/strings.xml` and `res/values-ru/strings.xml`, same keys in
+  both (`<area>_<meaning>`, shared `common_*`), counts as `<plurals>` (ru has one/few/many/other). Lint
+  `MissingTranslation` is an error, so `lintDebug` gates a missing Russian string.
+- View models that build text emit `ViewText` (`Plain`, `Res`, `Plural`, `Dynamic`), resolved in the UI
+  or with a context at show time.
+- Dates: `ViewDateFormats` with the app locale (nominative "Октябрь 2026" in headers, genitive
+  "1 октября" in day lines). Amounts: `ViewAmountFormat` by the app locale (ru: "1 234,56 €", comma on
+  the keypad too). Amount ranges: `describeRange`.
+- Not translated: user data (account/category titles, memos, payees), the SEB texts the parser matches,
+  logs and exception messages.
+
+**Decisions.**
+- System with a device language other than en/ru: English strings, device number and date formats.
+- The "Payments to sort" notification channel name/description and the question texts are built with
+  `getString` at post time. On API 26-32 a process cold-started by a receiver may not know the app
+  language yet and then uses the device language until the app is opened; API 33+ is exact.
+- The listener label is a manifest label (`@string/bank_notification_listener_label`) resolved by the
+  system in the system/device language, not by the app at runtime.
+- Theme names Paper / Midnight / Ember / Aurora stay as proper names in both languages (their subtitles
+  are translated); privacy symbols (`•••`, `—`) and `N%` stay as they are.
+- `app_name` and the pure-format `template_category_subcategory` are `translatable="false"`.

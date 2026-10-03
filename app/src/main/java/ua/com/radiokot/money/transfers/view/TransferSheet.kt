@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.transfers.view
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -267,7 +268,7 @@ private fun TransferSheet(
             if (isSwapCounterpartiesShown) {
                 MoneyIconButton(
                     icon = R.drawable.ic_tabler_arrows_exchange,
-                    contentDescription = "Swap",
+                    contentDescription = stringResource(R.string.transfers_swap),
                     onClick = onSwapCounterpartiesClicked,
                     size = 36.dp,
                     iconSize = 18.dp,
@@ -306,7 +307,7 @@ private fun TransferSheet(
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = kind.label,
+            text = stringResource(kind.labelRes),
             style = MoneyTheme.typography.caption,
             color = colors.ink3,
         )
@@ -408,7 +409,7 @@ private fun TransferSheet(
         MoneyTextField(
             value = memo.value,
             onValueChange = onMemoUpdated,
-            placeholder = "Note",
+            placeholder = stringResource(R.string.transfers_note),
             leadingIcon = R.drawable.ic_tabler_notes,
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Sentences,
@@ -437,7 +438,7 @@ private fun TransferSheet(
                     )
             ) {
                 Text(
-                    text = "Remember for \u201C$rememberPayeeDisplayName\u201D",
+                    text = stringResource(R.string.transfers_remember_for, rememberPayeeDisplayName),
                     style = MoneyTheme.typography.labelRegular,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,

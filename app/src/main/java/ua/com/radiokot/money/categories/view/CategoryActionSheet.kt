@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.categories.view
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -144,7 +145,7 @@ private fun CategoryActionSheet(
     ) {
         ActionTile(
             icon = R.drawable.ic_tabler_list_details,
-            label = "Activity",
+            label = stringResource(R.string.accounts_action_activity),
             onClick = onActivityClicked,
             modifier = Modifier
                 .weight(1f)
@@ -152,7 +153,7 @@ private fun CategoryActionSheet(
 
         ActionTile(
             icon = R.drawable.ic_tabler_pencil,
-            label = "Edit",
+            label = stringResource(R.string.common_edit),
             onClick = onEditClicked,
             modifier = Modifier
                 .weight(1f)
@@ -161,7 +162,7 @@ private fun CategoryActionSheet(
         if (isUnarchiveVisible.value) {
             ActionTile(
                 icon = R.drawable.ic_tabler_arrow_back_up,
-                label = "Restore",
+                label = stringResource(R.string.accounts_action_restore),
                 onClick = onUnarchiveClicked,
                 modifier = Modifier
                     .weight(1f)
@@ -256,7 +257,7 @@ private fun Header(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                text = title ?: "Other",
+                                text = title ?: stringResource(R.string.categories_sheet_other),
                                 style = MoneyTheme.typography.body,
                                 color =
                                     if (title == null)
