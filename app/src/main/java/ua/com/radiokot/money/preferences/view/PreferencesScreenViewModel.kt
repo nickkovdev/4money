@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.preferences.view
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -40,6 +42,7 @@ import ua.com.radiokot.money.inbox.data.InboxRepository
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.lock.logic.AppLock
 import ua.com.radiokot.money.lock.logic.DisableAppLockUseCase
+import ua.com.radiokot.money.preferences.logic.AppLanguage
 import ua.com.radiokot.money.syncerrors.data.SyncErrorRepository
 import ua.com.radiokot.money.theme.data.ThemeMode
 import ua.com.radiokot.money.theme.data.ThemePreferences
@@ -119,6 +122,35 @@ class PreferencesScreenViewModel(
         }
 
         themePreferences.themeMode.value = mode
+    }
+
+    private val _language: MutableStateFlow<AppLanguage> =
+        MutableStateFlow(
+            AppLanguage.fromTags(AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        )
+    val language: StateFlow<AppLanguage> = _language.asStateFlow()
+
+    fun refreshLanguage() {
+        _language.value =
+            AppLanguage.fromTags(AppCompatDelegate.getApplicationLocales().toLanguageTags())
+    }
+
+    fun onLanguageClicked(language: AppLanguage) {
+        if (_language.value == language) {
+            return
+        }
+
+        log.debug {
+            "onLanguageClicked(): switching language:" +
+                    "\nlanguage=$language"
+        }
+
+        _language.value = language
+
+        // AppCompat stores the choice and recreates the activities.
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(language.tag)
+        )
     }
 
     fun onPrimaryCurrencyCodeChanged(newValue: String) {

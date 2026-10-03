@@ -80,4 +80,22 @@ class AmountInputStateTest {
         Assert.assertEquals("7 ", state.inputText)
         Assert.assertFalse(state.isEvaluationNeeded)
     }
+
+    @Test
+    fun russian_KeypadDecimalIsCommaAndTypedAmountParsesBack() {
+        val ruFormat = ViewAmountFormat(Locale.forLanguageTag("ru"))
+        val ruState = AmountInputState(
+            currency = usd,
+            initialValue = BigInteger.ZERO,
+            format = ruFormat,
+        )
+
+        Assert.assertEquals(',', ruState.decimalSeparator)
+        ruState.type('1', '2', '3', '4', ',', '5')
+        Assert.assertTrue(ruState.inputText.contains(','))
+        Assert.assertEquals(
+            BigInteger.valueOf(123450),
+            ruFormat.parseInput(ruState.inputText.trim(), usd),
+        )
+    }
 }

@@ -22,6 +22,7 @@ package ua.com.radiokot.money.privacy.view
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import org.koin.compose.koinInject
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.privacy.data.PrivacyPreferences
@@ -39,7 +40,7 @@ fun PrivacyModeButton() {
 
     MoneyIconButton(
         icon = if (isPrivate) R.drawable.ic_tabler_eye_off else R.drawable.ic_tabler_eye,
-        contentDescription = if (isPrivate) "Show amounts" else "Hide amounts",
+        contentDescription = stringResource(if (isPrivate) R.string.privacy_show_amounts else R.string.privacy_hide_amounts),
         onClick = { flow.value = !flow.value },
         tint = if (isPrivate) colors.accent else colors.ink2,
     )

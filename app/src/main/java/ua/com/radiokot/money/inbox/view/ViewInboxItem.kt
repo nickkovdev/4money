@@ -22,15 +22,18 @@ package ua.com.radiokot.money.inbox.view
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import androidx.compose.runtime.Immutable
+import kotlinx.datetime.LocalDateTime
 import ua.com.radiokot.money.inbox.data.InboxItem
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
-import ua.com.radiokot.money.inbox.logic.originalAmountText
+import ua.com.radiokot.money.inbox.logic.displayAmountText
+import ua.com.radiokot.money.uikit.ViewText
+import java.util.Locale
 
 @Immutable
 class ViewInboxItem(
     val title: String,
-    val amountText: String?,
-    val dateText: String,
+    val amountText: ViewText?,
+    val receivedAt: LocalDateTime,
     val isForeignCurrency: Boolean,
     val key: String,
     val source: InboxItem? = null,
@@ -54,15 +57,18 @@ class ViewInboxItem(
         title = item.payee
             ?.let(PayeeNormalizer::displayName)
             ?: item.rawText.lineSequence().last().take(120),
-        amountText = item.originalAmountText()
+        amountText = item.displayAmountText(Locale.ROOT)
             .takeIf(String::isNotEmpty)
-            ?.let { amountText ->
-                if (item.direction == InboxItem.Direction.Incoming)
-                    "+$amountText"
-                else
-                    amountText
+            ?.let {
+                ViewText.Dynamic { context ->
+                    val amountText = item.displayAmountText(context.resources.configuration.locales[0])
+                    if (item.direction == InboxItem.Direction.Incoming)
+                        "+$amountText"
+                    else
+                        amountText
+                }
             },
-        dateText = item.receivedAt.toString().replace('T', ' ').take(16),
+        receivedAt = item.receivedAt,
         isForeignCurrency = accountCurrencyCode != null
                 && item.currencyCode != null
                 && !item.currencyCode.equals(accountCurrencyCode, ignoreCase = true),
@@ -73,11 +79,6 @@ class ViewInboxItem(
         isTitleRawText = item.payee?.let(PayeeNormalizer::displayName) == null,
     )
 }
-
-/**
- * Neutral title shown instead of a raw bank text fallback while the privacy mode is on.
- */
-const val PRIVATE_TITLE = "Bank payment"
 
 /**
  * The bank amount as an app amount, e.g. 18.90 EUR → −18.90 €,

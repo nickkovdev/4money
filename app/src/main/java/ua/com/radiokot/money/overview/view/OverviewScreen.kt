@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.overview.view
 
+import androidx.compose.ui.res.stringResource
 import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
@@ -157,8 +158,8 @@ private fun OverviewScreen(
                 OverviewScreenState.NoPrimaryCurrency ->
                     EmptyState(
                         icon = R.drawable.ic_tabler_currency_euro,
-                        title = "No primary currency",
-                        text = "Set an existing primary currency in Settings to see the overview",
+                        title = stringResource(R.string.overview_no_primary_currency),
+                        text = stringResource(R.string.overview_no_primary_currency_hint),
                     )
 
                 is OverviewScreenState.Loaded ->
@@ -196,7 +197,7 @@ private fun OverviewContent(
             )
     ) {
         Text(
-            text = "Income minus expenses",
+            text = stringResource(R.string.overview_income_minus_expenses),
             style = MoneyTheme.typography.labelRegular,
             color = colors.ink2,
         )
@@ -215,7 +216,7 @@ private fun OverviewContent(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         TotalCard(
-            title = "Expenses",
+            title = stringResource(R.string.categories_expenses),
             icon = R.drawable.ic_tabler_arrow_up_right,
             amount = overview.expenseTotal,
             color = colors.expense,
@@ -225,7 +226,7 @@ private fun OverviewContent(
             modifier = Modifier.weight(1f),
         )
         TotalCard(
-            title = "Income",
+            title = stringResource(R.string.categories_income),
             icon = R.drawable.ic_tabler_arrow_down_left,
             amount = overview.incomeTotal,
             color = colors.income,
@@ -265,7 +266,7 @@ private fun OverviewContent(
                 .padding(16.dp)
         ) {
             Text(
-                text = "By day",
+                text = stringResource(R.string.overview_by_day),
                 style = MoneyTheme.typography.caption,
                 color = colors.ink3,
             )
@@ -290,12 +291,17 @@ private fun OverviewContent(
                 .fillMaxWidth()
                 .height(IntrinsicSize.Min)
         ) {
-            StatColumn("Day avg", overview.dayAverage, Modifier.weight(1f))
+            StatColumn(stringResource(R.string.overview_day_avg), overview.dayAverage, Modifier.weight(1f))
             StatDivider()
-            StatColumn("Week avg", overview.weekAverage, Modifier.weight(1f))
+            StatColumn(stringResource(R.string.overview_week_avg), overview.weekAverage, Modifier.weight(1f))
             StatDivider()
             StatColumn(
-                if (overview.isMonth) "Month total" else "Total",
+                stringResource(
+                    if (overview.isMonth)
+                        R.string.overview_month_total
+                    else
+                        R.string.accounts_tab_total
+                ),
                 overview.periodTotal,
                 Modifier.weight(1f),
             )
@@ -306,7 +312,7 @@ private fun OverviewContent(
         val isPrivate = LocalPrivacyMode.current
 
         SectionHeader(
-            title = "Top categories",
+            title = stringResource(R.string.overview_top_categories),
             modifier = Modifier
                 .padding(top = 8.dp)
         )
@@ -353,10 +359,12 @@ private fun OverviewContent(
                 ListDivider()
                 ListRow(
                     title =
-                        if (isExpanded)
-                            "Show less"
-                        else
-                            "All categories",
+                        stringResource(
+                            if (isExpanded)
+                                R.string.overview_show_less
+                            else
+                                R.string.overview_all_categories
+                        ),
                     titleColor = colors.accent,
                     trailing = {
                         Icon(

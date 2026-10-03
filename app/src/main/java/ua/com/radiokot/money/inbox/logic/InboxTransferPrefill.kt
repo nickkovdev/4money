@@ -23,6 +23,8 @@ import ua.com.radiokot.money.accounts.data.Account
 import ua.com.radiokot.money.categories.data.Category
 import ua.com.radiokot.money.categories.data.Subcategory
 import ua.com.radiokot.money.inbox.data.InboxItem
+import java.text.NumberFormat
+import java.util.Locale
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.view.TransferSheetRoute
@@ -34,6 +36,23 @@ import ua.com.radiokot.money.transfers.view.TransferSheetRoute
 fun InboxItem.originalAmountText(): String =
     "${amount?.toPlainString()?.replace('.', ',').orEmpty()} ${currencyCode.orEmpty()}"
         .trim()
+
+/**
+ * @return the amount in the number format of the [locale], with the currency code,
+ * e.g. "1,234.50 USD" or "1 234,50 USD". Empty if neither is known.
+ */
+fun InboxItem.displayAmountText(locale: Locale): String =
+    listOfNotNull(
+        amount?.let { amount ->
+            NumberFormat.getNumberInstance(locale)
+                .apply {
+                    minimumFractionDigits = 2
+                    maximumFractionDigits = maxOf(2, amount.stripTrailingZeros().scale())
+                }
+                .format(amount)
+        },
+        currencyCode?.takeIf(String::isNotEmpty),
+    ).joinToString(" ")
 
 object InboxTransferPrefill {
 

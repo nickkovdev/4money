@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.overview.view
 
+import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.R
 import androidx.compose.runtime.Immutable
 import ua.com.radiokot.money.categories.data.Category
 import ua.com.radiokot.money.categories.data.CategoryWithAmountsBySubcategory
@@ -100,7 +102,9 @@ class ViewCategoryStats(
                     .map { row ->
                         ViewCategoryStatsSubcategory(
                             key = row.subcategory?.id ?: "none",
-                            title = row.subcategory?.title ?: "No subcategory",
+                            title = row.subcategory?.title
+                                ?.let(ViewText::Plain)
+                                ?: ViewText.Res(R.string.overview_no_subcategory),
                             isUncategorized = row.subcategory == null,
                             amount = ViewAmount(row.amount, categoryCurrency),
                             fraction = row.fraction,
@@ -114,7 +118,7 @@ class ViewCategoryStats(
 @Immutable
 class ViewCategoryStatsSubcategory(
     val key: String,
-    val title: String,
+    val title: ViewText,
     val isUncategorized: Boolean,
     val amount: ViewAmount,
     val fraction: Float,

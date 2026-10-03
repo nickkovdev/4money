@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.transfers.history.view
 
+import ua.com.radiokot.money.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -70,10 +72,9 @@ fun NavGraphBuilder.activityScreen(
 
     transferToRevertId?.also { idToRevert ->
         MoneyDialog(
-            title = "Revert this transaction?",
-            text = "It will be removed, and the amount goes back " +
-                    "to the balances of the accounts it touched.",
-            confirmText = "Revert",
+            title = stringResource(R.string.history_revert_title),
+            text = stringResource(R.string.history_revert_text),
+            confirmText = stringResource(R.string.history_revert_confirm),
             isDestructive = true,
             onConfirm = {
                 transferToRevertId = null

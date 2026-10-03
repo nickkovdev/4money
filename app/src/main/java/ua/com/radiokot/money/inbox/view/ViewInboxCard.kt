@@ -20,10 +20,12 @@
 package ua.com.radiokot.money.inbox.view
 
 import androidx.compose.runtime.Immutable
+import kotlinx.datetime.LocalDateTime
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
+import ua.com.radiokot.money.uikit.ViewText
 
 /**
  * A category an inbox card can be sorted to.
@@ -61,15 +63,16 @@ data class ViewInboxCard(
     val amount: ViewAmount?,
     val isIncoming: Boolean,
     val isForeignCurrency: Boolean,
+    val receivedAt: LocalDateTime,
     /**
-     * Time and account, e.g. "Today 11:55 · Card".
+     * The account or the card, e.g. "Card"; shown after the time of receiving.
      */
-    val metaText: String,
+    val sourceText: String,
     val suggestion: ViewInboxCardCategory?,
     /**
      * Why the suggestion, e.g. "Remembered payee → Food".
      */
-    val reasonText: String?,
+    val reasonText: ViewText?,
     val alternatives: List<ViewInboxCardCategory>,
     /**
      * The "Remember" toggle, null when there is nothing to learn
@@ -96,6 +99,6 @@ data class ViewInboxCardsProgress(
  */
 @Immutable
 data class ViewInboxCardUndo(
-    val text: String,
+    val text: ViewText,
     val id: Long,
 )

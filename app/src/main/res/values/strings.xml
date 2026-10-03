@@ -1,8 +1,337 @@
 <resources>
-    <string name="app_name">4Money</string>
-    <string name="template_category_subcategory">%1$s (%2$s)</string>
+    <string name="app_name" translatable="false">4Money</string>
+    <string name="template_category_subcategory" translatable="false">%1$s (%2$s)</string>
     <string name="add_operation_shortcut_title">Add operation</string>
     <string name="add_income_shortcut_title">Add income</string>
     <string name="add_expense_shortcut_title">Add expense</string>
     <string name="bank_notification_listener_label">Bank payments to expenses</string>
+
+    <string name="common_back">Back</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_close">Close</string>
+    <string name="common_done">Done</string>
+    <string name="common_undo">Undo</string>
+    <string name="common_expand">Expand</string>
+    <string name="common_collapse">Collapse</string>
+
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">Follow the system</string>
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_russian" translatable="false">Русский</string>
+
+    <!-- Dates -->
+    <string name="date_today">Today</string>
+    <string name="date_yesterday">Yesterday</string>
+    <string name="date_today_at">Today %1$s</string>
+    <string name="date_at_time">%1$s %2$s</string>
+    <string name="history_period_entire_time">The entire time</string>
+    <string name="date_picker_previous_month">Previous month</string>
+    <string name="date_picker_next_month">Next month</string>
+
+    <!-- Inbox amount ranges -->
+    <string name="inbox_range_between">%1$s–%2$s</string>
+    <string name="inbox_range_up_to">Up to %1$s</string>
+    <string name="inbox_range_under">Under %1$s</string>
+    <string name="inbox_range_from">From %1$s</string>
+    <string name="inbox_range_over">Over %1$s</string>
+    <string name="inbox_range_any">Any amount</string>
+
+    <!-- Home and privacy -->
+    <string name="home_tab_accounts">Accounts</string>
+    <string name="home_tab_categories">Categories</string>
+    <string name="home_tab_history">History</string>
+    <string name="home_tab_overview">Overview</string>
+    <string name="home_profile_and_settings">Profile and settings</string>
+    <string name="privacy_show_amounts">Show amounts</string>
+    <string name="privacy_hide_amounts">Hide amounts</string>
+
+    <!-- Accounts -->
+    <string name="accounts_tab_accounts">Accounts</string>
+    <string name="accounts_tab_total">Total</string>
+    <string name="accounts_add">Add account</string>
+    <string name="accounts_total_balance">Total balance</string>
+    <string name="accounts_by_currency">By currency</string>
+    <string name="accounts_archived">Archived accounts</string>
+    <string name="accounts_new">New account</string>
+    <string name="accounts_edit">Edit account</string>
+    <string name="accounts_field_title">Title</string>
+    <string name="accounts_field_title_placeholder">Account title</string>
+    <string name="accounts_field_currency">Currency</string>
+    <string name="accounts_currency_locked">The currency of an existing account can\'t be changed</string>
+    <string name="accounts_field_type">Type</string>
+    <string name="accounts_field_archived">Archived</string>
+    <string name="accounts_field_archived_hint">Hidden from the lists, the history stays</string>
+    <string name="accounts_type_title">Account type</string>
+    <string name="accounts_type_regular">Regular</string>
+    <string name="accounts_type_savings">Savings</string>
+    <string name="accounts_type_regular_hint">Cash, bank cards, etc.</string>
+    <string name="accounts_type_savings_hint">Stash, cold wallet, etc.</string>
+    <string name="accounts_current_balance">Current balance %1$s</string>
+    <string name="accounts_new_balance">New balance</string>
+    <string name="accounts_action_expense">Expense</string>
+    <string name="accounts_action_income">Income</string>
+    <string name="accounts_action_transfer">Transfer</string>
+    <string name="accounts_action_activity">Activity</string>
+    <string name="accounts_action_balance">Balance</string>
+    <string name="accounts_action_restore">Restore</string>
+
+    <!-- Currency -->
+    <string name="currency_title">Currency</string>
+    <string name="currency_keyboard_switch">Switch currency</string>
+    <string name="currency_keyboard_erase">Erase</string>
+    <string name="currency_keyboard_date">Date</string>
+    <string name="currency_keyboard_confirm">Confirm</string>
+
+    <!-- Colors and icons -->
+    <string name="colors_icon">Icon</string>
+    <string name="colors_icon_and_color">Icon and color</string>
+    <string name="colors_logo_account">Account logo</string>
+    <string name="colors_logo_category">Category logo</string>
+    <string name="colors_tab_icon">Icon</string>
+    <string name="colors_tab_color">Color</string>
+    <string name="colors_group_letter">Letter</string>
+    <string name="colors_group_care">Care</string>
+    <string name="colors_group_digital">Digital</string>
+    <string name="colors_group_finances">Finances</string>
+    <string name="colors_group_food">Food</string>
+    <string name="colors_group_health">Health</string>
+    <string name="colors_group_hobbies">Hobbies</string>
+    <string name="colors_group_home">Home</string>
+    <string name="colors_group_leisure">Leisure</string>
+    <string name="colors_group_meal">Meals</string>
+    <string name="colors_group_misc">Misc</string>
+    <string name="colors_group_money">Money</string>
+    <string name="colors_group_other">Other</string>
+    <string name="colors_group_people">People</string>
+    <string name="colors_group_services">Services</string>
+    <string name="colors_group_shop">Shopping</string>
+    <string name="colors_group_socializing">Socializing</string>
+    <string name="colors_group_transport">Transport</string>
+    <string name="colors_group_travel">Travel</string>
+    <string name="colors_group_vehicle">Vehicles</string>
+    <string name="colors_group_work">Work</string>
+
+    <!-- Categories -->
+    <string name="categories_expenses">Expenses</string>
+    <string name="categories_income">Income</string>
+    <string name="categories_add">Add</string>
+    <string name="categories_archived_header">ARCHIVED</string>
+    <string name="categories_sheet_other">Other</string>
+    <string name="categories_new_expense">New expense category</string>
+    <string name="categories_new_income">New income category</string>
+    <string name="categories_edit_expense">Edit expense category</string>
+    <string name="categories_edit_income">Edit income category</string>
+    <string name="categories_field_title_placeholder">Category title</string>
+    <string name="categories_subcategories">Subcategories</string>
+    <string name="categories_hold_to_move">Hold to move</string>
+    <string name="categories_add_subcategory">Add subcategory</string>
+    <string name="categories_new_subcategory">New subcategory</string>
+    <string name="categories_edit_subcategory">Edit subcategory</string>
+    <plurals name="transaction_count">
+        <item quantity="one">%d transaction</item>
+        <item quantity="other">%d transactions</item>
+    </plurals>
+
+    <!-- Overview -->
+    <string name="overview_no_primary_currency">No primary currency</string>
+    <string name="overview_no_primary_currency_hint">Set an existing primary currency in Settings to see the overview</string>
+    <string name="overview_income_minus_expenses">Income minus expenses</string>
+    <string name="overview_by_day">By day</string>
+    <string name="overview_day_avg">Day avg</string>
+    <string name="overview_week_avg">Week avg</string>
+    <string name="overview_month_total">Month total</string>
+    <string name="overview_top_categories">Top categories</string>
+    <string name="overview_show_less">Show less</string>
+    <string name="overview_all_categories">All categories</string>
+    <string name="overview_transactions">Transactions</string>
+    <string name="overview_no_subcategory">No subcategory</string>
+
+    <!-- Transfers -->
+    <string name="transfers_kind_expense">Expense</string>
+    <string name="transfers_kind_income">Income</string>
+    <string name="transfers_kind_transfer">Transfer</string>
+    <string name="transfers_from_category">From category</string>
+    <string name="transfers_to_category">To category</string>
+    <string name="transfers_from_account">From account</string>
+    <string name="transfers_to_account">To account</string>
+    <string name="transfers_income_category">Income category</string>
+    <string name="transfers_expense_category">Expense category</string>
+    <string name="transfers_swap">Swap</string>
+    <string name="transfers_note">Note</string>
+    <string name="transfers_remember_for">Remember for “%1$s”</string>
+    <string name="transfers_empty_title">No transactions</string>
+    <string name="transfers_empty_text">Nothing recorded in this period yet</string>
+
+    <!-- History -->
+    <string name="history_clear_filter">Clear filter</string>
+    <string name="history_in">In</string>
+    <string name="history_out">Out</string>
+    <string name="history_deleted">Transaction deleted</string>
+    <string name="history_previous_period">Previous period</string>
+    <string name="history_next_period">Next period</string>
+    <string name="history_revert_title">Revert this transaction?</string>
+    <string name="history_revert_text">It will be removed, and the amount goes back to the balances of the accounts it touched.</string>
+    <string name="history_revert_confirm">Revert</string>
+
+    <!-- Inbox -->
+    <string name="inbox_title">Inbox</string>
+    <string name="inbox_rules">Rules</string>
+    <string name="inbox_nothing_to_sort">Nothing to sort</string>
+    <string name="inbox_to_sort">%1$d to sort</string>
+    <string name="inbox_progress_to_sort">%1$d of %2$d to sort</string>
+    <string name="inbox_sort_as_cards">Sort as cards</string>
+    <string name="inbox_section_pending">To categorize</string>
+    <string name="inbox_all_sorted">All sorted</string>
+    <string name="inbox_empty_text">New bank payments that need a category will appear here.</string>
+    <string name="inbox_dismiss">Dismiss</string>
+    <string name="inbox_section_cards">Cards</string>
+    <string name="inbox_card_title">Card •%1$s</string>
+    <string name="inbox_card_subtitle">%1$s · tap to change</string>
+    <string name="inbox_most_used_account">Most used account</string>
+    <string name="inbox_section_recorded">Recorded</string>
+    <string name="inbox_item_foreign_currency">%1$s · foreign currency</string>
+    <string name="inbox_private_title">Bank payment</string>
+    <string name="inbox_undo_failed">Failed to undo: %1$s</string>
+    <string name="inbox_undo_failed_no_reason">Failed to undo</string>
+    <string name="inbox_no_account">No account to record to</string>
+    <string name="inbox_no_account_or_category">No account or category to record to</string>
+
+    <!-- Inbox cards -->
+    <string name="inbox_cards_title">Sort payments</string>
+    <string name="inbox_cards_empty_text">New bank payments will appear here as cards.</string>
+    <string name="inbox_cards_back_to_inbox">Back to the inbox</string>
+    <string name="inbox_cards_skip_for_now">Skip for now</string>
+    <string name="inbox_cards_choose_category">Choose a category</string>
+    <string name="inbox_cards_accept">Accept: %1$s</string>
+    <string name="inbox_cards_hint_skip">← skip</string>
+    <string name="inbox_cards_hint_pick">↑ pick</string>
+    <string name="inbox_cards_hint_accept">accept →</string>
+    <string name="inbox_cards_swipe_description">Payment card: swipe right to accept, left to skip, up to pick</string>
+    <string name="inbox_cards_stamp_pick">Pick a category</string>
+    <string name="inbox_cards_stamp_skip">Skip</string>
+    <string name="inbox_cards_foreign_hint">Foreign currency: the transfer sheet opens to convert the amount</string>
+    <string name="inbox_cards_no_suggestion">No suggestion yet: pick a category</string>
+    <string name="inbox_cards_remember">Remember for this payee</string>
+    <string name="inbox_cards_remember_on">Next time it is recorded automatically</string>
+    <string name="inbox_cards_remember_off">Next time it waits here again</string>
+    <string name="inbox_cards_amount_rules_hint">Different categories here: set up amount rules</string>
+    <string name="inbox_cards_or_pick">OR PICK</string>
+    <string name="inbox_cards_skipped">Skipped, it stays in the inbox</string>
+    <string name="inbox_cards_recorded">Recorded to %1$s</string>
+    <string name="inbox_cards_recorded_remembered">Recorded to %1$s, remembered</string>
+    <string name="inbox_cards_record_failed">Failed to record: %1$s</string>
+    <string name="inbox_cards_record_failed_no_reason">Failed to record</string>
+
+    <!-- Inbox card reasons -->
+    <string name="inbox_reason_remembered">Remembered payee → %1$s</string>
+    <string name="inbox_reason_contains">Payee contains “%1$s” → %2$s</string>
+    <plurals name="inbox_reason_history">
+        <item quantity="one">Recorded to %1$s once before</item>
+        <item quantity="other">Recorded to %1$s %2$d× before</item>
+    </plurals>
+    <string name="inbox_reason_most_used">New payee: your most used category</string>
+    <string name="inbox_reason_range">%1$s at %2$s → %3$s</string>
+
+    <!-- Payee rules -->
+    <string name="rules_title">Payee rules</string>
+    <string name="rules_empty_title">No rules yet</string>
+    <string name="rules_empty_text">Categorize a payment from the inbox with Remember on to create one.</string>
+    <string name="rules_hint">Amounts in an “Ask me” range wait for you: a notification with your top categories for the payee, one tap from the shade.</string>
+    <string name="rules_actions_description">Rule actions</string>
+    <string name="rules_add_range">Add amount range</string>
+    <string name="rules_range_new">New amount range</string>
+    <string name="rules_range_title">Amount range</string>
+    <string name="rules_range_from">From (incl.)</string>
+    <string name="rules_range_under">Under</string>
+    <string name="rules_range_any">Any</string>
+    <string name="rules_then">THEN</string>
+    <string name="rules_ask_me">Ask me</string>
+    <string name="rules_other_category">Other category</string>
+    <string name="rules_delete_range">Delete the range</string>
+    <string name="rules_other_amounts">Other amounts</string>
+    <string name="rules_missing_category">Missing category</string>
+    <string name="rules_subtitle_exact">Exact payee</string>
+    <string name="rules_subtitle_contains">Contains</string>
+    <plurals name="rules_rule_count">
+        <item quantity="one">%d rule</item>
+        <item quantity="other">%d rules</item>
+    </plurals>
+    <string name="rules_used">used %d×</string>
+    <string name="rules_error_format">Enter amounts like 10 or 9.99</string>
+    <string name="rules_error_need_one">Enter at least one of the amounts</string>
+    <string name="rules_error_negative">Amounts can\'t be negative</string>
+    <string name="rules_error_order">“From” must be less than “Under”</string>
+    <string name="rules_error_no_target">Choose a category or Ask me</string>
+    <string name="rules_delete_title">Delete the rules?</string>
+    <string name="rules_delete_text">All rules for “%1$s” are deleted, its payments will wait in the inbox again.</string>
+    <string name="rules_edit_pattern">Edit pattern</string>
+    <string name="rules_match_contains">Match payees containing it</string>
+    <string name="rules_match_exact">Match the exact payee only</string>
+    <string name="rules_pattern_title">Payee pattern</string>
+
+    <!-- Payment question notification -->
+    <string name="ask_channel_name">Payments to sort</string>
+    <string name="ask_channel_description">Bank payments the app asks you to categorize</string>
+    <string name="ask_text_ask_range">This amount here can be one of several. Which one?</string>
+    <string name="ask_text_new_payee">A new payee. Which category?</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_sync_error">There is a data upload error. Some of the changes you made have been reverted. The app will be fixed soon, then the reverted changes will be applied.</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme_paper" translatable="false">Paper</string>
+    <string name="settings_theme_midnight" translatable="false">Midnight</string>
+    <string name="settings_theme_ember" translatable="false">Ember</string>
+    <string name="settings_theme_aurora" translatable="false">Aurora</string>
+    <string name="settings_theme_system_subtitle">Paper by day, Midnight at night</string>
+    <string name="settings_theme_paper_subtitle">Light, warm paper</string>
+    <string name="settings_theme_midnight_subtitle">Dark, cool blue</string>
+    <string name="settings_theme_ember_subtitle">Dark, warm amber</string>
+    <string name="settings_theme_aurora_subtitle">Dark, deep teal</string>
+    <string name="settings_bank_notifications">Bank notifications</string>
+    <string name="settings_notification_access">Notification access</string>
+    <string name="settings_notification_access_granted">SEB payments are recorded from notifications</string>
+    <string name="settings_notification_access_hint">Allow it so SEB payments become expenses automatically</string>
+    <string name="settings_granted">Granted</string>
+    <string name="settings_allow">Allow</string>
+    <plurals name="settings_inbox_to_categorize">
+        <item quantity="one">%d to categorize</item>
+        <item quantity="other">%d to categorize</item>
+    </plurals>
+    <string name="settings_inbox_subtitle">Bank payments and rules</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_currency_placeholder">Primary currency code</string>
+    <string name="settings_currency_primary">Primary</string>
+    <string name="settings_currency_save">Save currency</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_passcode_lock">Passcode lock</string>
+    <string name="settings_passcode_lock_subtitle">Ask for a passcode when opening the app</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_user_id">User ID</string>
+    <string name="settings_copy">Copy</string>
+    <string name="settings_sign_out">Sign out</string>
+    <string name="settings_sign_out_title">Sign out?</string>
+    <string name="settings_sign_out_text">You will need to authenticate again to see your data on this device.</string>
+
+    <!-- Auth -->
+    <string name="auth_just_authenticate">Just authenticate</string>
+    <string name="auth_use_phrase">Use recovery phrase</string>
+    <string name="auth_recovery_phrase">Recovery phrase</string>
+    <string name="auth_sign_in">Sign in</string>
+    <string name="auth_sign_in_failed">Sign in failed: %1$s</string>
+    <string name="auth_sign_in_failed_no_reason">Sign in failed</string>
+
+    <!-- Lock -->
+    <string name="lock_biometrics">Biometrics</string>
+    <string name="lock_erase">Erase</string>
+    <string name="lock_repeat_passcode">Repeat the passcode</string>
+    <string name="lock_enter_new_passcode">Enter a passcode</string>
+    <string name="lock_mismatch">Passcodes don\'t match, try again</string>
+    <string name="lock_unlock_title">Unlock 4Money</string>
+    <string name="lock_use_passcode">Use passcode</string>
+    <string name="lock_enter_passcode">Enter the passcode</string>
+    <string name="lock_incorrect">Incorrect passcode</string>
 </resources>

@@ -40,6 +40,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import ua.com.radiokot.money.R
+import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.failureText
+import ua.com.radiokot.money.uikit.resolve
 
 @Composable
 private fun TempAuthScreen(
@@ -58,14 +63,14 @@ private fun TempAuthScreen(
     Spacer(modifier = Modifier.weight(1f))
 
     Text(
-        text = "4Money",
+        text = stringResource(R.string.app_name),
         style = MoneyTheme.typography.display,
     )
 
     Spacer(modifier = Modifier.weight(1f))
 
     MoneyButton(
-        text = "Just authenticate",
+        text = stringResource(R.string.auth_just_authenticate),
         style = MoneyButtonStyle.Filled,
         onClick = onAuthenticateClicked,
         modifier = Modifier
@@ -75,7 +80,7 @@ private fun TempAuthScreen(
     Spacer(modifier = Modifier.height(8.dp))
 
     MoneyButton(
-        text = "Use recovery phrase",
+        text = stringResource(R.string.auth_use_phrase),
         onClick = onPhraseClicked,
         modifier = Modifier
             .fillMaxWidth()
@@ -95,7 +100,11 @@ fun TempAuthScreenRoot(
                     Toast
                         .makeText(
                             context,
-                            "Sign in failed: ${event.technicalReason}",
+                            failureText(
+                                withReasonId = R.string.auth_sign_in_failed,
+                                withoutReasonId = R.string.auth_sign_in_failed_no_reason,
+                                reason = event.technicalReason,
+                            ).resolve(context),
                             Toast.LENGTH_LONG,
                         )
                         .show()

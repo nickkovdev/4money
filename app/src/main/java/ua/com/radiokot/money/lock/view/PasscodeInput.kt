@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
 import ua.com.radiokot.money.uikit.ScaleIndication
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun PasscodeInput(
@@ -187,7 +188,7 @@ private fun Keyboard(
             if (isBiometricsButtonShown) {
                 ActionButton(
                     icon = R.drawable.ic_tabler_fingerprint,
-                    contentDescription = "Biometrics",
+                    contentDescription = stringResource(R.string.lock_biometrics),
                     onClick = onBiometricsClicked,
                     modifier = Modifier
                         .size(buttonSize)
@@ -206,7 +207,7 @@ private fun Keyboard(
             )
             ActionButton(
                 icon = R.drawable.ic_tabler_backspace,
-                contentDescription = "Erase",
+                contentDescription = stringResource(R.string.lock_erase),
                 onClick = onBackspaceClicked,
                 modifier = Modifier
                     .size(buttonSize)

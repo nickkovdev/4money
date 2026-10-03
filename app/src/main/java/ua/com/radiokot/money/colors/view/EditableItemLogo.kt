@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.Icon
 import com.composeunstyled.Text
@@ -95,7 +96,7 @@ fun EditableItemLogo(
     }
 
     Text(
-        text = "Icon and color",
+        text = stringResource(R.string.colors_icon_and_color),
         style = MoneyTheme.typography.caption,
         color = MoneyTheme.colors.ink3,
     )

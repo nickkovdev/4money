@@ -35,7 +35,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -71,6 +70,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -82,6 +82,9 @@ import com.composeunstyled.Text
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import ua.com.radiokot.money.colors.data.HardcodedItemColorSchemeRepository
@@ -90,6 +93,8 @@ import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
+import ua.com.radiokot.money.transfers.view.ViewDateFormats
+import ua.com.radiokot.money.transfers.view.rememberAppLocale
 import ua.com.radiokot.money.uikit.EmptyState
 import ua.com.radiokot.money.uikit.IconTile
 import ua.com.radiokot.money.uikit.MoneyButton
@@ -98,12 +103,16 @@ import ua.com.radiokot.money.uikit.MoneyChip
 import ua.com.radiokot.money.uikit.MoneyIconButton
 import ua.com.radiokot.money.uikit.MoneyIconButtonStyle
 import ua.com.radiokot.money.uikit.MoneySwitch
+import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.resolve
 import ua.com.radiokot.money.uikit.theme.MidnightMoneyColors
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
 import java.math.BigInteger
 import kotlin.math.abs
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 private enum class SwipeAction {
     Accept,
@@ -151,7 +160,7 @@ private fun InboxCardsScreen(
         ) {
             MoneyIconButton(
                 icon = R.drawable.ic_tabler_arrow_left,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.common_back),
                 onClick = onCloseClicked,
             )
 
@@ -160,16 +169,20 @@ private fun InboxCardsScreen(
                     .weight(1f)
             ) {
                 Text(
-                    text = "Sort payments",
+                    text = stringResource(R.string.inbox_cards_title),
                     style = MoneyTheme.typography.headline,
                 )
                 val currentProgress = progress.value
                 Text(
                     text =
                         if (cards.value.isEmpty())
-                            "Nothing to sort"
+                            stringResource(R.string.inbox_nothing_to_sort)
                         else
-                            "${currentProgress.sortedCount + 1} of ${currentProgress.totalCount} to sort",
+                            stringResource(
+                                R.string.inbox_progress_to_sort,
+                                currentProgress.sortedCount + 1,
+                                currentProgress.totalCount,
+                            ),
                     style = MoneyTheme.typography.caption,
                     color = MoneyTheme.colors.ink3,
                 )
@@ -177,7 +190,7 @@ private fun InboxCardsScreen(
 
             MoneyIconButton(
                 icon = R.drawable.ic_tabler_adjustments_horizontal,
-                contentDescription = "Rules",
+                contentDescription = stringResource(R.string.inbox_rules),
                 onClick = onRulesClicked,
             )
         }
@@ -204,11 +217,11 @@ private fun InboxCardsScreen(
             ) {
                 EmptyState(
                     icon = R.drawable.ic_tabler_check,
-                    title = "All sorted",
-                    text = "New bank payments will appear here as cards.",
+                    title = stringResource(R.string.inbox_all_sorted),
+                    text = stringResource(R.string.inbox_cards_empty_text),
                     action = {
                         MoneyButton(
-                            text = "Back to the inbox",
+                            text = stringResource(R.string.inbox_cards_back_to_inbox),
                             onClick = onCloseClicked,
                             modifier = Modifier
                                 .padding(top = 6.dp)
@@ -281,7 +294,7 @@ private fun InboxCardsScreen(
             ) {
                 MoneyIconButton(
                     icon = R.drawable.ic_tabler_x,
-                    contentDescription = "Skip for now",
+                    contentDescription = stringResource(R.string.inbox_cards_skip_for_now),
                     tint = MoneyTheme.colors.expense,
                     size = 60.dp,
                     iconSize = 26.dp,
@@ -289,7 +302,7 @@ private fun InboxCardsScreen(
                 )
                 MoneyIconButton(
                     icon = R.drawable.ic_tabler_layout_grid,
-                    contentDescription = "Choose a category",
+                    contentDescription = stringResource(R.string.inbox_cards_choose_category),
                     size = 48.dp,
                     onClick = { commit(SwipeAction.Pick) },
                 )
@@ -297,9 +310,9 @@ private fun InboxCardsScreen(
                     icon = R.drawable.ic_tabler_check,
                     contentDescription =
                         if (topCard.suggestion != null)
-                            "Accept: ${topCard.suggestion.fullTitle}"
+                            stringResource(R.string.inbox_cards_accept, topCard.suggestion.fullTitle)
                         else
-                            "Choose a category",
+                            stringResource(R.string.inbox_cards_choose_category),
                     style = MoneyIconButtonStyle.Filled,
                     size = 60.dp,
                     iconSize = 28.dp,
@@ -316,9 +329,9 @@ private fun InboxCardsScreen(
                     )
             ) {
                 listOf(
-                    "← skip" to TextAlign.Start,
-                    "↑ pick" to TextAlign.Center,
-                    "accept →" to TextAlign.End,
+                    stringResource(R.string.inbox_cards_hint_skip) to TextAlign.Start,
+                    stringResource(R.string.inbox_cards_hint_pick) to TextAlign.Center,
+                    stringResource(R.string.inbox_cards_hint_accept) to TextAlign.End,
                 ).forEach { (text, align) ->
                     Text(
                         text = text,
@@ -365,14 +378,14 @@ private fun InboxCardsScreen(
                 )
         ) {
             Text(
-                text = currentUndo?.text ?: "",
+                text = currentUndo?.text?.resolve() ?: "",
                 style = MoneyTheme.typography.labelRegular,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             MoneyButton(
-                text = "Undo",
+                text = stringResource(R.string.common_undo),
                 style = MoneyButtonStyle.Text,
                 icon = R.drawable.ic_tabler_arrow_back_up,
                 onClick = onUndoClicked,
@@ -455,10 +468,11 @@ private fun CardStack(
     onAlternativeClicked: (ViewInboxCardCategory) -> Unit,
     onRememberToggled: (Boolean) -> Unit,
     onAmountRulesClicked: () -> Unit,
-) = BoxWithConstraints(
+) = Box(
     modifier = modifier,
 ) {
     val colors = MoneyTheme.colors
+    val swipeDescription = stringResource(R.string.inbox_cards_swipe_description)
 
     if (behindCount >= 2) {
         Box(
@@ -543,7 +557,7 @@ private fun CardStack(
             .clip(MoneyShapes.extraLarge)
             .background(colors.surface2)
             .semantics {
-                contentDescription = "Payment card: swipe right to accept, left to skip, up to pick"
+                contentDescription = swipeDescription
             }
     ) {
         CardContent(
@@ -588,13 +602,13 @@ private fun Stamp(
             if (acceptTitle != null)
                 Triple(acceptTitle, colors.accent, colors.onAccent)
             else
-                Triple("Pick a category", colors.accent, colors.onAccent)
+                Triple(stringResource(R.string.inbox_cards_stamp_pick), colors.accent, colors.onAccent)
 
         SwipeAction.Skip ->
-            Triple("Skip", colors.expense, colors.background)
+            Triple(stringResource(R.string.inbox_cards_stamp_skip), colors.expense, colors.background)
 
         SwipeAction.Pick ->
-            Triple("Pick a category", colors.ink, colors.background)
+            Triple(stringResource(R.string.inbox_cards_stamp_pick), colors.ink, colors.background)
     }
 
     Text(
@@ -619,6 +633,7 @@ private fun Stamp(
 }
 
 @Composable
+@OptIn(ExperimentalTime::class)
 private fun CardContent(
     card: ViewInboxCard,
     onAlternativeClicked: (ViewInboxCardCategory) -> Unit,
@@ -655,15 +670,18 @@ private fun CardContent(
         Text(
             text =
                 if (card.isTitleRawText && LocalPrivacyMode.current)
-                    PRIVATE_TITLE
+                    stringResource(R.string.inbox_private_title)
                 else
                     card.title,
             style = MoneyTheme.typography.title,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
+        val dateTimeText = receivedAtText(card.receivedAt)
         Text(
-            text = card.metaText,
+            text = listOf(dateTimeText, card.sourceText)
+                .filter(String::isNotEmpty)
+                .joinToString(" · "),
             style = MoneyTheme.typography.labelRegular,
             color = colors.ink2,
         )
@@ -690,14 +708,14 @@ private fun CardContent(
         HintBox(
             icon = R.drawable.ic_tabler_alert_triangle,
             iconTint = colors.warning,
-            text = "Foreign currency: the transfer sheet opens to convert the amount",
+            text = stringResource(R.string.inbox_cards_foreign_hint),
         )
     }
 
     HintBox(
         icon = R.drawable.ic_tabler_adjustments_horizontal,
         iconTint = colors.accent,
-        text = card.reasonText ?: "No suggestion yet: pick a category",
+        text = card.reasonText?.resolve() ?: stringResource(R.string.inbox_cards_no_suggestion),
     )
 
     val isRememberOn = card.isRememberOn
@@ -719,15 +737,15 @@ private fun CardContent(
                     .weight(1f)
             ) {
                 Text(
-                    text = "Remember for this payee",
+                    text = stringResource(R.string.inbox_cards_remember),
                     style = MoneyTheme.typography.label,
                 )
                 Text(
                     text =
                         if (isRememberOn)
-                            "Next time it is recorded automatically"
+                            stringResource(R.string.inbox_cards_remember_on)
                         else
-                            "Next time it waits here again",
+                            stringResource(R.string.inbox_cards_remember_off),
                     style = MoneyTheme.typography.small,
                     color = colors.ink3,
                 )
@@ -759,7 +777,7 @@ private fun CardContent(
                     .size(16.dp)
             )
             Text(
-                text = "Different categories here: set up amount rules",
+                text = stringResource(R.string.inbox_cards_amount_rules_hint),
                 style = MoneyTheme.typography.label,
                 color = colors.accent,
             )
@@ -771,7 +789,7 @@ private fun CardContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text = "OR PICK",
+                text = stringResource(R.string.inbox_cards_or_pick),
                 style = MoneyTheme.typography.overline,
                 color = colors.ink3,
             )
@@ -883,9 +901,10 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
                     ),
                     isIncoming = false,
                     isForeignCurrency = false,
-                    metaText = "Today 11:55 · Card",
+                    receivedAt = LocalDateTime(2026, 10, 3, 11, 55),
+                    sourceText = "Card",
                     suggestion = food,
-                    reasonText = "Remembered payee → Food",
+                    reasonText = ViewText.Plain("Remembered payee → Food"),
                     alternatives = listOf(car),
                 ),
                 ViewInboxCard(
@@ -894,14 +913,15 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
                     amount = null,
                     isIncoming = false,
                     isForeignCurrency = false,
-                    metaText = "Today",
+                    receivedAt = LocalDateTime(2026, 10, 3, 9, 30),
+                    sourceText = "",
                     suggestion = null,
                     reasonText = null,
                     alternatives = emptyList(),
                 ),
             ).let(::mutableStateOf),
             progress = ViewInboxCardsProgress(1, 4).let(::mutableStateOf),
-            undo = ViewInboxCardUndo("Recorded to Food", 1).let(::mutableStateOf),
+            undo = ViewInboxCardUndo(ViewText.Plain("Recorded to Food"), 1).let(::mutableStateOf),
             onAcceptClicked = {},
             onSkipClicked = {},
             onPickClicked = {},

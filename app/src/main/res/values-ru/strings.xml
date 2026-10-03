@@ -1,0 +1,337 @@
+<resources>
+    <string name="add_operation_shortcut_title">Добавить операцию</string>
+    <string name="add_income_shortcut_title">Добавить доход</string>
+    <string name="add_expense_shortcut_title">Добавить расход</string>
+    <string name="bank_notification_listener_label">Банковские платежи в расходы</string>
+
+    <string name="common_back">Назад</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_edit">Изменить</string>
+    <string name="common_close">Закрыть</string>
+    <string name="common_done">Готово</string>
+    <string name="common_undo">Отменить</string>
+    <string name="common_expand">Развернуть</string>
+    <string name="common_collapse">Свернуть</string>
+
+    <string name="settings_language">Язык</string>
+    <string name="settings_language_system">Как в системе</string>
+
+    <!-- Dates -->
+    <string name="date_today">Сегодня</string>
+    <string name="date_yesterday">Вчера</string>
+    <string name="date_today_at">Сегодня, %1$s</string>
+    <string name="date_at_time">%1$s, %2$s</string>
+    <string name="history_period_entire_time">За всё время</string>
+    <string name="date_picker_previous_month">Предыдущий месяц</string>
+    <string name="date_picker_next_month">Следующий месяц</string>
+
+    <!-- Inbox amount ranges -->
+    <string name="inbox_range_between">%1$s–%2$s</string>
+    <string name="inbox_range_up_to">До %1$s</string>
+    <string name="inbox_range_under">Меньше %1$s</string>
+    <string name="inbox_range_from">От %1$s</string>
+    <string name="inbox_range_over">Больше %1$s</string>
+    <string name="inbox_range_any">Любая сумма</string>
+
+    <!-- Home and privacy -->
+    <string name="home_tab_accounts">Счета</string>
+    <string name="home_tab_categories">Категории</string>
+    <string name="home_tab_history">История</string>
+    <string name="home_tab_overview">Обзор</string>
+    <string name="home_profile_and_settings">Профиль и настройки</string>
+    <string name="privacy_show_amounts">Показать суммы</string>
+    <string name="privacy_hide_amounts">Скрыть суммы</string>
+
+    <!-- Accounts -->
+    <string name="accounts_tab_accounts">Счета</string>
+    <string name="accounts_tab_total">Итого</string>
+    <string name="accounts_add">Добавить счёт</string>
+    <string name="accounts_total_balance">Общий баланс</string>
+    <string name="accounts_by_currency">По валютам</string>
+    <string name="accounts_archived">Архивные счета</string>
+    <string name="accounts_new">Новый счёт</string>
+    <string name="accounts_edit">Изменить счёт</string>
+    <string name="accounts_field_title">Название</string>
+    <string name="accounts_field_title_placeholder">Название счёта</string>
+    <string name="accounts_field_currency">Валюта</string>
+    <string name="accounts_currency_locked">Валюту существующего счёта нельзя изменить</string>
+    <string name="accounts_field_type">Тип</string>
+    <string name="accounts_field_archived">В архиве</string>
+    <string name="accounts_field_archived_hint">Скрыт из списков, история сохраняется</string>
+    <string name="accounts_type_title">Тип счёта</string>
+    <string name="accounts_type_regular">Обычный</string>
+    <string name="accounts_type_savings">Накопительный</string>
+    <string name="accounts_type_regular_hint">Наличные, банковские карты и т. д.</string>
+    <string name="accounts_type_savings_hint">Заначка, холодный кошелёк и т. д.</string>
+    <string name="accounts_current_balance">Текущий баланс: %1$s</string>
+    <string name="accounts_new_balance">Новый баланс</string>
+    <string name="accounts_action_expense">Расход</string>
+    <string name="accounts_action_income">Доход</string>
+    <string name="accounts_action_transfer">Перевод</string>
+    <string name="accounts_action_activity">История</string>
+    <string name="accounts_action_balance">Баланс</string>
+    <string name="accounts_action_restore">Восстановить</string>
+
+    <!-- Currency -->
+    <string name="currency_title">Валюта</string>
+    <string name="currency_keyboard_switch">Сменить валюту</string>
+    <string name="currency_keyboard_erase">Стереть</string>
+    <string name="currency_keyboard_date">Дата</string>
+    <string name="currency_keyboard_confirm">Подтвердить</string>
+
+    <!-- Colors and icons -->
+    <string name="colors_icon">Значок</string>
+    <string name="colors_icon_and_color">Значок и цвет</string>
+    <string name="colors_logo_account">Значок счёта</string>
+    <string name="colors_logo_category">Значок категории</string>
+    <string name="colors_tab_icon">Значок</string>
+    <string name="colors_tab_color">Цвет</string>
+    <string name="colors_group_letter">Буква</string>
+    <string name="colors_group_care">Уход</string>
+    <string name="colors_group_digital">Цифровое</string>
+    <string name="colors_group_finances">Финансы</string>
+    <string name="colors_group_food">Еда</string>
+    <string name="colors_group_health">Здоровье</string>
+    <string name="colors_group_hobbies">Хобби</string>
+    <string name="colors_group_home">Дом</string>
+    <string name="colors_group_leisure">Досуг</string>
+    <string name="colors_group_meal">Питание</string>
+    <string name="colors_group_misc">Разное</string>
+    <string name="colors_group_money">Деньги</string>
+    <string name="colors_group_other">Другое</string>
+    <string name="colors_group_people">Люди</string>
+    <string name="colors_group_services">Услуги</string>
+    <string name="colors_group_shop">Покупки</string>
+    <string name="colors_group_socializing">Общение</string>
+    <string name="colors_group_transport">Транспорт</string>
+    <string name="colors_group_travel">Путешествия</string>
+    <string name="colors_group_vehicle">Авто</string>
+    <string name="colors_group_work">Работа</string>
+
+    <!-- Categories -->
+    <string name="categories_expenses">Расходы</string>
+    <string name="categories_income">Доходы</string>
+    <string name="categories_add">Добавить</string>
+    <string name="categories_archived_header">АРХИВ</string>
+    <string name="categories_sheet_other">Прочее</string>
+    <string name="categories_new_expense">Новая категория расходов</string>
+    <string name="categories_new_income">Новая категория доходов</string>
+    <string name="categories_edit_expense">Категория расходов</string>
+    <string name="categories_edit_income">Категория доходов</string>
+    <string name="categories_field_title_placeholder">Название категории</string>
+    <string name="categories_subcategories">Подкатегории</string>
+    <string name="categories_hold_to_move">Удерживайте, чтобы переместить</string>
+    <string name="categories_add_subcategory">Добавить подкатегорию</string>
+    <string name="categories_new_subcategory">Новая подкатегория</string>
+    <string name="categories_edit_subcategory">Подкатегория</string>
+    <plurals name="transaction_count">
+        <item quantity="one">%d операция</item>
+        <item quantity="few">%d операции</item>
+        <item quantity="many">%d операций</item>
+        <item quantity="other">%d операции</item>
+    </plurals>
+
+    <!-- Overview -->
+    <string name="overview_no_primary_currency">Нет основной валюты</string>
+    <string name="overview_no_primary_currency_hint">Выберите основную валюту в настройках, чтобы увидеть обзор</string>
+    <string name="overview_income_minus_expenses">Доходы минус расходы</string>
+    <string name="overview_by_day">По дням</string>
+    <string name="overview_day_avg">В день</string>
+    <string name="overview_week_avg">В неделю</string>
+    <string name="overview_month_total">За месяц</string>
+    <string name="overview_top_categories">Топ категорий</string>
+    <string name="overview_show_less">Свернуть</string>
+    <string name="overview_all_categories">Все категории</string>
+    <string name="overview_transactions">Операции</string>
+    <string name="overview_no_subcategory">Без подкатегории</string>
+
+    <!-- Transfers -->
+    <string name="transfers_kind_expense">Расход</string>
+    <string name="transfers_kind_income">Доход</string>
+    <string name="transfers_kind_transfer">Перевод</string>
+    <string name="transfers_from_category">Из категории</string>
+    <string name="transfers_to_category">В категорию</string>
+    <string name="transfers_from_account">Со счёта</string>
+    <string name="transfers_to_account">На счёт</string>
+    <string name="transfers_income_category">Категория дохода</string>
+    <string name="transfers_expense_category">Категория расхода</string>
+    <string name="transfers_swap">Поменять местами</string>
+    <string name="transfers_note">Заметка</string>
+    <string name="transfers_remember_for">Запомнить для «%1$s»</string>
+    <string name="transfers_empty_title">Нет операций</string>
+    <string name="transfers_empty_text">За этот период пока ничего нет</string>
+
+    <!-- History -->
+    <string name="history_clear_filter">Сбросить фильтр</string>
+    <string name="history_in">Приход</string>
+    <string name="history_out">Расход</string>
+    <string name="history_deleted">Операция удалена</string>
+    <string name="history_previous_period">Предыдущий период</string>
+    <string name="history_next_period">Следующий период</string>
+    <string name="history_revert_title">Удалить операцию?</string>
+    <string name="history_revert_text">Она будет удалена, а сумма вернётся на балансы затронутых счетов.</string>
+    <string name="history_revert_confirm">Удалить</string>
+
+    <!-- Inbox -->
+    <string name="inbox_title">Входящие</string>
+    <string name="inbox_rules">Правила</string>
+    <string name="inbox_nothing_to_sort">Нечего разбирать</string>
+    <string name="inbox_to_sort">К разбору: %1$d</string>
+    <string name="inbox_progress_to_sort">%1$d из %2$d к разбору</string>
+    <string name="inbox_sort_as_cards">Разобрать карточками</string>
+    <string name="inbox_section_pending">Нужна категория</string>
+    <string name="inbox_all_sorted">Всё разобрано</string>
+    <string name="inbox_empty_text">Новые банковские платежи, которым нужна категория, появятся здесь.</string>
+    <string name="inbox_dismiss">Убрать</string>
+    <string name="inbox_section_cards">Карты</string>
+    <string name="inbox_card_title">Карта •%1$s</string>
+    <string name="inbox_card_subtitle">%1$s · нажмите, чтобы изменить</string>
+    <string name="inbox_most_used_account">Самый частый счёт</string>
+    <string name="inbox_section_recorded">Записано</string>
+    <string name="inbox_item_foreign_currency">%1$s · иностранная валюта</string>
+    <string name="inbox_private_title">Банковский платёж</string>
+    <string name="inbox_undo_failed">Не удалось отменить: %1$s</string>
+    <string name="inbox_undo_failed_no_reason">Не удалось отменить</string>
+    <string name="inbox_no_account">Нет счёта для записи</string>
+    <string name="inbox_no_account_or_category">Нет счёта или категории для записи</string>
+
+    <!-- Inbox cards -->
+    <string name="inbox_cards_title">Разбор платежей</string>
+    <string name="inbox_cards_empty_text">Новые банковские платежи появятся здесь карточками.</string>
+    <string name="inbox_cards_back_to_inbox">Назад во входящие</string>
+    <string name="inbox_cards_skip_for_now">Пропустить пока</string>
+    <string name="inbox_cards_choose_category">Выбрать категорию</string>
+    <string name="inbox_cards_accept">Принять: %1$s</string>
+    <string name="inbox_cards_hint_skip">← пропуск</string>
+    <string name="inbox_cards_hint_pick">↑ выбор</string>
+    <string name="inbox_cards_hint_accept">принять →</string>
+    <string name="inbox_cards_swipe_description">Карточка платежа: смахните вправо, чтобы принять, влево, чтобы пропустить, вверх, чтобы выбрать</string>
+    <string name="inbox_cards_stamp_pick">Выбрать категорию</string>
+    <string name="inbox_cards_stamp_skip">Пропустить</string>
+    <string name="inbox_cards_foreign_hint">Иностранная валюта: откроется форма перевода, чтобы конвертировать сумму</string>
+    <string name="inbox_cards_no_suggestion">Пока нет подсказки: выберите категорию</string>
+    <string name="inbox_cards_remember">Запомнить для этого получателя</string>
+    <string name="inbox_cards_remember_on">В следующий раз запишется автоматически</string>
+    <string name="inbox_cards_remember_off">В следующий раз снова появится здесь</string>
+    <string name="inbox_cards_amount_rules_hint">Здесь разные категории: настройте правила по сумме</string>
+    <string name="inbox_cards_or_pick">ИЛИ ВЫБЕРИТЕ</string>
+    <string name="inbox_cards_skipped">Пропущено, платёж остаётся во входящих</string>
+    <string name="inbox_cards_recorded">Записано в %1$s</string>
+    <string name="inbox_cards_recorded_remembered">Записано в %1$s, запомнено</string>
+    <string name="inbox_cards_record_failed">Не удалось записать: %1$s</string>
+    <string name="inbox_cards_record_failed_no_reason">Не удалось записать</string>
+
+    <!-- Inbox card reasons -->
+    <string name="inbox_reason_remembered">Запомненный получатель → %1$s</string>
+    <string name="inbox_reason_contains">Получатель содержит «%1$s» → %2$s</string>
+    <plurals name="inbox_reason_history">
+        <item quantity="one">Раньше записано в %1$s: %2$d раз</item>
+        <item quantity="few">Раньше записано в %1$s: %2$d раза</item>
+        <item quantity="many">Раньше записано в %1$s: %2$d раз</item>
+        <item quantity="other">Раньше записано в %1$s: %2$d раза</item>
+    </plurals>
+    <string name="inbox_reason_most_used">Новый получатель: ваша самая частая категория</string>
+    <string name="inbox_reason_range">%1$s в %2$s → %3$s</string>
+
+    <!-- Payee rules -->
+    <string name="rules_title">Правила получателей</string>
+    <string name="rules_empty_title">Правил пока нет</string>
+    <string name="rules_empty_text">Распределите платёж из входящих с включённым «Запомнить», чтобы создать правило.</string>
+    <string name="rules_hint">Суммы из диапазона «Спросить» ждут вашего решения: уведомление с самыми частыми категориями получателя, один тап прямо из шторки.</string>
+    <string name="rules_actions_description">Действия с правилом</string>
+    <string name="rules_add_range">Добавить диапазон сумм</string>
+    <string name="rules_range_new">Новый диапазон сумм</string>
+    <string name="rules_range_title">Диапазон сумм</string>
+    <string name="rules_range_from">От (включая)</string>
+    <string name="rules_range_under">Меньше</string>
+    <string name="rules_range_any">Любая</string>
+    <string name="rules_then">ТОГДА</string>
+    <string name="rules_ask_me">Спросить</string>
+    <string name="rules_other_category">Другая категория</string>
+    <string name="rules_delete_range">Удалить диапазон</string>
+    <string name="rules_other_amounts">Остальные суммы</string>
+    <string name="rules_missing_category">Категория не найдена</string>
+    <string name="rules_subtitle_exact">Точный получатель</string>
+    <string name="rules_subtitle_contains">Содержит</string>
+    <plurals name="rules_rule_count">
+        <item quantity="one">%d правило</item>
+        <item quantity="few">%d правила</item>
+        <item quantity="many">%d правил</item>
+        <item quantity="other">%d правила</item>
+    </plurals>
+    <string name="rules_used">использовано %d×</string>
+    <string name="rules_error_format">Введите сумму, например 10 или 9,99</string>
+    <string name="rules_error_need_one">Укажите хотя бы одну сумму</string>
+    <string name="rules_error_negative">Сумма не может быть отрицательной</string>
+    <string name="rules_error_order">Значение «От» должно быть меньше значения «Меньше»</string>
+    <string name="rules_error_no_target">Выберите категорию или «Спросить»</string>
+    <string name="rules_delete_title">Удалить правила?</string>
+    <string name="rules_delete_text">Все правила для «%1$s» будут удалены, его платежи снова будут ждать во входящих.</string>
+    <string name="rules_edit_pattern">Изменить шаблон</string>
+    <string name="rules_match_contains">Искать получателей, содержащих шаблон</string>
+    <string name="rules_match_exact">Только точный получатель</string>
+    <string name="rules_pattern_title">Шаблон получателя</string>
+
+    <!-- Payment question notification -->
+    <string name="ask_channel_name">Платежи к разбору</string>
+    <string name="ask_channel_description">Банковские платежи, для которых приложение спрашивает категорию</string>
+    <string name="ask_text_ask_range">Для этой суммы возможны разные категории. Какая?</string>
+    <string name="ask_text_new_payee">Новый получатель. Какая категория?</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_sync_error">Произошла ошибка загрузки данных. Часть ваших изменений была отменена. Приложение скоро исправят, и отменённые изменения будут применены.</string>
+    <string name="settings_appearance">Оформление</string>
+    <string name="settings_theme_system_subtitle">Paper днём, Midnight ночью</string>
+    <string name="settings_theme_paper_subtitle">Светлая, тёплая бумага</string>
+    <string name="settings_theme_midnight_subtitle">Тёмная, холодный синий</string>
+    <string name="settings_theme_ember_subtitle">Тёмная, тёплый янтарь</string>
+    <string name="settings_theme_aurora_subtitle">Тёмная, глубокий бирюзовый</string>
+    <string name="settings_bank_notifications">Банковские уведомления</string>
+    <string name="settings_notification_access">Доступ к уведомлениям</string>
+    <string name="settings_notification_access_granted">Платежи SEB записываются из уведомлений</string>
+    <string name="settings_notification_access_hint">Разрешите, чтобы платежи SEB автоматически становились расходами</string>
+    <string name="settings_granted">Разрешено</string>
+    <string name="settings_allow">Разрешить</string>
+    <plurals name="settings_inbox_to_categorize">
+        <item quantity="one">%d ждёт категории</item>
+        <item quantity="few">%d ждут категории</item>
+        <item quantity="many">%d ждут категории</item>
+        <item quantity="other">%d ждут категории</item>
+    </plurals>
+    <string name="settings_inbox_subtitle">Банковские платежи и правила</string>
+    <string name="settings_currency">Валюта</string>
+    <string name="settings_currency_placeholder">Код основной валюты</string>
+    <string name="settings_currency_primary">Основная</string>
+    <string name="settings_currency_save">Сохранить валюту</string>
+    <string name="settings_security">Безопасность</string>
+    <string name="settings_passcode_lock">Блокировка кодом</string>
+    <string name="settings_passcode_lock_subtitle">Запрашивать код-пароль при открытии приложения</string>
+    <string name="settings_account">Аккаунт</string>
+    <string name="settings_user_id">ID пользователя</string>
+    <string name="settings_copy">Копировать</string>
+    <string name="settings_sign_out">Выйти</string>
+    <string name="settings_sign_out_title">Выйти?</string>
+    <string name="settings_sign_out_text">Чтобы снова увидеть свои данные на этом устройстве, нужно будет пройти аутентификацию.</string>
+
+    <!-- Auth -->
+    <string name="auth_just_authenticate">Просто войти</string>
+    <string name="auth_use_phrase">Войти по фразе восстановления</string>
+    <string name="auth_recovery_phrase">Фраза восстановления</string>
+    <string name="auth_sign_in">Войти</string>
+    <string name="auth_sign_in_failed">Не удалось войти: %1$s</string>
+    <string name="auth_sign_in_failed_no_reason">Не удалось войти</string>
+
+    <!-- Lock -->
+    <string name="lock_biometrics">Биометрия</string>
+    <string name="lock_erase">Стереть</string>
+    <string name="lock_repeat_passcode">Повторите код-пароль</string>
+    <string name="lock_enter_new_passcode">Придумайте код-пароль</string>
+    <string name="lock_mismatch">Коды не совпадают, попробуйте ещё раз</string>
+    <string name="lock_unlock_title">Разблокировать 4Money</string>
+    <string name="lock_use_passcode">Ввести код-пароль</string>
+    <string name="lock_enter_passcode">Введите код-пароль</string>
+    <string name="lock_incorrect">Неверный код-пароль</string>
+</resources>

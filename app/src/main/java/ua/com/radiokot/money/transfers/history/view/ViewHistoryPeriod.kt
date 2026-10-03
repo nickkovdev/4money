@@ -23,10 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.format.MonthNames
-import kotlinx.datetime.format.char
+import androidx.compose.ui.res.stringResource
+import ua.com.radiokot.money.R
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.view.ViewDate
+import ua.com.radiokot.money.transfers.view.ViewDateFormats
+import ua.com.radiokot.money.transfers.view.rememberAppLocale
 
 @Immutable
 sealed interface ViewHistoryPeriod {
@@ -62,16 +64,11 @@ sealed interface ViewHistoryPeriod {
 
         @Composable
         override fun getText(): String {
+            val locale = rememberAppLocale()
 
-            val monthYearFormat = remember {
-                LocalDate.Format {
-                    monthName(MonthNames.ENGLISH_FULL)
-                    char(' ')
-                    year()
-                }
+            return remember(month, locale) {
+                ViewDateFormats.monthYear(month, locale)
             }
-
-            return monthYearFormat.format(month)
         }
 
         override fun equals(other: Any?): Boolean {
@@ -92,7 +89,7 @@ sealed interface ViewHistoryPeriod {
 
         @Composable
         override fun getText(): String =
-            "The entire time"
+            stringResource(R.string.history_period_entire_time)
     }
 
     companion object {

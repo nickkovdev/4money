@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -147,7 +148,7 @@ fun AmountKeyboard(
                     if (onCurrencyClicked != null) {
                         KeyButton(
                             text = inputState.currency.symbol,
-                            contentDescription = "Switch currency",
+                            contentDescription = stringResource(R.string.currency_keyboard_switch),
                             fontSize = 20.sp,
                             isOperator = true,
                             onClick = onCurrencyClicked,
@@ -183,7 +184,7 @@ fun AmountKeyboard(
             ) {
                 KeyButton(
                     icon = R.drawable.ic_tabler_backspace,
-                    contentDescription = "Erase",
+                    contentDescription = stringResource(R.string.currency_keyboard_erase),
                     onClick = { onSymbolClicked('⌫') },
                     onLongClick = animateClear,
                     isOperator = true,
@@ -191,7 +192,7 @@ fun AmountKeyboard(
                 )
                 KeyButton(
                     icon = R.drawable.ic_tabler_calendar,
-                    contentDescription = "Date",
+                    contentDescription = stringResource(R.string.currency_keyboard_date),
                     isEnabled = onDateClicked != null,
                     onClick = { onDateClicked?.invoke() },
                     isOperator = true,
@@ -210,7 +211,7 @@ fun AmountKeyboard(
                             AmountKeyboardMainAction.Done -> R.drawable.ic_tabler_check
                             AmountKeyboardMainAction.Next -> R.drawable.ic_tabler_chevron_right
                         },
-                    contentDescription = "Confirm",
+                    contentDescription = stringResource(R.string.currency_keyboard_confirm),
                     contentColor = confirmContentColor,
                     background = confirmBackground,
                     onClick = {

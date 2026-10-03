@@ -24,8 +24,10 @@ import org.junit.Test
 import ua.com.radiokot.money.inbox.data.AmountRange
 import ua.com.radiokot.money.inbox.data.ParsedBankNotification
 import ua.com.radiokot.money.inbox.data.PayeeRule
+import ua.com.radiokot.money.inbox.view.RangeTexts
 import ua.com.radiokot.money.inbox.view.describeRange
 import java.math.BigDecimal
+import java.util.Locale
 
 class AskRuleTest {
 
@@ -79,17 +81,61 @@ class AskRuleTest {
         Assert.assertTrue(result.suggestion?.reason is InboxCardSuggester.Reason.PayeeHistory)
     }
 
+    private val enTexts = RangeTexts(
+        between = "%1\$s–%2\$s",
+        upTo = "Up to %1\$s",
+        under = "Under %1\$s",
+        from = "From %1\$s",
+        over = "Over %1\$s",
+        any = "Any amount",
+    )
+    private val ruTexts = RangeTexts(
+        between = "%1\$s–%2\$s",
+        upTo = "До %1\$s",
+        under = "Меньше %1\$s",
+        from = "От %1\$s",
+        over = "Больше %1\$s",
+        any = "Любая сумма",
+    )
+    private val ru = Locale.forLanguageTag("ru")
+
     @Test
     fun describeRange_Texts() {
-        Assert.assertEquals("10–35 €", describeRange(AmountRange(BigDecimal("10"), max = BigDecimal("35.00")), "EUR"))
-        Assert.assertEquals("Under 10 €", describeRange(AmountRange(null, max = BigDecimal("10")), "EUR"))
+        fun describe(range: AmountRange, code: String?) =
+            describeRange(range, code, Locale.ENGLISH, enTexts)
+
+        Assert.assertEquals("10–35 €", describe(AmountRange(BigDecimal("10"), max = BigDecimal("35.00")), "EUR"))
+        Assert.assertEquals("Under 10 €", describe(AmountRange(null, max = BigDecimal("10")), "EUR"))
         Assert.assertEquals(
             "Up to 10",
-            describeRange(AmountRange(null, max = BigDecimal("10"), isMaxInclusive = true), null),
+            describe(AmountRange(null, max = BigDecimal("10"), isMaxInclusive = true), null),
         )
         Assert.assertEquals(
             "Over 35 €",
-            describeRange(AmountRange(BigDecimal("35"), isMinInclusive = false, max = null), "EUR"),
+            describe(AmountRange(BigDecimal("35"), isMinInclusive = false, max = null), "EUR"),
+        )
+    }
+
+    @Test
+    fun describeRange_Russian() {
+        fun describe(range: AmountRange, code: String?) =
+            describeRange(range, code, ru, ruTexts)
+
+        Assert.assertEquals(
+            "До 10,5 €",
+            describe(AmountRange(null, max = BigDecimal("10.50"), isMaxInclusive = true), "EUR"),
+        )
+        Assert.assertEquals(
+            "Меньше 10 €",
+            describe(AmountRange(null, max = BigDecimal("10")), "EUR"),
+        )
+        Assert.assertEquals(
+            "10–35,25 €",
+            describe(AmountRange(BigDecimal("10"), max = BigDecimal("35.25")), "EUR"),
+        )
+        Assert.assertEquals(
+            "Больше 35 €",
+            describe(AmountRange(BigDecimal("35"), isMinInclusive = false, max = null), "EUR"),
         )
     }
 }

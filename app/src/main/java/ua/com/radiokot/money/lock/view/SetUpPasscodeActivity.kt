@@ -32,6 +32,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.auth.logic.UserSessionScope
 import ua.com.radiokot.money.theme.view.MoneyAppTheme
+import ua.com.radiokot.money.R
 
 class SetUpPasscodeActivity : MoneyAppActivity(
     requiresUnlocking = false,
@@ -74,7 +75,7 @@ private fun Content(
                     Toast
                         .makeText(
                             context,
-                            "Passcodes don't match, try again",
+                            context.getString(R.string.lock_mismatch),
                             Toast.LENGTH_SHORT
                         )
                         .show()

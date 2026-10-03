@@ -25,6 +25,7 @@ import ua.com.radiokot.money.privacy.view.LocalPrivacyMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.draw.clip
+import kotlinx.datetime.LocalDateTime
 import androidx.compose.ui.text.style.TextOverflow
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
@@ -38,6 +39,8 @@ import ua.com.radiokot.money.uikit.MoneyIconButton
 import ua.com.radiokot.money.uikit.MoneyIconButtonStyle
 import ua.com.radiokot.money.uikit.RowChevron
 import ua.com.radiokot.money.uikit.SectionHeader
+import ua.com.radiokot.money.uikit.ViewText
+import ua.com.radiokot.money.uikit.resolve
 import ua.com.radiokot.money.uikit.listGroupItem
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
@@ -65,6 +68,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composeunstyled.Text
@@ -101,7 +105,7 @@ private fun InboxScreen(
     ) {
         MoneyIconButton(
             icon = R.drawable.ic_tabler_x,
-            contentDescription = "Close",
+            contentDescription = stringResource(R.string.common_close),
             onClick = onCloseClicked,
         )
 
@@ -110,15 +114,15 @@ private fun InboxScreen(
                 .weight(1f)
         ) {
             Text(
-                text = "Inbox",
+                text = stringResource(R.string.inbox_title),
                 style = MoneyTheme.typography.headline,
             )
             Text(
                 text =
                     if (pendingItemList.value.isEmpty())
-                        "Nothing to sort"
+                        stringResource(R.string.inbox_nothing_to_sort)
                     else
-                        "${pendingItemList.value.size} to sort",
+                        stringResource(R.string.inbox_to_sort, pendingItemList.value.size),
                 style = MoneyTheme.typography.caption,
                 color = MoneyTheme.colors.ink3,
             )
@@ -126,7 +130,7 @@ private fun InboxScreen(
 
         MoneyIconButton(
             icon = R.drawable.ic_tabler_adjustments_horizontal,
-            contentDescription = "Rules",
+            contentDescription = stringResource(R.string.inbox_rules),
             onClick = onRulesClicked,
         )
     }
@@ -146,7 +150,7 @@ private fun InboxScreen(
         if (pending.isNotEmpty() && onSortAsCardsClicked != null) {
             item(key = "sort-cards") {
                 MoneyButton(
-                    text = "Sort as cards",
+                    text = stringResource(R.string.inbox_sort_as_cards),
                     icon = R.drawable.ic_tabler_cards,
                     style = MoneyButtonStyle.Filled,
                     onClick = onSortAsCardsClicked,
@@ -158,15 +162,15 @@ private fun InboxScreen(
         }
 
         item(key = "pending-title") {
-            SectionHeader(title = "To categorize")
+            SectionHeader(title = stringResource(R.string.inbox_section_pending))
         }
 
         if (pending.isEmpty()) {
             item(key = "pending-empty") {
                 EmptyState(
                     icon = R.drawable.ic_tabler_circle_check,
-                    title = "All sorted",
-                    text = "New bank payments that need a category will appear here.",
+                    title = stringResource(R.string.inbox_all_sorted),
+                    text = stringResource(R.string.inbox_empty_text),
                     modifier = Modifier
                         .clip(MoneyShapes.large)
                         .background(MoneyTheme.colors.surface)
@@ -188,7 +192,7 @@ private fun InboxScreen(
                 trailing = {
                     MoneyIconButton(
                         icon = R.drawable.ic_tabler_x,
-                        contentDescription = "Dismiss",
+                        contentDescription = stringResource(R.string.inbox_dismiss),
                         style = MoneyIconButtonStyle.Plain,
                         size = 36.dp,
                         iconSize = 18.dp,
@@ -202,7 +206,7 @@ private fun InboxScreen(
         if (cards.isNotEmpty()) {
             item(key = "cards-title") {
                 SectionHeader(
-                    title = "Cards",
+                    title = stringResource(R.string.inbox_section_cards),
                     modifier = Modifier
                         .padding(top = 12.dp)
                 )
@@ -213,8 +217,11 @@ private fun InboxScreen(
                 key = { _, card -> "card-${card.cardLast4}" },
             ) { index, card ->
                 ListRow(
-                    title = "Card •${card.cardLast4}",
-                    subtitle = (card.accountTitle ?: "Most used account") + " · tap to change",
+                    title = stringResource(R.string.inbox_card_title, card.cardLast4),
+                    subtitle = stringResource(
+                        R.string.inbox_card_subtitle,
+                        card.accountTitle ?: stringResource(R.string.inbox_most_used_account),
+                    ),
                     leading = {
                         IconTile(icon = R.drawable.ic_tabler_credit_card)
                     },
@@ -233,7 +240,7 @@ private fun InboxScreen(
         if (done.isNotEmpty()) {
             item(key = "done-title") {
                 SectionHeader(
-                    title = "Recorded",
+                    title = stringResource(R.string.inbox_section_recorded),
                     modifier = Modifier
                         .padding(top = 12.dp)
                 )
@@ -253,7 +260,7 @@ private fun InboxScreen(
                     trailing = {
                         MoneyIconButton(
                             icon = R.drawable.ic_tabler_arrow_back_up,
-                            contentDescription = "Undo",
+                            contentDescription = stringResource(R.string.common_undo),
                             style = MoneyIconButtonStyle.Plain,
                             size = 36.dp,
                             iconSize = 18.dp,
@@ -298,19 +305,20 @@ private fun InboxItemRow(
         Text(
             text =
                 if (item.isTitleRawText && LocalPrivacyMode.current)
-                    PRIVATE_TITLE
+                    stringResource(R.string.inbox_private_title)
                 else
                     item.title,
             style = MoneyTheme.typography.bodyStrong,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+        val dateText = receivedAtText(item.receivedAt)
         Text(
             text =
                 if (item.isForeignCurrency)
-                    item.dateText + " · foreign currency"
+                    stringResource(R.string.inbox_item_foreign_currency, dateText)
                 else
-                    item.dateText,
+                    dateText,
             style = MoneyTheme.typography.caption,
             color =
                 if (item.isForeignCurrency)
@@ -341,7 +349,7 @@ private fun InboxItemRow(
                 if (LocalPrivacyMode.current)
                     PrivacyAmounts.MASK
                 else
-                    item.amountText,
+                    item.amountText.resolve(),
             style = MoneyTheme.typography.bodyStrong,
             maxLines = 1,
         )
@@ -376,15 +384,15 @@ private fun InboxScreenPreview(
     pendingItemList = listOf(
         ViewInboxItem(
             title = "DEEPSEERWEA",
-            amountText = "2,12 USD",
-            dateText = "2026-10-02 08:06",
+            amountText = ViewText.Plain("2,12 USD"),
+            receivedAt = LocalDateTime(2026, 10, 2, 8, 6),
             isForeignCurrency = true,
             key = "1",
         ),
         ViewInboxItem(
             title = "Jums ir jauns ziņojums internetbankā",
             amountText = null,
-            dateText = "2026-10-02 09:00",
+            receivedAt = LocalDateTime(2026, 10, 2, 9, 0),
             isForeignCurrency = false,
             key = "2",
         ),
@@ -392,8 +400,8 @@ private fun InboxScreenPreview(
     doneItemList = listOf(
         ViewInboxItem(
             title = "CAFE EXAMPLE",
-            amountText = "4,50 EUR",
-            dateText = "2026-10-01 13:10",
+            amountText = ViewText.Plain("4,50 EUR"),
+            receivedAt = LocalDateTime(2026, 10, 1, 13, 10),
             isForeignCurrency = false,
             key = "3",
         ),

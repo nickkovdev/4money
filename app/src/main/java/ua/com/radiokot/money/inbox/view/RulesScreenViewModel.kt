@@ -19,6 +19,8 @@
 
 package ua.com.radiokot.money.inbox.view
 
+import ua.com.radiokot.money.uikit.resolve
+import ua.com.radiokot.money.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +44,9 @@ import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.view.TransferCounterpartySelectionResult
+import ua.com.radiokot.money.uikit.ViewText
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 
 /**
  * Activity-level: also receives the category picker result for a range being edited.
@@ -109,13 +114,18 @@ class RulesScreenViewModel(
                 val subcategory = rule.subcategoryId?.let(subcategoriesById::get)
                 ViewPayeeRuleRow(
                     rangeText = rule.amountRange
-                        ?.let { describeRange(it, currencyCode) }
-                        ?: if (rules.size > 1) "Other amounts" else "Any amount",
+                        ?.let { ViewText.Dynamic(describeRangeText(it, currencyCode)) }
+                        ?: ViewText.Res(
+                            if (rules.size > 1)
+                                R.string.rules_other_amounts
+                            else
+                                R.string.inbox_range_any
+                        ),
                     targetTitle = when {
-                        rule.action == PayeeRule.Action.Ask -> "Ask me"
-                        category == null -> "Missing category"
-                        subcategory != null -> "${category.title} · ${subcategory.title}"
-                        else -> category.title
+                        rule.action == PayeeRule.Action.Ask -> ViewText.Res(R.string.rules_ask_me)
+                        category == null -> ViewText.Res(R.string.rules_missing_category)
+                        subcategory != null -> ViewText.Plain("${category.title} · ${subcategory.title}")
+                        else -> ViewText.Plain(category.title)
                     },
                     isAsk = rule.action == PayeeRule.Action.Ask,
                     colorScheme = category?.colorScheme,
@@ -131,21 +141,18 @@ class RulesScreenViewModel(
                 .split(' ')
                 .joinToString(" ") { word -> word.replaceFirstChar(Char::titlecase) },
             matchType = first.matchType,
-            subtitle = buildString {
-                append(
-                    if (first.matchType == PayeeRule.MatchType.Contains)
-                        "Contains"
-                    else
-                        "Exact payee"
-                )
-                append(" · ")
-                append(rules.size)
-                append(if (rules.size == 1) " rule" else " rules")
-                if (hits > 0) {
-                    append(" · used ")
-                    append(hits)
-                    append("×")
-                }
+            subtitle = ViewText.Dynamic { context ->
+                listOfNotNull(
+                    ViewText.Res(
+                        if (first.matchType == PayeeRule.MatchType.Contains)
+                            R.string.rules_subtitle_contains
+                        else
+                            R.string.rules_subtitle_exact
+                    ),
+                    ViewText.Plural(R.plurals.rules_rule_count, rules.size),
+                    ViewText.Res(R.string.rules_used, listOf(hits))
+                        .takeIf { hits > 0 },
+                ).joinToString(" · ") { it.resolve(context) }
             },
             rows = rows,
             colorScheme = anyCategory?.colorScheme,
@@ -162,6 +169,7 @@ class RulesScreenViewModel(
     fun onRowClicked(
         group: ViewPayeeRuleGroup,
         row: ViewPayeeRuleRow,
+        locale: Locale,
     ) {
         val rule = row.rule
         val range = rule.amountRange
@@ -174,11 +182,22 @@ class RulesScreenViewModel(
 
         _rangeDraft.value = newDraft(group).copy(
             ruleId = rule.id,
-            fromText = range.min?.stripTrailingZeros()?.toPlainString().orEmpty(),
-            underText = range.max?.stripTrailingZeros()?.toPlainString().orEmpty(),
+            fromText = range.min?.let { editableAmountText(it, locale) }.orEmpty(),
+            underText = range.max?.let { editableAmountText(it, locale) }.orEmpty(),
             target = targetOf(rule),
         )
     }
+
+    /**
+     * A plain number with the decimal separator of the [locale] and no grouping,
+     * as the range editor hint shows it. The editor parser accepts both '.' and ','.
+     */
+    private fun editableAmountText(
+        amount: java.math.BigDecimal,
+        locale: Locale,
+    ): String =
+        amount.stripTrailingZeros().toPlainString()
+            .replace('.', DecimalFormatSymbols.getInstance(locale).decimalSeparator)
 
     /**
      * Opens a new range for a payee, also one without rules yet (from an inbox card).
@@ -301,12 +320,16 @@ class RulesScreenViewModel(
 
         val range = parseRangeDraft(draft.fromText, draft.underText)
             .getOrElse { error ->
-                _rangeDraft.value = draft.copy(error = error.message)
+                _rangeDraft.value = draft.copy(
+                    error = (error as? RangeDraftException)
+                        ?.let { ViewText.Res(it.textRes) }
+                        ?: ViewText.Plain(error.message.orEmpty())
+                )
                 return
             }
         val target = draft.target
         if (target == null) {
-            _rangeDraft.value = draft.copy(error = "Choose a category or Ask me")
+            _rangeDraft.value = draft.copy(error = ViewText.Res(R.string.rules_error_no_target))
             return
         }
 
