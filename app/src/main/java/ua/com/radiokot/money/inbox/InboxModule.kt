@@ -40,6 +40,8 @@ import ua.com.radiokot.money.inbox.logic.ProcessBankNotificationUseCase
 import ua.com.radiokot.money.inbox.logic.SebLatviaNotificationParser
 import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
 import ua.com.radiokot.money.inbox.ask.PaymentQuestionNotifier
+import ua.com.radiokot.money.inbox.templates.data.NotificationTemplateRepository
+import ua.com.radiokot.money.inbox.templates.data.PowerSyncNotificationTemplateRepository
 import ua.com.radiokot.money.inbox.view.InboxCardsViewModel
 import ua.com.radiokot.money.inbox.view.InboxScreenViewModel
 import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
@@ -73,6 +75,12 @@ val inboxModule = module {
                 database = get(),
             )
         } bind PayeeRuleRepository::class
+
+        scoped {
+            PowerSyncNotificationTemplateRepository(
+                database = get(),
+            )
+        } bind NotificationTemplateRepository::class
 
         scoped {
             PowerSyncMostUsedAccountSource(

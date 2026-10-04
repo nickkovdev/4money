@@ -62,6 +62,7 @@ object DbSchema {
             getPowerSyncSyncErrorsTable(),
             getPowerSyncPayeeRulesTable(),
             getPowerSyncInboxItemsTable(),
+            getPowerSyncNotificationTemplatesTable(),
         )
     )
 
@@ -457,6 +458,37 @@ object DbSchema {
                     IndexedColumn.ascending(INBOX_ITEM_DEDUP_HASH),
                 )
             ),
+        ),
+        ignoreEmptyUpdates = true,
+    )
+
+    const val NOTIFICATION_TEMPLATES_TABLE = "notification_templates"
+    const val NOTIFICATION_TEMPLATE_SOURCE_PACKAGE = "source_package"
+    const val NOTIFICATION_TEMPLATE_NAME = "name"
+    const val NOTIFICATION_TEMPLATE_DIRECTION = "direction"
+    const val NOTIFICATION_TEMPLATE_PATTERN = "pattern"
+
+    /** JSON text, jsonb on the server. */
+    const val NOTIFICATION_TEMPLATE_FIELDS = "fields"
+    const val NOTIFICATION_TEMPLATE_SAMPLE_TEXT = "sample_text"
+
+    /** Integer 0/1. */
+    const val NOTIFICATION_TEMPLATE_IS_ENABLED = "is_enabled"
+
+    /** Local date time, see [toDbString]. */
+    const val NOTIFICATION_TEMPLATE_CREATED_AT = "created_at"
+
+    private fun getPowerSyncNotificationTemplatesTable() = Table(
+        name = NOTIFICATION_TEMPLATES_TABLE,
+        columns = listOf(
+            Column.text(NOTIFICATION_TEMPLATE_SOURCE_PACKAGE),
+            Column.text(NOTIFICATION_TEMPLATE_NAME),
+            Column.text(NOTIFICATION_TEMPLATE_DIRECTION),
+            Column.text(NOTIFICATION_TEMPLATE_PATTERN),
+            Column.text(NOTIFICATION_TEMPLATE_FIELDS),
+            Column.text(NOTIFICATION_TEMPLATE_SAMPLE_TEXT),
+            Column.integer(NOTIFICATION_TEMPLATE_IS_ENABLED),
+            Column.text(NOTIFICATION_TEMPLATE_CREATED_AT),
         ),
         ignoreEmptyUpdates = true,
     )
