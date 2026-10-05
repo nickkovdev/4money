@@ -26,6 +26,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import ua.com.radiokot.money.inbox.sources.data.RecentNotificationBuffer
 import ua.com.radiokot.money.lock.logic.DisableAppLockUseCase
 import kotlin.time.Duration.Companion.seconds
 
@@ -33,6 +34,7 @@ import kotlin.time.Duration.Companion.seconds
  * On success, [supabaseClient] is signed out,
  * [userSessionHolder] is cleared,
  * [database] is cleared and closed,
+ * [recentNotificationBuffer] is cleared,
  * app lock is disabled via [disableAppLockUseCase].
  */
 @OptIn(DelicateCoroutinesApi::class)
@@ -41,6 +43,7 @@ class SignOutUseCase(
     private val userSessionHolder: UserSessionHolder,
     private val database: PowerSyncDatabase,
     private val disableAppLockUseCase: DisableAppLockUseCase,
+    private val recentNotificationBuffer: RecentNotificationBuffer,
 ) {
 
     suspend operator fun invoke(
@@ -56,6 +59,10 @@ class SignOutUseCase(
         database.disconnectAndClear()
 
         userSessionHolder.clear()
+
+        // Texts of other apps' notifications must not outlive the session
+        // they were collected in.
+        recentNotificationBuffer.clear()
 
         disableAppLockUseCase()
     }

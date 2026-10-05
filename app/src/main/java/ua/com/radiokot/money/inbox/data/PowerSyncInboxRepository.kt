@@ -111,6 +111,28 @@ class PowerSyncInboxRepository(
             mapper = { cursor -> cursor.getString(0)!! },
         )
 
+    override fun getSourceStatsFlow(since: LocalDateTime): Flow<Map<String, SourceStats>> =
+        database
+            .watch(
+                sql = "SELECT ${DbSchema.INBOX_ITEM_SOURCE_PACKAGE}, " +
+                        "SUM(CASE WHEN ${DbSchema.INBOX_ITEM_AMOUNT} IS NOT NULL " +
+                        "AND $RECEIVED_AT_DATETIME >= datetime(?) THEN 1 ELSE 0 END), " +
+                        "MAX($RECEIVED_AT_DATETIME) " +
+                        "FROM ${DbSchema.INBOX_ITEMS_TABLE} " +
+                        "GROUP BY ${DbSchema.INBOX_ITEM_SOURCE_PACKAGE}",
+                parameters = listOf(since.toDbString()),
+                mapper = { cursor ->
+                    val last = cursor.getString(2)
+                        ?.let { LocalDateTime.fromDbString(it) }
+                    cursor.getString(0)!! to SourceStats(
+                        recognizedCount = cursor.getLong(1)?.toInt() ?: 0,
+                        lastReceivedAt = last,
+                    )
+                },
+            )
+            .map(List<Pair<String, SourceStats>>::toMap)
+            .flowOn(Dispatchers.Default)
+
     // The status and the transfer ID are written in a single UPDATE.
     override suspend fun markDone(itemId: String, transferId: String) =
         updateStatus(itemId, InboxItem.Status.Done, transferId)

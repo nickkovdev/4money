@@ -116,6 +116,7 @@ val authModule = module {
                 userSessionHolder = get(),
                 database = get(),
                 disableAppLockUseCase = get(),
+                recentNotificationBuffer = get(),
             )
         } bind SignOutUseCase::class
     }

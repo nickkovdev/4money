@@ -33,3 +33,7 @@ bucket_definitions:
                account_id, status, transfer_id, dedup_hash, direction
         FROM money.inbox_items AS inbox_items
         WHERE user_id = bucket.user_id
+      - >-
+        SELECT id, source_package, name, direction, pattern, fields, sample_text, is_enabled, created_at
+        FROM money.notification_templates AS notification_templates
+        WHERE user_id = bucket.user_id

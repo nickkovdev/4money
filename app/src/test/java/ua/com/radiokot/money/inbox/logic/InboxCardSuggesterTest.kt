@@ -154,4 +154,29 @@ class InboxCardSuggesterTest {
         Assert.assertNull(result.suggestion)
         Assert.assertTrue(result.alternatives.isEmpty())
     }
+
+    @Test
+    fun history_IsIgnoredWhenNotUsed() {
+        val history = listOf(HistoryEntry("fuelstop", car), HistoryEntry("other", food))
+
+        val withoutRule = InboxCardSuggester.suggest(
+            normalizedPayee = "fuelstop",
+            rules = emptyList(),
+            history = history,
+            useHistory = false,
+        )
+        Assert.assertNull(withoutRule.suggestion)
+        Assert.assertTrue(withoutRule.alternatives.isEmpty())
+        Assert.assertNull(withoutRule.rememberDefault)
+
+        val withRule = InboxCardSuggester.suggest(
+            normalizedPayee = "fuelstop",
+            rules = listOf(rule("fuelstop", moto)),
+            history = history,
+            useHistory = false,
+        )
+        Assert.assertEquals(moto, withRule.suggestion?.category)
+        Assert.assertTrue(withRule.suggestion?.reason is InboxCardSuggester.Reason.Rule)
+        Assert.assertTrue(withRule.alternatives.isEmpty())
+    }
 }

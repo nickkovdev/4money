@@ -19,6 +19,14 @@ class DefaultCardAccountResolverTest {
         }
 
         override fun getCardAccountsFlow(): Flow<Map<String, String>> = map
+
+        val sourceMap = MutableStateFlow(mapOf("com.example.bank" to "acc-source"))
+        override fun getAccountIdForSource(sourcePackage: String) = sourceMap.value[sourcePackage]
+        override fun setAccountIdForSource(sourcePackage: String, accountId: String) {
+            sourceMap.value += sourcePackage to accountId
+        }
+
+        override fun getSourceAccountsFlow(): Flow<Map<String, String>> = sourceMap
     }
     private val resolver = DefaultCardAccountResolver(
         cardAccountPreferences = preferences,
@@ -27,7 +35,7 @@ class DefaultCardAccountResolverTest {
         },
     )
 
-    private val allUsable = setOf("acc-card", "acc-rule", "acc-most-used")
+    private val allUsable = setOf("acc-card", "acc-rule", "acc-most-used", "acc-source")
 
     @Test
     fun precedence() = runBlocking {
@@ -49,5 +57,27 @@ class DefaultCardAccountResolverTest {
             resolver.resolve(cardLast4 = "0000", ruleAccountId = "acc-rule", setOf("acc-most-used")),
         )
         assertNull(resolver.resolve(cardLast4 = "0000", ruleAccountId = "acc-rule", emptySet()))
+    }
+
+    @Test
+    fun sourceAccountIsUsedOnlyWithoutCard() = runBlocking {
+        val source = "com.example.bank"
+        // No card: the source account wins over the rule account.
+        assertEquals("acc-source", resolver.resolve(null, "acc-rule", allUsable, source))
+        // A card with a mapping: the card wins.
+        assertEquals("acc-card", resolver.resolve("0000", "acc-rule", allUsable, source))
+        // A card without a mapping: the source account is not for it.
+        assertEquals("acc-rule", resolver.resolve("1111", "acc-rule", allUsable, source))
+        // Another source, or none.
+        assertEquals("acc-rule", resolver.resolve(null, "acc-rule", allUsable, "com.example.other"))
+        assertEquals("acc-rule", resolver.resolve(null, "acc-rule", allUsable))
+    }
+
+    @Test
+    fun archivedSourceAccountIsSkipped() = runBlocking {
+        assertEquals(
+            "acc-rule",
+            resolver.resolve(null, "acc-rule", setOf("acc-rule", "acc-most-used"), "com.example.bank"),
+        )
     }
 }

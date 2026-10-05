@@ -39,7 +39,8 @@ import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
 import ua.com.radiokot.money.inbox.logic.AutoExpenseResolver
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
-import ua.com.radiokot.money.inbox.view.InboxActivity
+import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferences
+import ua.com.radiokot.money.home.view.HomeActivity
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.privacy.data.PrivacyPreferences
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
@@ -63,6 +64,7 @@ class PaymentQuestionNotifier(
     private val categoryRepository: CategoryRepository,
     private val transferHistoryRepository: TransferHistoryRepository,
     private val privacyPreferences: PrivacyPreferences,
+    private val autoBookPreferences: AutoBookPreferences,
 ) {
     private val log by lazyLogger("PaymentQuestionNotifier")
 
@@ -70,7 +72,7 @@ class PaymentQuestionNotifier(
         itemId: String,
         reason: AutoExpenseResolver.PendingReason,
     ) {
-        if (!PaymentQuestion.shouldAsk(reason)) {
+        if (!PaymentQuestion.shouldAsk(reason) || !autoBookPreferences.isAskInNotificationEnabled) {
             return
         }
 
@@ -168,8 +170,13 @@ class PaymentQuestionNotifier(
                 PendingIntent.getActivity(
                     context,
                     notificationId,
-                    Intent(context, InboxActivity::class.java)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    Intent(context, HomeActivity::class.java)
+                        .putExtra(HomeActivity.EXTRA_OPEN_INBOX, true)
+                        .addFlags(
+                            Intent.FLAG_ACTIVITY_NEW_TASK
+                                    or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                    or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        ),
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
                 )
             )

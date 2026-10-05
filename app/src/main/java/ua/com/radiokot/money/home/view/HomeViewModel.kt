@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -85,14 +84,19 @@ class HomeViewModel(
                     ?: emptyList()
             }
 
+    /**
+     * The profile dot: only sync errors. Pending inbox items are shown by the Inbox tab badge.
+     */
     val hasMoreNotice: StateFlow<Boolean> =
-        combine(
-            syncErrorRepository.getErrorCountFlow(),
-            inboxRepository.getPendingCountFlow(),
-        ) { syncErrorCount, pendingInboxCount ->
-            syncErrorCount > 0 || pendingInboxCount > 0
-        }
+        syncErrorRepository
+            .getErrorCountFlow()
+            .map { syncErrorCount -> syncErrorCount > 0 }
             .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val pendingInboxCount: StateFlow<Long> =
+        inboxRepository
+            .getPendingCountFlow()
+            .stateIn(viewModelScope, SharingStarted.Eagerly, 0L)
 
     override fun onNextHistoryStatsPeriodClicked() {
         log.debug {

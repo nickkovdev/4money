@@ -58,6 +58,11 @@ object AutoExpenseResolver {
          * The matched rule asks the user (e.g. an amount range that can be either).
          */
         AskRequested,
+
+        /**
+         * The matched rule would record, but recording of known payees is switched off.
+         */
+        AutoRecordDisabled,
     }
 
     sealed interface Resolution {
@@ -87,12 +92,14 @@ object AutoExpenseResolver {
      * @param account resolved, existing, non-archived account, if any
      * @param category resolved, existing, non-archived rule category, if any;
      * an income one for an incoming payment, an expense one otherwise
+     * @param recordKnownPayees whether a matched record rule may book without the user
      */
     fun resolve(
         payment: ParsedBankNotification.Payment?,
         rule: PayeeRule?,
         account: AccountRef?,
         category: CategoryRef?,
+        recordKnownPayees: Boolean = true,
     ): Resolution {
         if (payment == null || payment.amount.signum() <= 0) {
             return Resolution.Pending(PendingReason.NotParsed)
@@ -102,6 +109,9 @@ object AutoExpenseResolver {
         }
         if (rule.action == PayeeRule.Action.Ask) {
             return Resolution.Pending(PendingReason.AskRequested)
+        }
+        if (!recordKnownPayees) {
+            return Resolution.Pending(PendingReason.AutoRecordDisabled)
         }
         if (account == null) {
             return Resolution.Pending(PendingReason.NoAccount)

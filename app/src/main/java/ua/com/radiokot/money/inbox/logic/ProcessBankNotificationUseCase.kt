@@ -32,6 +32,8 @@ import ua.com.radiokot.money.inbox.data.IncomingBankNotification
 import ua.com.radiokot.money.inbox.data.ParsedBankNotification
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
+import ua.com.radiokot.money.inbox.sources.data.AutoBookBehaviour
+import ua.com.radiokot.money.inbox.sources.logic.BankNotificationParsing
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.logic.TransferFundsUseCase
 import java.util.UUID
@@ -44,13 +46,15 @@ import kotlin.time.Instant
  * the dedup check and the writes for notifications arriving at once.
  */
 class ProcessBankNotificationUseCase(
-    private val parsers: List<BankNotificationParser>,
+    private val parsing: BankNotificationParsing,
     private val inboxRepository: InboxRepository,
     private val payeeRuleRepository: PayeeRuleRepository,
     private val accountRepository: AccountRepository,
     private val categoryRepository: CategoryRepository,
     private val cardAccountResolver: CardAccountResolver,
     private val transferFundsUseCase: TransferFundsUseCase,
+    // Resolved per notification: the switches may change while the process lives.
+    private val behaviour: () -> AutoBookBehaviour,
     // Resolved per call: the listener process may outlive a time zone change.
     private val timeZone: () -> TimeZone = { TimeZone.currentSystemDefault() },
     private val newId: () -> String = { UUID.randomUUID().toString() },
@@ -78,11 +82,10 @@ class ProcessBankNotificationUseCase(
         notification: IncomingBankNotification,
     ): Result<Outcome> = runCatching {
 
-        val parser = parsers.firstOrNull { it.packageName == notification.packageName }
+        val parsed = parsing.parse(notification.packageName, notification.title, notification.text)
             ?: return@runCatching Outcome.Ignored
 
-        val payment = parser.parse(notification.title, notification.text)
-                as? ParsedBankNotification.Payment
+        val payment = parsed as? ParsedBankNotification.Payment
         val dedupHash = BankNotificationDedupHash.compute(
             notification = notification,
             includePostTime = payment == null || !payment.hasTimestamp,
@@ -118,6 +121,7 @@ class ProcessBankNotificationUseCase(
                     cardLast4 = payment?.cardLast4,
                     ruleAccountId = rule?.accountId,
                     usableAccountIds = accountsById.keys,
+                    sourcePackage = notification.packageName,
                 )
                 ?.let(accountsById::get)
 
@@ -132,6 +136,7 @@ class ProcessBankNotificationUseCase(
                     )
                 },
                 category = rule?.let { getCategoryRef(it) },
+                recordKnownPayees = behaviour().recordKnownPayees,
             )
 
             val item = InboxItem(

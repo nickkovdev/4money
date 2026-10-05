@@ -46,7 +46,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -65,6 +68,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -86,14 +91,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.composeunstyled.Icon
 import com.composeunstyled.Text
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.mapNotNull
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.MoneyAppModalBottomSheetHost
 import ua.com.radiokot.money.R
@@ -112,7 +120,17 @@ import ua.com.radiokot.money.categories.view.EditCategoryActivity
 import ua.com.radiokot.money.categories.view.EditCategoryScreenRoute
 import ua.com.radiokot.money.categories.view.categoriesScreen
 import ua.com.radiokot.money.categories.view.categoryActionSheet
-import ua.com.radiokot.money.inbox.view.InboxActivity
+import ua.com.radiokot.money.inbox.view.InboxCardsScreenRoute
+import ua.com.radiokot.money.inbox.view.InboxCardsViewModel
+import ua.com.radiokot.money.inbox.view.InboxScreenViewModel
+import ua.com.radiokot.money.inbox.view.InboxTabItems
+import ua.com.radiokot.money.inbox.view.InboxTabRoute
+import ua.com.radiokot.money.inbox.sources.view.AutoBookActivity
+import ua.com.radiokot.money.inbox.view.RulesScreenRoute
+import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
+import ua.com.radiokot.money.inbox.view.inboxCardsScreen
+import ua.com.radiokot.money.inbox.view.inboxTab
+import ua.com.radiokot.money.inbox.view.rulesScreen
 import ua.com.radiokot.money.lock.view.SetUpPasscodeActivity
 import ua.com.radiokot.money.overview.view.CategoryStatsSheetRoute
 import ua.com.radiokot.money.overview.view.OverviewScreenRoute
@@ -121,6 +139,7 @@ import ua.com.radiokot.money.overview.view.overviewScreen
 import ua.com.radiokot.money.preferences.view.PreferencesScreenRoute
 import ua.com.radiokot.money.preferences.view.preferencesScreen
 import ua.com.radiokot.money.rememberMoneyAppNavController
+import ua.com.radiokot.money.routeIs
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.history.view.ActivityScreenRoute
 import ua.com.radiokot.money.transfers.history.view.activityScreen
@@ -139,7 +158,17 @@ class HomeActivity : MoneyAppActivity(
 
     private val viewModel: HomeViewModel by viewModel()
 
+    /**
+     * Incremented whenever the inbox tab is requested by an intent.
+     */
+    private val openInboxRequest = MutableStateFlow(0)
+
     override fun onCreateAllowed(savedInstanceState: Bundle?) {
+
+        // Do not reopen the tab on a recreation: the intent is the same.
+        if (savedInstanceState == null && intent.getBooleanExtra(EXTRA_OPEN_INBOX, false)) {
+            openInboxRequest.value++
+        }
 
         enableEdgeToEdge(
             navigationBarStyle = SystemBarStyle.auto(
@@ -153,11 +182,28 @@ class HomeActivity : MoneyAppActivity(
                 UserSessionScope {
                     HomeScreen(
                         viewModel = viewModel,
+                        openInboxRequest = openInboxRequest.collectAsState(),
                         goToAuth = ::goToAuth,
                     )
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+
+        if (intent.getBooleanExtra(EXTRA_OPEN_INBOX, false)) {
+            openInboxRequest.value++
+        }
+    }
+
+    companion object {
+        /**
+         * Open the Inbox tab, e.g. from the "payments to sort" notification.
+         */
+        const val EXTRA_OPEN_INBOX = "open_inbox"
     }
 }
 
@@ -165,6 +211,7 @@ class HomeActivity : MoneyAppActivity(
 @Composable
 private fun HomeScreen(
     viewModel: HomeViewModel,
+    openInboxRequest: State<Int>,
     goToAuth: () -> Unit,
 ) {
     val navController = rememberMoneyAppNavController()
@@ -176,6 +223,26 @@ private fun HomeScreen(
         )
     }
     val context = LocalContext.current
+    val inboxViewModel: InboxScreenViewModel = koinViewModel()
+    val inboxCardsViewModel: InboxCardsViewModel = koinViewModel()
+    val rulesViewModel: RulesScreenViewModel = koinViewModel()
+    val onProceedToInboxCategorySelection = { accountId: TransferCounterpartyId.Account, isIncome: Boolean ->
+        navController.navigate(
+            route = TransferCounterpartySelectionSheetRoute(
+                // An income category is the source of an income.
+                isForSource = isIncome,
+                alreadySelectedCounterpartyId = accountId,
+                showAccounts = false,
+                showCategories = true,
+            ),
+        )
+    }
+
+    LaunchedEffect(openInboxRequest.value) {
+        if (openInboxRequest.value > 0) {
+            navController.navigateToTab(InboxTabRoute)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -217,6 +284,9 @@ private fun HomeScreen(
                 .fillMaxWidth()
                 .weight(1f)
                 .displayCutoutPadding()
+                // The bottom bar below takes the navigation bar,
+                // the inbox screens must not add it once more.
+                .consumeWindowInsets(WindowInsets.navigationBars)
         ) {
 
             accountsScreen(
@@ -345,12 +415,51 @@ private fun HomeScreen(
                         Intent(context, SetUpPasscodeActivity::class.java)
                     )
                 },
+                onProceedToAutoBook = {
+                    context.startActivity(AutoBookActivity.getIntent(context))
+                },
                 onSignedOut = goToAuth,
-                onProceedToInbox = {
-                    context.startActivity(
-                        Intent(context, InboxActivity::class.java)
+            )
+
+            inboxTab(
+                viewModel = inboxViewModel,
+                onProceedToCategorySelection = onProceedToInboxCategorySelection,
+                onProceedToTransfer = { route -> navController.navigate(route) },
+                onProceedToRules = { navController.navigate(RulesScreenRoute) },
+                onProceedToCards = { navController.navigate(InboxCardsScreenRoute) },
+            )
+
+            inboxCardsScreen(
+                viewModel = inboxCardsViewModel,
+                onProceedToAmountRules = { request ->
+                    rulesViewModel.onAddRangeForPayeeRequested(
+                        payeePattern = request.payeePattern,
+                        displayPattern = request.displayPattern,
+                        currencyCode = request.currencyCode,
+                        isIncome = request.isIncome,
+                        categoryOptions = request.categoryOptions,
+                    )
+                    navController.navigate(RulesScreenRoute)
+                },
+                onProceedToCategorySelection = onProceedToInboxCategorySelection,
+                onProceedToTransfer = { route -> navController.navigate(route) },
+                onProceedToRules = { navController.navigate(RulesScreenRoute) },
+                onClose = navController::navigateUp,
+            )
+
+            rulesScreen(
+                viewModel = rulesViewModel,
+                onProceedToCategorySelection = { isIncome ->
+                    navController.navigate(
+                        route = TransferCounterpartySelectionSheetRoute(
+                            isForSource = isIncome,
+                            alreadySelectedCounterpartyId = null,
+                            showAccounts = false,
+                            showCategories = true,
+                        ),
                     )
                 },
+                onClose = navController::navigateUp,
             )
 
             accountActionSheet(
@@ -436,7 +545,29 @@ private fun HomeScreen(
             )
 
             transferCounterpartySelectionSheet(
-                onSelected = transfersNavigator::proceedToTransfer,
+                onSelected = { result ->
+                    // The inbox screens request a selection for themselves.
+                    val previousDestination = navController.previousBackStackEntry?.destination
+                    when {
+                        previousDestination?.routeIs<RulesScreenRoute>() == true -> {
+                            navController.navigateUp()
+                            rulesViewModel.onCounterpartySelected(result)
+                        }
+
+                        previousDestination?.routeIs<InboxCardsScreenRoute>() == true -> {
+                            navController.navigateUp()
+                            inboxCardsViewModel.onCounterpartySelected(result)
+                        }
+
+                        previousDestination?.route == InboxTabRoute -> {
+                            navController.navigateUp()
+                            inboxViewModel.onCounterpartySelected(result)
+                        }
+
+                        else ->
+                            transfersNavigator.proceedToTransfer(result)
+                    }
+                },
             )
         }
 
@@ -445,7 +576,10 @@ private fun HomeScreen(
         CompositionLocalProvider(
             LocalIndication provides remember(::ScaleIndication),
         ) {
-            BottomNavigation(navController = navController)
+            BottomNavigation(
+                navController = navController,
+                pendingInboxCount = viewModel.pendingInboxCount.collectAsState(),
+            )
         }
     }
 
@@ -458,6 +592,7 @@ private fun HomeScreen(
 @Composable
 private fun BottomNavigation(
     navController: NavController,
+    pendingInboxCount: State<Long>,
 ) = Row(
     horizontalArrangement = Arrangement.SpaceAround,
     modifier = Modifier
@@ -494,6 +629,7 @@ private fun BottomNavigation(
     listOf(
         Triple(stringResource(R.string.home_tab_accounts), R.drawable.ic_tabler_wallet, AccountsScreenRoute),
         Triple(stringResource(R.string.home_tab_categories), R.drawable.ic_tabler_chart_donut, CategoriesScreenRoute),
+        Triple(stringResource(R.string.home_tab_inbox), R.drawable.ic_tabler_inbox, InboxTabRoute),
         Triple(stringResource(R.string.home_tab_history), R.drawable.ic_tabler_list_details, ActivityScreenRoute),
         Triple(stringResource(R.string.home_tab_overview), R.drawable.ic_tabler_chart_bar, OverviewScreenRoute),
     ).forEach { (text, icon, route) ->
@@ -502,6 +638,11 @@ private fun BottomNavigation(
             icon = icon,
             isCurrent = lastVisitedBottomRoute == route
                     || (LocalInspectionMode.current && route == AccountsScreenRoute),
+            badgeText =
+                if (route == InboxTabRoute)
+                    InboxTabItems.badgeText(pendingInboxCount.value)
+                else
+                    null,
             modifier = Modifier
                 .weight(1f)
                 .clickable(
@@ -518,11 +659,13 @@ private fun BottomNavigation(
  * sits above a tab and is closed when switching tabs.
  */
 private fun NavController.navigateToTab(route: String) {
-    if (currentDestination?.route == PreferencesScreenRoute) {
-        popBackStack()
+    // Also closes whatever sits above the tab: settings, the inbox cards, rules.
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) {
+            inclusive = true
+        }
+        launchSingleTop = true
     }
-    popBackStack()
-    navigate(route)
 }
 
 @Composable
@@ -531,6 +674,7 @@ private fun BottomNavigationEntry(
     text: String,
     @DrawableRes icon: Int,
     isCurrent: Boolean,
+    badgeText: String? = null,
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -593,6 +737,28 @@ private fun BottomNavigationEntry(
             modifier = Modifier
                 .size(22.dp)
         )
+
+        if (badgeText != null) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 2.dp, y = (-2).dp)
+                    .defaultMinSize(minWidth = 18.dp, minHeight = 18.dp)
+                    .background(
+                        color = colors.accent,
+                        shape = CircleShape,
+                    )
+                    .padding(horizontal = 4.dp)
+            ) {
+                Text(
+                    text = badgeText,
+                    style = MoneyTheme.typography.small,
+                    color = colors.onAccent,
+                    maxLines = 1,
+                )
+            }
+        }
     }
 
     Text(
@@ -614,6 +780,7 @@ private fun BottomNavigationEntry(
 private val bottomNavigationRoutes: Set<String> = setOf(
     AccountsScreenRoute,
     CategoriesScreenRoute,
+    InboxTabRoute,
     ActivityScreenRoute,
     OverviewScreenRoute,
 )
@@ -626,4 +793,5 @@ private fun BottomNavigation2Preview(
 
 ) = BottomNavigation(
     navController = rememberNavController(),
+    pendingInboxCount = 3L.let(::mutableStateOf),
 )

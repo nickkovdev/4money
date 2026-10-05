@@ -1,8 +1,10 @@
-# Redesign: progress (state as of 2026-10-02)
+# Redesign: progress (state as of 2026-10-05)
 
 Branch `feature/redesign` (from `main` at 50aa715). Not merged. Every commit builds (`assembleDebug`)
-and passes `testDebugUnitTest` (195 tests; only the pre-existing upstream
-`SternBrocotTreeSearchTest > extensiveTest` fails). Brief: [BRIEF.md](BRIEF.md).
+and passes `testDebugUnitTest` (195 tests at the time; only the pre-existing upstream
+`SternBrocotTreeSearchTest > extensiveTest` fails). The F4 branch `feature/autobook-sources-inbox-tab`
+head builds, passes `lintDebug` and `testDebugUnitTest` (412 tests, the same single upstream failure).
+Brief: [BRIEF.md](BRIEF.md).
 
 **Nothing on this branch has been checked on the phone yet.**
 
@@ -27,6 +29,7 @@ and passes `testDebugUnitTest` (195 tests; only the pre-existing upstream
 | 77593b1 | Owner decision: a card suggested from history (no rule yet) has a Remember toggle: on when the payee's history has one category, off when mixed, with a "set up amount rules" link. Undo removes only a rule created by that accept (`LearnedRule`, `CardRememberTest`). |
 | F2 (branch `feature/category-sheet-privacy`) | Category sheet from Overview: tap a category (top list or the inline-expanded "All categories") → sheet in the category colour with N transactions, total, share of the period and the period total, subcategory shares, Expense/Income and Transactions actions. Privacy mode: eye button next to the profile button in every tab header (stored in prefs `privacy`), headline amounts `•••`, the rest as % of the relevant total, no amount in the "Payments to sort" notification. Plan with rulings: `docs/superpowers/plans/2026-10-02-category-sheet-privacy.md`. |
 | F3 (branch `feature/localization-ru`) | Localization: English base + complete Russian, Settings → Language (System / English / Русский) via per-app locales, locale-aware dates (nominative month headers, genitive day lines) and amounts (ru: "1 234,56 €", comma keypad), plurals, notifications. Plan with rulings: `docs/superpowers/plans/2026-10-03-localization-ru.md`. |
+| F4 (branch `feature/autobook-sources-inbox-tab`) | Inbox tab and user-configured notification sources: the Inbox is the centre tab of the bottom bar (badge with the pending count; the "Payments to sort" notification opens it; `InboxActivity` removed). Settings → Auto-booking (`AutoBookActivity`): Sources (apps with a notification access switch, SEB Latvia as a built-in preset), a setup wizard (add app → pick a sample notification → teach a template by tapping words as amount / currency / payee / card / varies → test against recent notifications → card accounts → behaviour switches → Done), Cards and accounts, Payee rules, Test text. Templates are synced rows (`money.notification_templates`); the listener only reacts to packages in the active set (cached in prefs); recent money-like notifications are buffered on the device only (`noBackupFilesDir`, 50 entries, 7 days). Plan with rulings: `docs/superpowers/plans/2026-10-05-autobook-sources-inbox-tab.md`. **Needs a migration and a sync-config update before the install, see below.** |
 
 ## Install order (important)
 
@@ -41,6 +44,24 @@ them makes rule uploads fail into `money.sync_errors`. Order:
 
 To check phases 1–4 on the phone before the migration, build commit **5b60431** (e.g. `git worktree add
 ../4money-verify 5b60431`, copy both `local.properties` files into it, build there).
+
+### Install order for F4
+
+Builds of `feature/autobook-sources-inbox-tab` read and write the new table `money.notification_templates`.
+Installing one before the server has the table and the sync rule breaks template sync: the uploads of
+taught templates fail and are dead-lettered into `money.sync_errors`, so they never reach other devices,
+and the next sync checkpoint then removes those locally taught templates from the phone too (the server
+has no such rows), so the wizard's work is lost. The owner applies both steps; nothing here is run
+automatically. Order:
+
+1. Owner OK, then apply `supabase/migrations/20261006000000_money_notification_templates.sql` (command in
+   [../HANDOFF.md](../HANDOFF.md), Infrastructure). It creates the table and adds it to the `atomic_crud`
+   whitelist. The earlier `20261005000000_money_payee_rule_ranges.sql` must already be applied.
+2. Copy `deploy/powersync/sync-config.yaml` (new `notification_templates` query in the user bucket) to
+   `~/4money-powersync/`, `docker restart 4money-powersync`, check `pg_replication_slots` has exactly one
+   active `powersync_*` slot.
+3. Only then install the new APK. After the first sync the Sources screen shows the SEB Latvia preset
+   (it works without any template rows).
 
 ## Next steps
 
@@ -65,6 +86,13 @@ To check phases 1–4 on the phone before the migration, build commit **5b60431*
 ## Backlog (owner ideas, later)
 
 - Privacy mode: done in F2 (see above).
+- **Home screen widget (1Money-style).** A compact widget of three round buttons: left "↑ income"
+  (income colour), centre the app logo with a badge = pending Inbox count (tap → Inbox tab),
+  right "↓ expense" (expense colour). Income/expense open a translucent quick-entry activity over
+  the home screen: category picker grid (as in the transfer flow) → transfer sheet with the keypad,
+  default account = last used; closing returns to the launcher, no app UI behind. Glance (or
+  RemoteViews) widget, badge updated when inbox items change (no polling), dark/light following the
+  app theme, resizable 3×1. Own icons only (Tabler), no 1Money assets.
 
 ## F2 device checklist
 
@@ -85,10 +113,21 @@ To check phases 1–4 on the phone before the migration, build commit **5b60431*
 - "Payments to sort" notification arrives in Russian.
 - Privacy mode in Russian: `•••` and % as before.
 - System with a device language other than English or Russian (e.g. Latvian): English strings, no crash.
-- **Home screen widget (1Money-style).** A compact widget of three round buttons: left "↑ income"
-  (income colour), centre the app logo with a badge = pending Inbox count (tap → Inbox tab),
-  right "↓ expense" (expense colour). Income/expense open a translucent quick-entry activity over
-  the home screen: category picker grid (as in the transfer flow) → transfer sheet with the keypad,
-  default account = last used; closing returns to the launcher, no app UI behind. Glance (or
-  RemoteViews) widget, badge updated when inbox items change (no polling), dark/light following the
-  app theme, resizable 3×1. Own icons only (Tabler), no 1Money assets.
+
+## F4 device checklist
+
+Do the install order above first. Use only invented/test data in anything you screenshot or commit.
+
+- Notification access: Settings → Auto-booking → Sources shows the access state; grant it (Android 13+: App info → ⋮ → "Allow restricted settings" first), then revoke it in system settings and come back: the screen shows access missing, the recent-notification buffer is cleared and the listener stops (after re-granting, check that it reconnects).
+- SEB preset: a real card payment notification still becomes a pending Inbox item (or an auto-recorded expense for a known payee) within a second, card row shown, no network needed; turning the SEB switch off stops it, on resumes it. Other SEB kinds (account payment out/in) still parse; Google Wallet still ignored.
+- Wizard, add app: Sources → Add app → pick an installed app (real icons shown) → pick a recent notification (or a pasted sample) → teach: tap words as amount, currency, payee (card optional, "Varies" for changing words) → Test shows the matches with extracted fields → map card(s) / no-card account → behaviour switches → Done. The new source appears with its kinds; Done with nothing taught is blocked.
+- Then post a matching notification from that app: it lands in the Inbox with the right amount, payee and account. A second, different payee of the same kind also matches. Check the Teach FlowRow / role chooser layout and the account-pick round trip from the wizard.
+- Teach another kind on an existing source starts at step 3; Set up on a source without kinds too. Source switch off: the app's notifications are no longer processed; on again: they are.
+- Inbox tab: centre tab with a badge equal to the pending count (placement and visibility at 1 and 12); the "Payments to sort" notification opens `HomeActivity` on the Inbox tab, also when the app is already open (singleTop). Rules reachable from the tab. Insets correct on the Inbox and Rules screens.
+- Accept a pending item with Remember, then Undo from the Inbox tab: the transaction is removed and the rule learned by that accept is gone (a rule that existed before stays). "Recorded today" lists the day's done items, each with Undo.
+- Privacy mode (eye button on): amounts in the Inbox tab, Sources, wizard legend/preview/test rows and Cards and accounts are `•••`. Known limit: the raw sample text in the wizard's sample and teach steps is shown unmasked on purpose.
+- Test text (Auto-booking → Test text): paste a notification (check IME and scrolling), see which source and kind match and the extracted fields; no inbox item is created.
+- Cards and accounts: card → account mapping, the no-card account per source, the three behaviour switches (record known payees, ask in the notification, learn from history); same values as wizard step 6. Resolution order when recording: card mapping, no-card source account, rule account, most used.
+- Sign out and back in (without killing the app): no crash; sign-out clears the recent-notification buffer (a device-wide file, cleared by the sign-out use case) and closes the session scope, which stops the old source registry; sign-in creates the new registry right away (off the main thread), so the cached active packages follow the new account's templates, including ones synced from another device, before any screen is opened; the listener keeps working after sign-in.
+- Launcher icons of installed apps appear in the app picker (package visibility via `<queries>`), letter tiles otherwise.
+- RU locale: the whole flow in Russian (Settings → Language), plurals for source and kind counts and the badge, nothing left in English except app names and user data; then switch back.

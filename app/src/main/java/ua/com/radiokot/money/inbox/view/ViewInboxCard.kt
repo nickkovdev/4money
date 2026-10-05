@@ -25,6 +25,7 @@ import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
+import ua.com.radiokot.money.inbox.logic.InboxSuggestionLookup
 import ua.com.radiokot.money.uikit.ViewText
 
 /**
@@ -44,6 +45,18 @@ data class ViewInboxCardCategory(
                 "$title · $subcategoryTitle"
             else
                 title
+}
+
+fun InboxSuggestionLookup.viewCategory(key: InboxCardSuggester.CategoryKey): ViewInboxCardCategory? {
+    val category = categoriesById[key.categoryId]
+        ?: return null
+    return ViewInboxCardCategory(
+        key = key,
+        title = category.title,
+        subcategoryTitle = key.subcategoryId?.let(subcategoriesById::get)?.title,
+        colorScheme = category.colorScheme,
+        icon = category.icon,
+    )
 }
 
 /**
