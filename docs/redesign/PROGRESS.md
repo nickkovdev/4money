@@ -86,6 +86,13 @@ automatically. Order:
 ## Backlog (owner ideas, later)
 
 - Privacy mode: done in F2 (see above).
+- **Home screen widget (1Money-style).** A compact widget of three round buttons: left "↑ income"
+  (income colour), centre the app logo with a badge = pending Inbox count (tap → Inbox tab),
+  right "↓ expense" (expense colour). Income/expense open a translucent quick-entry activity over
+  the home screen: category picker grid (as in the transfer flow) → transfer sheet with the keypad,
+  default account = last used; closing returns to the launcher, no app UI behind. Glance (or
+  RemoteViews) widget, badge updated when inbox items change (no polling), dark/light following the
+  app theme, resizable 3×1. Own icons only (Tabler), no 1Money assets.
 
 ## F2 device checklist
 
