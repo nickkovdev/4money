@@ -105,10 +105,10 @@ object InboxCardSuggester {
         history: List<HistoryEntry>,
         isUsable: (CategoryKey) -> Boolean = { true },
         maxAlternatives: Int = 3,
-        useHistory: Boolean = true,
         amount: java.math.BigDecimal? = null,
         ruleMatcher: (normalizedPayee: String, rules: List<PayeeRule>, amount: java.math.BigDecimal?) -> PayeeRule? =
             PayeeRuleMatcher::match,
+        useHistory: Boolean = true,
     ): Result {
         val usedHistory = if (useHistory) history else emptyList()
         val payeeRanking = rank(

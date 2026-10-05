@@ -106,8 +106,7 @@ class PaymentQuestionNotifier(
             .filter { it.currency == account.currency }
             .associateBy { it.id }
         val normalizedPayee = item.payee?.let(PayeeNormalizer::normalize).orEmpty()
-        val useHistory = autoBookPreferences.isLearnFromHistoryEnabled
-        val history = if (!useHistory) emptyList() else runCatching {
+        val history = runCatching {
             transferHistoryRepository
                 .getTransferHistoryPage(
                     cursor = null,
@@ -135,7 +134,6 @@ class PaymentQuestionNotifier(
                 )
             },
             isUsable = { key -> key.categoryId in categories },
-            useHistory = useHistory,
             amount = amount,
         )
         val actionCategories = PaymentQuestion.actionCategories(suggestions)
