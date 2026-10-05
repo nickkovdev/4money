@@ -17,19 +17,24 @@
    along with 4Money. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package ua.com.radiokot.money.inbox.logic
 
-import ua.com.radiokot.money.inbox.data.ParsedBankNotification
+package ua.com.radiokot.money.inbox.sources.data
 
-interface BankNotificationParser {
-
-    /**
-     * The bank app package this parser handles.
-     */
-    val packageName: String
+/**
+ * Recent money-like notifications of any app, device only.
+ */
+interface RecentNotificationBuffer {
 
     /**
-     * Must never throw: anything not matching a template is [ParsedBankNotification.Unrecognized].
+     * Adds the [notification] unless one of the same package, title and text is kept.
+     * Keeps the newest 50 within 7 days.
      */
-    fun parse(title: String?, text: String): ParsedBankNotification
+    fun add(notification: RecentNotification)
+
+    /**
+     * @return the kept notifications not older than 7 days, newest first
+     */
+    fun getAll(): List<RecentNotification>
+
+    fun clear()
 }

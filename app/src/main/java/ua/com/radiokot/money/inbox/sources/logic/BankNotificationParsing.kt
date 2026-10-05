@@ -17,19 +17,25 @@
    along with 4Money. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package ua.com.radiokot.money.inbox.logic
+
+package ua.com.radiokot.money.inbox.sources.logic
 
 import ua.com.radiokot.money.inbox.data.ParsedBankNotification
 
-interface BankNotificationParser {
+/**
+ * Decides whether a notification comes from an active source and parses it.
+ */
+fun interface BankNotificationParsing {
 
     /**
-     * The bank app package this parser handles.
+     * Must never throw.
+     *
+     * @return null when the package is not an active source (the notification is ignored),
+     * [ParsedBankNotification.Unrecognized] when it is a source but nothing matched the text
      */
-    val packageName: String
-
-    /**
-     * Must never throw: anything not matching a template is [ParsedBankNotification.Unrecognized].
-     */
-    fun parse(title: String?, text: String): ParsedBankNotification
+    suspend fun parse(
+        packageName: String,
+        title: String?,
+        text: String,
+    ): ParsedBankNotification?
 }

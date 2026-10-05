@@ -17,19 +17,20 @@
    along with 4Money. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package ua.com.radiokot.money.inbox.logic
 
-import ua.com.radiokot.money.inbox.data.ParsedBankNotification
+package ua.com.radiokot.money.inbox.sources.data
 
-interface BankNotificationParser {
+import kotlinx.serialization.Serializable
 
-    /**
-     * The bank app package this parser handles.
-     */
-    val packageName: String
-
-    /**
-     * Must never throw: anything not matching a template is [ParsedBankNotification.Unrecognized].
-     */
-    fun parse(title: String?, text: String): ParsedBankNotification
-}
+/**
+ * A money-like notification of any app, kept on the device as a sample for teaching a source.
+ *
+ * @param postTimeMillis `StatusBarNotification.postTime`, epoch millis
+ */
+@Serializable
+data class RecentNotification(
+    val packageName: String,
+    val postTimeMillis: Long,
+    val title: String?,
+    val text: String,
+)

@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Test
 import ua.com.radiokot.money.inbox.data.ParsedBankNotification
+import ua.com.radiokot.money.inbox.sources.logic.BuiltInPresets
 import java.math.BigDecimal
 import java.text.Normalizer
 
@@ -86,7 +87,7 @@ class SebLatviaNotificationParserTest {
 
     @Test
     fun sourcePackagesAreSebOnly() {
-        assertEquals(setOf("se.seb.latvia"), BankNotificationSources.packageNames)
+        assertEquals(listOf("se.seb.latvia"), BuiltInPresets.all.map { it.packageName })
     }
 
     @Test

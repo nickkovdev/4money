@@ -18,6 +18,12 @@ import ua.com.radiokot.money.inbox.data.IncomingBankNotification
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.logic.AutoExpenseResolver.PendingReason
 import ua.com.radiokot.money.inbox.logic.ProcessBankNotificationUseCase.Outcome
+import ua.com.radiokot.money.inbox.sources.logic.BankNotificationParsing
+import ua.com.radiokot.money.inbox.sources.logic.EXAMPLE_PACKAGE
+import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistry
+import ua.com.radiokot.money.inbox.sources.logic.SebLatviaPreset
+import ua.com.radiokot.money.inbox.sources.logic.testTemplate
+import ua.com.radiokot.money.inbox.templates.data.NotificationTemplate
 import ua.com.radiokot.money.inbox.testAccount
 import ua.com.radiokot.money.inbox.testCategory
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
@@ -25,6 +31,19 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+
+/**
+ * The registry's decision without its flows: the SEB preset, plus [templates] of their packages.
+ */
+private fun sourcesParsing(templates: List<NotificationTemplate>) =
+    BankNotificationParsing { packageName, title, text ->
+        val preset = SebLatviaPreset.takeIf { it.packageName == packageName }
+        val packageTemplates = templates.filter { it.sourcePackage == packageName }
+        if (preset == null && packageTemplates.none(NotificationTemplate::isEnabled))
+            null
+        else
+            NotificationSourceRegistry.parseWith(preset, packageTemplates, title, text)
+    }
 
 @OptIn(ExperimentalTime::class)
 class ProcessBankNotificationUseCaseTest {
@@ -55,8 +74,9 @@ class ProcessBankNotificationUseCaseTest {
         rules: List<PayeeRule> = listOf(rule),
         categories: List<Category> = listOf(testCategory("cat-food")),
         ruleRepository: FakePayeeRuleRepository = FakePayeeRuleRepository(rules),
+        templates: List<NotificationTemplate> = emptyList(),
     ) = ProcessBankNotificationUseCase(
-        parsers = listOf(SebLatviaNotificationParser()),
+        parsing = sourcesParsing(templates),
         inboxRepository = inbox,
         payeeRuleRepository = ruleRepository,
         accountRepository = FakeAccountRepository(listOf(testAccount("acc-main"))),
@@ -252,5 +272,45 @@ class ProcessBankNotificationUseCaseTest {
         assertEquals(Outcome.Duplicate, repost)
         assertTrue(nextMonth is Outcome.Pending)
         assertEquals(2, inbox.items.value.size)
+    }
+
+    @Test
+    fun templatePackageAutoRecordsViaTemplate() = runBlocking {
+        val notification = IncomingBankNotification(
+            packageName = EXAMPLE_PACKAGE,
+            postTimeMillis = postTime,
+            title = "Example Bank",
+            text = "Paid 12.50 EUR at COFFEE POINT",
+        )
+        val coffeeRule = rule.copy(payeePattern = "coffee point", id = "rule-coffee")
+
+        val outcome = useCase(
+            rules = listOf(coffeeRule),
+            templates = listOf(testTemplate("t-1")),
+        ).invoke(notification).getOrThrow()
+
+        val call = transfers.calls.single()
+        assertEquals(Outcome.AutoRecorded(itemId = "id-0", transferId = call.transferId, ruleId = "rule-coffee"), outcome)
+        assertEquals(BigInteger("1250"), call.sourceAmount)
+        assertEquals("COFFEE POINT", call.memo)
+        val item = inbox.items.value.single()
+        assertEquals(EXAMPLE_PACKAGE, item.sourcePackage)
+        assertEquals(InboxItem.Status.Done, item.status)
+    }
+
+    @Test
+    fun templatePackageWithDisabledTemplatesIsIgnored() = runBlocking {
+        val notification = IncomingBankNotification(
+            packageName = EXAMPLE_PACKAGE,
+            postTimeMillis = postTime,
+            title = "Example Bank",
+            text = "Paid 12.50 EUR at COFFEE POINT",
+        )
+
+        val outcome = useCase(templates = listOf(testTemplate("t-1", isEnabled = false)))
+            .invoke(notification).getOrThrow()
+
+        assertEquals(Outcome.Ignored, outcome)
+        assertTrue(inbox.items.value.isEmpty())
     }
 }

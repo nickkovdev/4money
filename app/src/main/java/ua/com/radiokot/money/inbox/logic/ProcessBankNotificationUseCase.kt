@@ -32,6 +32,7 @@ import ua.com.radiokot.money.inbox.data.IncomingBankNotification
 import ua.com.radiokot.money.inbox.data.ParsedBankNotification
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
+import ua.com.radiokot.money.inbox.sources.logic.BankNotificationParsing
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.logic.TransferFundsUseCase
 import java.util.UUID
@@ -44,7 +45,7 @@ import kotlin.time.Instant
  * the dedup check and the writes for notifications arriving at once.
  */
 class ProcessBankNotificationUseCase(
-    private val parsers: List<BankNotificationParser>,
+    private val parsing: BankNotificationParsing,
     private val inboxRepository: InboxRepository,
     private val payeeRuleRepository: PayeeRuleRepository,
     private val accountRepository: AccountRepository,
@@ -78,11 +79,10 @@ class ProcessBankNotificationUseCase(
         notification: IncomingBankNotification,
     ): Result<Outcome> = runCatching {
 
-        val parser = parsers.firstOrNull { it.packageName == notification.packageName }
+        val parsed = parsing.parse(notification.packageName, notification.title, notification.text)
             ?: return@runCatching Outcome.Ignored
 
-        val payment = parser.parse(notification.title, notification.text)
-                as? ParsedBankNotification.Payment
+        val payment = parsed as? ParsedBankNotification.Payment
         val dedupHash = BankNotificationDedupHash.compute(
             notification = notification,
             includePostTime = payment == null || !payment.hasTimestamp,

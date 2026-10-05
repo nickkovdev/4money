@@ -17,19 +17,18 @@
    along with 4Money. If not, see <http://www.gnu.org/licenses/>.
 */
 
-package ua.com.radiokot.money.inbox.logic
 
-import ua.com.radiokot.money.inbox.data.ParsedBankNotification
+package ua.com.radiokot.money.inbox.sources.data
 
-interface BankNotificationParser {
-
-    /**
-     * The bank app package this parser handles.
-     */
-    val packageName: String
+/**
+ * Money-like notifications currently shown, so the newest payments can be taught
+ * even if they were posted before the access was granted.
+ */
+interface ActiveNotificationsSource {
 
     /**
-     * Must never throw: anything not matching a template is [ParsedBankNotification.Unrecognized].
+     * @return the money-like notifications currently shown, newest first,
+     * from the connected listener; empty when it is not connected
      */
-    fun parse(title: String?, text: String): ParsedBankNotification
+    fun getActive(): List<RecentNotification>
 }
