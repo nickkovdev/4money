@@ -31,6 +31,7 @@ import ua.com.radiokot.money.overview.overviewModule
 import ua.com.radiokot.money.preferences.preferencesModule
 import ua.com.radiokot.money.syncerrors.syncErrorsModule
 import ua.com.radiokot.money.transfers.transfersModule
+import ua.com.radiokot.money.widget.homeWidgetModule
 
 val homeModule = module {
 
@@ -42,6 +43,7 @@ val homeModule = module {
         preferencesModule,
         syncErrorsModule,
         overviewModule,
+        homeWidgetModule,
     )
 
     sessionScope {
