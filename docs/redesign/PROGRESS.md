@@ -139,5 +139,6 @@ Do the install order above first. Use only invented/test data in anything you sc
 - Passcode on, app locked (background > threshold): ↓ shows the unlock screen first, then the grid; cancelling unlock returns to the launcher.
 - Signed out: badge hidden; ↓ opens the sign-in screen; after signing in the badge reappears.
 - Privacy mode on: category amounts and balances in the grid/sheet masked as in the app; the keypad shows the typed amount.
-- Russian: widget label, description and TalkBack descriptions ("Добавить расход", "Открыть «Входящие», ждут 3 платежа").
-- Battery: no new periodic work (`adb shell dumpsys jobscheduler | grep radiokot` shows only the existing BackgroundSync/CurrencyPricesUpdate) and no persistent service.
+- Russian: widget label, description and TalkBack descriptions ("Добавить расход", "Открыть «Входящие», ждут 3 платежа"); on Android 13+ the TalkBack descriptions follow the app language; on 8-12 they follow the system language (known limit).
+- Rapid changes: sort 3 Inbox items within 10 s: the badge ends at the final count; sign out right after: the badge disappears; switch the theme twice within 10 s: the widget shows the last one.
+- Battery: no new periodic work: `adb shell dumpsys jobscheduler | grep radiokot` shows only the existing BackgroundSync/CurrencyPricesUpdate periodic jobs plus Glance's own one-time session work and its long-delay placeholder (expected), and no persistent service.

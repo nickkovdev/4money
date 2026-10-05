@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.koinInject
@@ -58,6 +59,11 @@ class QuickTransferActivity : MoneyAppActivity(
     override fun onCreateAllowed(savedInstanceState: Bundle?) {
 
         enableEdgeToEdge()
+
+        // Keep the status bar icons light over the dim scrim in light themes.
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+        }
 
         val direction = QuickTransferDirection.fromAction(intent.action)
 

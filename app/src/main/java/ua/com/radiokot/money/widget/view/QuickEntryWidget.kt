@@ -22,6 +22,9 @@ package ua.com.radiokot.money.widget.view
 import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,6 +41,7 @@ import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
+import androidx.glance.currentState
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -52,7 +56,10 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import ua.com.radiokot.money.R
@@ -60,6 +67,7 @@ import ua.com.radiokot.money.auth.logic.DI_SCOPE_SESSION
 import ua.com.radiokot.money.home.view.HomeActivity
 import ua.com.radiokot.money.inbox.data.InboxRepository
 import ua.com.radiokot.money.lazyLogger
+import ua.com.radiokot.money.theme.data.ThemeMode
 import ua.com.radiokot.money.theme.data.ThemePreferences
 import ua.com.radiokot.money.transfers.view.QuickTransferActivity
 import ua.com.radiokot.money.transfers.view.QuickTransferDirection
@@ -76,23 +84,50 @@ class QuickEntryWidget : GlanceAppWidget(), KoinComponent {
     override val sizeMode: SizeMode = SizeMode.Single
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val themeMode = get<ThemePreferences>().themeMode.value
-        val pendingCount = readPendingCount()
+        // The initial values, so the first frame is already right.
+        val initialState = WidgetState(
+            themeMode = get<ThemePreferences>().themeMode.value,
+            pendingCount = readPendingCount(),
+        )
         provideContent {
+            // A running Glance session is not restarted by an update, only its state is
+            // reloaded. The updater bumps this key, so the values are re-read on every update.
+            val refresh = currentState(REFRESH_KEY)
+            val state by produceState(initialState, refresh) {
+                value = WidgetState(
+                    themeMode = get<ThemePreferences>().themeMode.value,
+                    pendingCount = readPendingCount(),
+                )
+            }
             QuickEntryWidgetContent(
-                palette = HomeWidgetPalette.of(themeMode),
-                pendingCount = pendingCount,
+                palette = HomeWidgetPalette.of(state.themeMode),
+                pendingCount = state.pendingCount,
             )
         }
     }
 
-    /** One COUNT query; 0 without a session or on an error. */
-    private suspend fun readPendingCount(): Long {
+    private class WidgetState(
+        val themeMode: ThemeMode,
+        val pendingCount: Long,
+    )
+
+    /** One COUNT query off the main thread; 0 without a session or on an error. */
+    private suspend fun readPendingCount(): Long = withContext(Dispatchers.IO) {
         val sessionScope = getKoin().getScopeOrNull(DI_SCOPE_SESSION)
-            ?.takeIf { it.isNotClosed() } ?: return 0
-        return runCatching { sessionScope.get<InboxRepository>().getPendingCountFlow().first() }
-            .onFailure { log.error(it) { "readPendingCount(): failed" } }
-            .getOrDefault(0)
+            ?.takeIf { it.isNotClosed() } ?: return@withContext 0L
+        try {
+            sessionScope.get<InboxRepository>().getPendingCountFlow().first()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log.error(e) { "readPendingCount(): failed" }
+            0L
+        }
+    }
+
+    companion object {
+        /** Bumped by the updater to make a running Glance session re-read the values. */
+        internal val REFRESH_KEY = longPreferencesKey("refresh")
     }
 }
 

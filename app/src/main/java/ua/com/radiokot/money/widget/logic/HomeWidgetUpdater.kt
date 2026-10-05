@@ -20,6 +20,9 @@
 package ua.com.radiokot.money.widget.logic
 
 import android.content.Context
+import android.os.SystemClock
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +42,14 @@ class GlanceHomeWidgetUpdater(
 
     private val appContext = context.applicationContext
     private val trigger = DebouncedTrigger(scope, debounceMs) {
+        // A running Glance session only reloads its state on update,
+        // so bump a state key it observes to make it re-read the theme and the count.
+        GlanceAppWidgetManager(appContext).getGlanceIds(QuickEntryWidget::class.java)
+            .forEach { id ->
+                updateAppWidgetState(appContext, id) {
+                    it[QuickEntryWidget.REFRESH_KEY] = SystemClock.elapsedRealtime()
+                }
+            }
         QuickEntryWidget().updateAll(appContext)
     }
 

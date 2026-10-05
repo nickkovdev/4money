@@ -306,7 +306,8 @@ signed-in session → no badge. Tap on the centre → `HomeActivity` on the Inbo
 count flow collected in a session-scoped coroutine scope (started by a `UserSessionScopeListener`, cancelled when
 the scope closes), the session scope closing (the badge disappears after sign-out), the notification listener
 right after it stores a pending item, and a theme mode change. Count read is a single `COUNT(*)`; errors mean no
-badge and are logged, never crash the widget.
+badge and are logged, never crash the widget. The updater bumps a widget state key, so a still-running Glance
+session re-reads the count and the theme (an update alone only reloads the state, not `provideGlance`).
 
 **Quick entry.** Income/expense start `QuickTransferActivity` (`transfers/view/`), a translucent activity in its
 own task (`taskAffinity` `.quickentry`, excluded from Recents, not exported, started with NEW_TASK + CLEAR_TASK so
