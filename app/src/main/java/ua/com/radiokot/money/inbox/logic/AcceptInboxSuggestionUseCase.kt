@@ -164,6 +164,14 @@ class AcceptInboxSuggestionUseCase(
             )
     }
 
+    /**
+     * Removes a rule learned by [invoke], for an undo.
+     * Only a rule an accept created is removed, never an older one.
+     */
+    suspend fun forgetLearnedRule(ruleId: String) {
+        payeeRuleRepository.deleteRule(ruleId)
+    }
+
     private suspend fun recordRuleHitIfFollowed(
         item: InboxItem,
         categoryId: String,

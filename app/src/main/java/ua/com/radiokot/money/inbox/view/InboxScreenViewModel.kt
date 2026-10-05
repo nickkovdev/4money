@@ -81,6 +81,9 @@ class InboxScreenViewModel(
     val events = _events.asSharedFlow()
     private var itemBeingProcessed: InboxItem? = null
 
+    /** Rules learned by accepts in this session, by item ID, to remove on undo. */
+    private val learnedRuleIds = mutableMapOf<String, String>()
+
     /** Items being recorded: hidden right away. */
     private val inFlightKeys = MutableStateFlow<Set<String>>(emptySet())
     private val history = MutableStateFlow<List<Transfer>>(emptyList())
@@ -239,6 +242,7 @@ class InboxScreenViewModel(
             when (result) {
                 is AcceptInboxSuggestionUseCase.Result.Recorded -> {
                     // The item moves to the recorded list on its own.
+                    result.learnedRuleId?.let { learnedRuleIds[item.id] = it }
                 }
 
                 is AcceptInboxSuggestionUseCase.Result.OpenSheet ->
@@ -304,6 +308,10 @@ class InboxScreenViewModel(
             ?: return
 
         viewModelScope.launch {
+            // An accidental accept must not leave an exact rule behind.
+            learnedRuleIds.remove(inboxItem.id)?.let { ruleId ->
+                acceptInboxSuggestionUseCase.forgetLearnedRule(ruleId)
+            }
             undoInboxItemUseCase(inboxItem)
                 .onFailure { error ->
                     log.error(error) {

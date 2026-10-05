@@ -455,7 +455,7 @@ class InboxCardsViewModel(
                 viewModelScope.launch {
                     // Only a rule this accept created is removed, never an older one.
                     action.learnedRuleId?.let { ruleId ->
-                        payeeRuleRepository.deleteRule(ruleId)
+                        acceptInboxSuggestionUseCase.forgetLearnedRule(ruleId)
                     }
                     undoInboxItemUseCase(action.item)
                         .onFailure { error ->
