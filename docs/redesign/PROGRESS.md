@@ -85,3 +85,10 @@ To check phases 1–4 on the phone before the migration, build commit **5b60431*
 - "Payments to sort" notification arrives in Russian.
 - Privacy mode in Russian: `•••` and % as before.
 - System with a device language other than English or Russian (e.g. Latvian): English strings, no crash.
+- **Home screen widget (1Money-style).** A compact widget of three round buttons: left "↑ income"
+  (income colour), centre the app logo with a badge = pending Inbox count (tap → Inbox tab),
+  right "↓ expense" (expense colour). Income/expense open a translucent quick-entry activity over
+  the home screen: category picker grid (as in the transfer flow) → transfer sheet with the keypad,
+  default account = last used; closing returns to the launcher, no app UI behind. Glance (or
+  RemoteViews) widget, badge updated when inbox items change (no polling), dark/light following the
+  app theme, resizable 3×1. Own icons only (Tabler), no 1Money assets.
