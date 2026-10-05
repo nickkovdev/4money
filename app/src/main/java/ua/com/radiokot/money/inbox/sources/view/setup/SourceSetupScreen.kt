@@ -48,7 +48,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.inbox.sources.view.setup.SourceSetupState.Step
-import ua.com.radiokot.money.uikit.EmptyState
 import ua.com.radiokot.money.uikit.ScreenTopBar
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
@@ -133,13 +132,42 @@ fun SourceSetupScreen(
                         onUseClicked = viewModel::onNextClicked,
                     )
 
-                // Steps 4-6 are not built yet.
-                Step.Teach,
-                Step.Test,
+                Step.Teach -> {
+                    val teach by viewModel.teach.collectAsState()
+
+                    teach?.let { draft ->
+                        SourceSetupTeachStep(
+                            packageName = state.packageName,
+                            appLabel = viewModel.chosenAppLabel.collectAsState(),
+                            draft = draft,
+                            onTokenTapped = viewModel::onTokenTapped,
+                            onRoleChosen = viewModel::onRoleChosen,
+                            onDirectionChosen = viewModel::onDirectionChosen,
+                            onCheckClicked = viewModel::onCheckOnOthersClicked,
+                        )
+                    }
+                }
+
+                Step.Test ->
+                    SourceSetupTestStep(
+                        packageName = state.packageName,
+                        appLabel = viewModel.chosenAppLabel.collectAsState(),
+                        result = viewModel.testRun.collectAsState().value,
+                        onTeachAnotherClicked = viewModel::onTeachAnotherClicked,
+                        onNextClicked = viewModel::onNextClicked,
+                    )
+
                 Step.Accounts ->
-                    EmptyState(
-                        icon = R.drawable.ic_tabler_bolt,
-                        title = step.name,
+                    SourceSetupAccountsStep(
+                        mapping = viewModel.mapping.collectAsState().value,
+                        behaviour = viewModel.behaviour.collectAsState().value,
+                        isSaving = viewModel.isSaving.collectAsState().value,
+                        isSaveFailed = viewModel.isSaveFailed.collectAsState().value,
+                        onRowClicked = viewModel::onAccountRowClicked,
+                        onRecordKnownPayeesChanged = viewModel::onRecordKnownPayeesChanged,
+                        onAskInNotificationChanged = viewModel::onAskInNotificationChanged,
+                        onLearnFromHistoryChanged = viewModel::onLearnFromHistoryChanged,
+                        onDoneClicked = viewModel::onDoneClicked,
                     )
             }
         }
@@ -151,6 +179,9 @@ private fun stepTitle(step: Step): String =
     when (step) {
         Step.App -> stringResource(R.string.setup_app_title)
         Step.Sample -> stringResource(R.string.setup_sample_title)
+        Step.Teach -> stringResource(R.string.setup_teach_title)
+        Step.Test -> stringResource(R.string.setup_test_title)
+        Step.Accounts -> stringResource(R.string.setup_accounts_title)
         else -> ""
     }
 

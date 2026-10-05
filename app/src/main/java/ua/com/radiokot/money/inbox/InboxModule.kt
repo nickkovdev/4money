@@ -58,6 +58,7 @@ import ua.com.radiokot.money.inbox.sources.data.RecentNotificationBuffer
 import ua.com.radiokot.money.inbox.sources.logic.BankNotificationParsing
 import ua.com.radiokot.money.inbox.sources.logic.BuiltInPresets
 import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistry
+import ua.com.radiokot.money.inbox.sources.logic.SaveSourceSetupUseCase
 import ua.com.radiokot.money.inbox.templates.data.NotificationTemplateRepository
 import ua.com.radiokot.money.inbox.templates.data.PowerSyncNotificationTemplateRepository
 import ua.com.radiokot.money.inbox.sources.view.CardAccountsScreenViewModel
@@ -194,6 +195,15 @@ val inboxModule = module {
         } bind PaymentQuestionNotifier::class
 
         factory {
+            SaveSourceSetupUseCase(
+                templateRepository = get(),
+                cardAccountPreferences = get(),
+                autoBookPreferences = get(),
+                recentNotificationBuffer = get(),
+            )
+        } bind SaveSourceSetupUseCase::class
+
+        factory {
             CompleteInboxItemUseCase(
                 inboxRepository = get(),
                 payeeRuleRepository = get(),
@@ -271,6 +281,10 @@ val inboxModule = module {
                 appInfoSource = get(),
                 recentNotificationBuffer = get(),
                 activeNotificationsSource = get(),
+                accountRepository = get(),
+                cardAccountPreferences = get(),
+                autoBookPreferences = get(),
+                saveSourceSetup = get(),
             )
         } bind SourceSetupViewModel::class
 

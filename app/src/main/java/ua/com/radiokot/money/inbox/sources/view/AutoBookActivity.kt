@@ -43,6 +43,7 @@ import ua.com.radiokot.money.MoneyAppModalBottomSheetHost
 import ua.com.radiokot.money.auth.logic.UserSessionScope
 import ua.com.radiokot.money.inbox.sources.view.setup.SourceSetupRoute
 import ua.com.radiokot.money.inbox.sources.view.setup.sourceSetupScreen
+import ua.com.radiokot.money.inbox.sources.view.setup.sourceSetupViewModelOf
 import ua.com.radiokot.money.inbox.view.RulesScreenRoute
 import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
 import ua.com.radiokot.money.inbox.view.rulesScreen
@@ -118,6 +119,16 @@ private fun Content(
         )
 
         sourceSetupScreen(
+            onProceedToAccountSelection = {
+                navController.navigate(
+                    route = TransferCounterpartySelectionSheetRoute(
+                        isForSource = true,
+                        alreadySelectedCounterpartyId = null,
+                        showAccounts = true,
+                        showCategories = false,
+                    ),
+                )
+            },
             onClose = navController::navigateUp,
         )
 
@@ -158,10 +169,14 @@ private fun Content(
 
         transferCounterpartySelectionSheet(
             onSelected = { result ->
-                val previousDestination = navController.previousBackStackEntry?.destination
+                val previousEntry = navController.previousBackStackEntry
+                val previousDestination = previousEntry?.destination
                 navController.navigateUp()
 
                 when {
+                    previousEntry != null && previousDestination?.routeIs<SourceSetupRoute>() == true ->
+                        sourceSetupViewModelOf(previousEntry).onCounterpartySelected(result)
+
                     previousDestination?.routeIs<RulesScreenRoute>() == true ->
                         rulesViewModel.onCounterpartySelected(result)
 

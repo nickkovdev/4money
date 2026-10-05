@@ -22,7 +22,9 @@ package ua.com.radiokot.money.inbox.sources.view.setup
 import android.content.ActivityNotFoundException
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
@@ -42,7 +44,19 @@ data class SourceSetupRoute(
 
 private val log = KotlinLogging.logger("SourceSetupScreen")
 
+/**
+ * The wizard view model of the [entry], to pass the account selection result to.
+ * The entry must be on the back stack, i.e. its screen has been shown.
+ */
+fun sourceSetupViewModelOf(entry: NavBackStackEntry): SourceSetupViewModel =
+    ViewModelProvider(entry)[SourceSetupViewModel::class.java]
+
+/**
+ * @param onProceedToAccountSelection open the account selection sheet,
+ * pass its result to [SourceSetupViewModel.onCounterpartySelected] of [sourceSetupViewModelOf]
+ */
 fun NavGraphBuilder.sourceSetupScreen(
+    onProceedToAccountSelection: () -> Unit,
     onClose: () -> Unit,
 ) = composable<SourceSetupRoute> { entry ->
 
@@ -73,6 +87,9 @@ fun NavGraphBuilder.sourceSetupScreen(
                             }
                         }
                     }
+
+                SourceSetupViewModel.Event.ProceedToAccountSelection ->
+                    onProceedToAccountSelection()
 
                 SourceSetupViewModel.Event.Close ->
                     onClose()

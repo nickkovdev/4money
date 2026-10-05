@@ -59,9 +59,14 @@ data class SourceSetupState(
     val canGoBack: Boolean
         get() = when (step) {
             Step.Intro -> false
-            Step.Sample -> !startedAtSample
+            // After "Teach another kind" the way back leads to the Test step.
+            Step.Sample -> !startedAtSample || drafts.isNotEmpty()
             else -> true
         }
+
+    // The sample being taught must not be swapped by a notification that arrives meanwhile.
+    private val isSampleFrozen: Boolean
+        get() = step == Step.Teach || step == Step.Test || step == Step.Accounts
 
     /**
      * Moves forward when the step is complete: an app is chosen on App,
@@ -98,10 +103,33 @@ data class SourceSetupState(
      * Moves back if [canGoBack], otherwise the state stays.
      */
     fun back(): SourceSetupState =
-        if (canGoBack)
-            copy(step = Step.entries[step.ordinal - 1])
+        when {
+            !canGoBack ->
+                this
+
+            step == Step.Sample && drafts.isNotEmpty() ->
+                copy(step = Step.Test)
+
+            else ->
+                copy(step = Step.entries[step.ordinal - 1])
+        }
+
+    /**
+     * "Teach another kind": from the Test step back to choosing a sample, the drafts are kept.
+     */
+    fun teachAnother(): SourceSetupState =
+        if (step == Step.Test)
+            copy(step = Step.Sample)
         else
             this
+
+    /**
+     * Adds the [draft], replacing the earlier one taught from the same sample.
+     */
+    fun withDraft(draft: NotificationTemplate): SourceSetupState =
+        copy(
+            drafts = drafts.filterNot { it.sampleText == draft.sampleText } + draft,
+        )
 
     /**
      * Chooses the app. The samples and the selection of another app are dropped.
@@ -120,6 +148,7 @@ data class SourceSetupState(
     /**
      * Refreshes the [samples] of the chosen app from all the known [notifications].
      * Keeps the selection if it is still there, otherwise selects the newest.
+     * From the Teach step on the selection is frozen, whatever arrives.
      */
     fun withNotifications(notifications: List<RecentNotification>): SourceSetupState {
         val samples =
@@ -134,8 +163,12 @@ data class SourceSetupState(
 
         return copy(
             samples = samples,
-            selectedSample = selectedSample?.takeIf { it in samples }
-                ?: samples.firstOrNull(),
+            selectedSample =
+                if (isSampleFrozen)
+                    selectedSample
+                else
+                    selectedSample?.takeIf { it in samples }
+                        ?: samples.firstOrNull(),
         )
     }
 

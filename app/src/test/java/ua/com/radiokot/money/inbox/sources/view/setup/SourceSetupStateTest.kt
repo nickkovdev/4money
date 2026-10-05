@@ -25,7 +25,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import ua.com.radiokot.money.inbox.sources.data.RecentNotification
+import ua.com.radiokot.money.inbox.sources.logic.testTemplate
 import ua.com.radiokot.money.inbox.sources.view.setup.SourceSetupState.Step
+import ua.com.radiokot.money.inbox.templates.data.NotificationTemplate
 
 class SourceSetupStateTest {
 
@@ -165,6 +167,111 @@ class SourceSetupStateTest {
         assertEquals(listOf(sample), state.samples)
         assertEquals(sample, state.selectedSample)
     }
+
+    @Test
+    fun withNotifications_onTeach_keepsTheSelectedSample_evenIfGone() {
+        val newer = sample.copy(postTimeMillis = 9L, text = "newer")
+
+        listOf(Step.Teach, Step.Test, Step.Accounts).forEach { step ->
+            val state = SourceSetupState.initial("com.example.bank")
+                .copy(step = step, samples = listOf(sample), selectedSample = sample)
+                .withNotifications(listOf(newer))
+
+            assertEquals(step.name, sample, state.selectedSample)
+            assertEquals(step.name, listOf(newer), state.samples)
+        }
+    }
+
+    @Test
+    fun withNotifications_onTeach_keepsTheSelectedSample_whenNewerArrives() {
+        val newer = sample.copy(postTimeMillis = 9L, text = "newer")
+
+        val state = SourceSetupState.initial("com.example.bank")
+            .copy(step = Step.Teach, samples = listOf(sample), selectedSample = sample)
+            .withNotifications(listOf(newer, sample))
+
+        assertEquals(sample, state.selectedSample)
+    }
+
+    @Test
+    fun withNotifications_onSample_stillSwapsAGoneSelection() {
+        val newer = sample.copy(postTimeMillis = 9L, text = "newer")
+
+        val state = SourceSetupState.initial("com.example.bank")
+            .copy(samples = listOf(sample), selectedSample = sample)
+            .withNotifications(listOf(newer))
+
+        assertEquals(newer, state.selectedSample)
+    }
+
+    @Test
+    fun teachAnother_fromTest_goesToSampleKeepingDrafts() {
+        val draft = draftTemplate("draft")
+        val state = SourceSetupState.initial("com.example.bank")
+            .copy(step = Step.Test, selectedSample = sample, drafts = listOf(draft))
+            .teachAnother()
+
+        assertEquals(Step.Sample, state.step)
+        assertEquals(listOf(draft), state.drafts)
+        assertEquals(sample, state.selectedSample)
+    }
+
+    @Test
+    fun teachAnother_onOtherSteps_stays() {
+        val state = SourceSetupState.initial("com.example.bank").copy(step = Step.Teach)
+
+        assertEquals(Step.Teach, state.teachAnother().step)
+    }
+
+    @Test
+    fun back_fromSampleWithDrafts_returnsToTest_evenWhenStartedThere() {
+        val state = SourceSetupState.initial("com.example.bank")
+            .copy(step = Step.Test, drafts = listOf(draftTemplate("draft")))
+            .teachAnother()
+
+        assertTrue(state.canGoBack)
+        assertEquals(Step.Test, state.back().step)
+    }
+
+    @Test
+    fun back_fromSampleWithDrafts_returnsToTest_whenStartedAtIntro() {
+        val state = SourceSetupState.initial(null)
+            .copy(
+                step = Step.Test,
+                packageName = "com.example.bank",
+                drafts = listOf(draftTemplate("draft")),
+            )
+            .teachAnother()
+
+        assertEquals(Step.Test, state.back().step)
+    }
+
+    @Test
+    fun withPackage_otherPackage_dropsDrafts() {
+        val state = SourceSetupState.initial("com.example.bank")
+            .copy(drafts = listOf(draftTemplate("draft")))
+            .withPackage("com.example.other")
+
+        assertEquals(emptyList<NotificationTemplate>(), state.drafts)
+    }
+
+    @Test
+    fun withDraft_replacesTheDraftOfTheSameSample_andKeepsOthers() {
+        val first = draftTemplate("first", sampleText = "one")
+        val second = draftTemplate("second", sampleText = "two")
+        val firstAgain = draftTemplate("first-again", sampleText = "one")
+
+        val state = SourceSetupState.initial("com.example.bank")
+            .withDraft(first)
+            .withDraft(second)
+            .withDraft(firstAgain)
+
+        assertEquals(listOf(second, firstAgain), state.drafts)
+    }
+
+    private fun draftTemplate(id: String, sampleText: String = "sample") =
+        testTemplate(id = id, sourcePackage = "com.example.bank")
+            .copy(sampleText = sampleText)
 
     @Test
     fun stepNumber_isOneBased_sixSegments() {
