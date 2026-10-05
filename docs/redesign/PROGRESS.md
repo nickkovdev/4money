@@ -1,8 +1,10 @@
-# Redesign: progress (state as of 2026-10-02)
+# Redesign: progress (state as of 2026-10-05)
 
 Branch `feature/redesign` (from `main` at 50aa715). Not merged. Every commit builds (`assembleDebug`)
-and passes `testDebugUnitTest` (195 tests; only the pre-existing upstream
-`SternBrocotTreeSearchTest > extensiveTest` fails). Brief: [BRIEF.md](BRIEF.md).
+and passes `testDebugUnitTest` (195 tests at the time; only the pre-existing upstream
+`SternBrocotTreeSearchTest > extensiveTest` fails). The F4 branch `feature/autobook-sources-inbox-tab`
+head builds, passes `lintDebug` and `testDebugUnitTest` (412 tests, the same single upstream failure).
+Brief: [BRIEF.md](BRIEF.md).
 
 **Nothing on this branch has been checked on the phone yet.**
 
@@ -46,9 +48,11 @@ To check phases 1–4 on the phone before the migration, build commit **5b60431*
 ### Install order for F4
 
 Builds of `feature/autobook-sources-inbox-tab` read and write the new table `money.notification_templates`.
-Installing one before the server has the table and the sync rule breaks template sync (uploads fail into
-`money.sync_errors`, templates taught on the phone never appear elsewhere). The owner applies both steps;
-nothing here is run automatically. Order:
+Installing one before the server has the table and the sync rule breaks template sync: the uploads of
+taught templates fail and are dead-lettered into `money.sync_errors`, so they never reach other devices,
+and the next sync checkpoint then removes those locally taught templates from the phone too (the server
+has no such rows), so the wizard's work is lost. The owner applies both steps; nothing here is run
+automatically. Order:
 
 1. Owner OK, then apply `supabase/migrations/20261006000000_money_notification_templates.sql` (command in
    [../HANDOFF.md](../HANDOFF.md), Infrastructure). It creates the table and adds it to the `atomic_crud`
@@ -117,6 +121,6 @@ Do the install order above first. Use only invented/test data in anything you sc
 - Privacy mode (eye button on): amounts in the Inbox tab, Sources, wizard legend/preview/test rows and Cards and accounts are `•••`. Known limit: the raw sample text in the wizard's sample and teach steps is shown unmasked on purpose.
 - Test text (Auto-booking → Test text): paste a notification (check IME and scrolling), see which source and kind match and the extracted fields; no inbox item is created.
 - Cards and accounts: card → account mapping, the no-card account per source, the three behaviour switches (record known payees, ask in the notification, learn from history); same values as wizard step 6. Resolution order when recording: card mapping, no-card source account, rule account, most used.
-- Sign out and back in: the session-scoped registry and buffer reset without a crash and the listener keeps working after sign-in.
+- Sign out and back in (without killing the app): no crash; sign-out clears the recent-notification buffer (a device-wide file, cleared by the sign-out use case) and closes the session scope, which stops the old source registry; sign-in creates the new registry right away (off the main thread), so the cached active packages follow the new account's templates, including ones synced from another device, before any screen is opened; the listener keeps working after sign-in.
 - Launcher icons of installed apps appear in the app picker (package visibility via `<queries>`), letter tiles otherwise.
 - RU locale: the whole flow in Russian (Settings → Language), plurals for source and kind counts and the badge, nothing left in English except app names and user data; then switch back.
