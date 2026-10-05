@@ -33,16 +33,25 @@ import ua.com.radiokot.money.inbox.templates.data.NotificationTemplateRepository
  *
  * The templates go first: if they can't be saved, the exception is thrown
  * and nothing else is touched, so the wizard can be finished again.
+ *
+ * Teaching a kind switches the whole source on: all the templates of the package
+ * and, for a preset package, the preset. Otherwise teaching another kind
+ * of a switched-off source would show it on while only the new kinds work.
+ *
+ * @param presetPackageNames packages of the built-in presets
  */
 class SaveSourceSetupUseCase(
     private val templateRepository: NotificationTemplateRepository,
     private val cardAccountPreferences: CardAccountPreferences,
     private val autoBookPreferences: AutoBookPreferences,
     private val recentNotificationBuffer: RecentNotificationBuffer,
+    private val presetPackageNames: Set<String> =
+        BuiltInPresets.all.mapTo(mutableSetOf(), NotificationSourcePreset::packageName),
 ) {
 
     /**
-     * @param templates the taught kinds, saved enabled under [packageName]
+     * @param templates the taught kinds, saved enabled under [packageName];
+     * if any, the whole source is switched on
      * @param cardAccounts account IDs by card last 4 digits
      * @param sourceAccountId the account for payments of [packageName] without a card
      */
@@ -64,6 +73,10 @@ class SaveSourceSetupUseCase(
                     )
                 }
             )
+            templateRepository.setEnabledForPackage(request.packageName, true)
+            if (request.packageName in presetPackageNames) {
+                autoBookPreferences.setPresetEnabled(request.packageName, true)
+            }
         }
 
         request.cardAccounts.forEach { (cardLast4, accountId) ->

@@ -49,7 +49,8 @@ object TemplateMatcher {
      *
      * @return the payment, or null when the template does not match or the captured
      * amount, currency or payee are not valid, or the input is longer than 4096 chars;
-     * never throws
+     * never throws. The card is the last 4 digits of the captured ones,
+     * null when fewer than 4 digits are captured.
      */
     fun match(
         pattern: String,
@@ -113,6 +114,11 @@ object TemplateMatcher {
             ?.takeIf(String::isNotEmpty)
             ?: return null
 
+        // The card group captures 2-6 digits (ruling 7), so a notification
+        // with a shorter number in the card place still matches; the last 4 digits are used.
+        // A capture shorter than 4 digits is not used as a card: cards can only be marked
+        // on 4-6 digits (TeachDraft), so no card mapping can have such a key, and the payment
+        // is resolved like one without a card (the source account first).
         val cardLast4 = fields.card
             ?.takeIf { it >= 1 }
             ?.let { result.groups[it] }

@@ -453,11 +453,19 @@ class InboxCardsViewModel(
 
             is LastAction.Recorded ->
                 viewModelScope.launch {
-                    // Only a rule this accept created is removed, never an older one.
-                    action.learnedRuleId?.let { ruleId ->
-                        acceptInboxSuggestionUseCase.forgetLearnedRule(ruleId)
-                    }
                     undoInboxItemUseCase(action.item)
+                        .onSuccess {
+                            // Only a rule this accept created is removed, never an older one,
+                            // and only once undone: a failed undo keeps the record and the rule.
+                            action.learnedRuleId?.let { ruleId ->
+                                runCatching { acceptInboxSuggestionUseCase.forgetLearnedRule(ruleId) }
+                                    .onFailure { error ->
+                                        log.error(error) {
+                                            "onUndoClicked(): failed to forget the learned rule"
+                                        }
+                                    }
+                            }
+                        }
                         .onFailure { error ->
                             log.error(error) {
                                 "onUndoClicked(): failed to undo"

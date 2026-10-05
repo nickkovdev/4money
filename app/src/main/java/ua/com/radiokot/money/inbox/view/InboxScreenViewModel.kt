@@ -121,10 +121,18 @@ class InboxScreenViewModel(
             pendingItems,
             lookupFlow,
             inFlightKeys,
-        ) { items, lookup, inFlight ->
+            // So switching "learn from history" changes the suggestions right away.
+            autoBookPreferences.getBehaviourFlow(),
+        ) { items, lookup, inFlight, behaviour ->
             items
                 .filterNot { it.id in inFlight }
-                .map { item -> toViewPending(item, lookup) }
+                .map { item ->
+                    toViewPending(
+                        item = item,
+                        lookup = lookup,
+                        useHistory = behaviour.learnFromHistory,
+                    )
+                }
         }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -183,6 +191,7 @@ class InboxScreenViewModel(
     private fun toViewPending(
         item: InboxItem,
         lookup: InboxSuggestionLookup,
+        useHistory: Boolean,
     ): ViewInboxTabPending {
         val account = item.accountId?.let(lookup.accountsById::get)
         val isRecognized = item.amount != null
@@ -190,7 +199,7 @@ class InboxScreenViewModel(
             if (isRecognized)
                 lookup.suggest(
                     item = item,
-                    useHistory = autoBookPreferences.isLearnFromHistoryEnabled,
+                    useHistory = useHistory,
                 )
             else
                 null
@@ -308,11 +317,19 @@ class InboxScreenViewModel(
             ?: return
 
         viewModelScope.launch {
-            // An accidental accept must not leave an exact rule behind.
-            learnedRuleIds.remove(inboxItem.id)?.let { ruleId ->
-                acceptInboxSuggestionUseCase.forgetLearnedRule(ruleId)
-            }
             undoInboxItemUseCase(inboxItem)
+                .onSuccess {
+                    // An accidental accept must not leave an exact rule behind.
+                    // Only once undone: a failed undo keeps the record, so the rule stays.
+                    learnedRuleIds.remove(inboxItem.id)?.let { ruleId ->
+                        runCatching { acceptInboxSuggestionUseCase.forgetLearnedRule(ruleId) }
+                            .onFailure { error ->
+                                log.error(error) {
+                                    "onUndoClicked(): failed to forget the learned rule"
+                                }
+                            }
+                    }
+                }
                 .onFailure { error ->
                     log.error(error) {
                         "onUndoClicked(): failed to undo"

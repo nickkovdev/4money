@@ -41,8 +41,15 @@ class SaveSourceSetupUseCaseTest {
     private val templates = FakeTemplates()
     private val cards = FakeCards()
     private val buffer = FakeBuffer()
-    private val preferences = FakeAutoBookPreferences(emptySet())
-    private val useCase = SaveSourceSetupUseCase(templates, cards, preferences, buffer)
+    private val presetPackage = "com.example.preset"
+    private val preferences = FakeAutoBookPreferences(setOf(presetPackage))
+    private val useCase = SaveSourceSetupUseCase(
+        templateRepository = templates,
+        cardAccountPreferences = cards,
+        autoBookPreferences = preferences,
+        recentNotificationBuffer = buffer,
+        presetPackageNames = setOf(presetPackage),
+    )
 
     private val behaviour = AutoBookBehaviour(
         recordKnownPayees = false,
@@ -54,8 +61,9 @@ class SaveSourceSetupUseCaseTest {
         templates: List<NotificationTemplate> = emptyList(),
         cardAccounts: Map<String, String> = emptyMap(),
         sourceAccountId: String? = null,
+        packageName: String = EXAMPLE_PACKAGE,
     ) = SaveSourceSetupUseCase.Request(
-        packageName = EXAMPLE_PACKAGE,
+        packageName = packageName,
         templates = templates,
         cardAccounts = cardAccounts,
         sourceAccountId = sourceAccountId,
@@ -77,6 +85,37 @@ class SaveSourceSetupUseCaseTest {
         assertEquals(listOf("a", "b"), saved.map { it.id })
         assertTrue(saved.all { it.isEnabled })
         assertTrue(saved.all { it.sourcePackage == EXAMPLE_PACKAGE })
+    }
+
+    @Test
+    fun teachingAnotherKindOfSwitchedOffSource_switchesTheWholeSourceOn() = runBlocking {
+        templates.stored += testTemplate("old", isEnabled = false)
+
+        useCase(request(templates = listOf(testTemplate("new"))))
+
+        assertEquals(listOf(EXAMPLE_PACKAGE to true), templates.enabledCalls)
+        assertTrue(templates.stored.all { it.isEnabled })
+        assertEquals(listOf("old", "new"), templates.stored.map { it.id })
+    }
+
+    @Test
+    fun teachingAKindOfSwitchedOffPreset_switchesThePresetOn() = runBlocking {
+        preferences.setPresetEnabled(presetPackage, false)
+
+        useCase(request(templates = listOf(testTemplate("new")), packageName = presetPackage))
+
+        assertEquals(listOf(presetPackage to true), templates.enabledCalls)
+        assertTrue(preferences.isPresetEnabled(presetPackage))
+    }
+
+    @Test
+    fun noTemplates_leavesTheSourceSwitchAlone() = runBlocking {
+        preferences.setPresetEnabled(presetPackage, false)
+
+        useCase(request(sourceAccountId = "acc-3", packageName = presetPackage))
+
+        assertTrue(templates.enabledCalls.isEmpty())
+        assertFalse(preferences.isPresetEnabled(presetPackage))
     }
 
     @Test
@@ -133,12 +172,15 @@ class SaveSourceSetupUseCaseTest {
         assertTrue(error is IllegalStateException)
         assertTrue(cards.byCard.isEmpty())
         assertTrue(cards.bySource.isEmpty())
+        assertTrue(templates.enabledCalls.isEmpty())
         assertEquals(0, buffer.clearCount)
         assertTrue(preferences.isRecordKnownPayeesEnabled)
     }
 
     private class FakeTemplates : NotificationTemplateRepository {
         val addCalls = mutableListOf<List<NotificationTemplate>>()
+        val enabledCalls = mutableListOf<Pair<String, Boolean>>()
+        val stored = mutableListOf<NotificationTemplate>()
         var failure: Exception? = null
 
         override fun getTemplatesFlow(): Flow<List<NotificationTemplate>> =
@@ -149,9 +191,15 @@ class SaveSourceSetupUseCaseTest {
         override suspend fun addTemplates(templates: List<NotificationTemplate>) {
             failure?.also { throw it }
             addCalls += templates
+            stored += templates
         }
 
-        override suspend fun setEnabledForPackage(sourcePackage: String, isEnabled: Boolean) = Unit
+        override suspend fun setEnabledForPackage(sourcePackage: String, isEnabled: Boolean) {
+            enabledCalls += sourcePackage to isEnabled
+            stored.replaceAll {
+                if (it.sourcePackage == sourcePackage) it.copy(isEnabled = isEnabled) else it
+            }
+        }
 
         override suspend fun deleteTemplate(id: String) = Unit
     }
