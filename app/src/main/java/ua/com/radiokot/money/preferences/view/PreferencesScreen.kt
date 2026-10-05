@@ -96,8 +96,6 @@ private fun PreferencesScreen(
     isSyncErrorsNoticeVisible: State<Boolean>,
     isNotificationAccessGranted: State<Boolean>,
     onNotificationAccessClicked: () -> Unit,
-    pendingInboxCount: State<Long>,
-    onInboxClicked: () -> Unit,
 ) = Column(
     modifier = modifier
 ) {
@@ -281,49 +279,6 @@ private fun PreferencesScreen(
                         null
                     else
                         onNotificationAccessClicked,
-            )
-
-            ListDivider(startInset = 16.dp + 36.dp + 14.dp)
-
-            ListRow(
-                title = stringResource(R.string.inbox_title),
-                subtitle =
-                    if (pendingInboxCount.value > 0)
-                        pluralStringResource(
-                            R.plurals.settings_inbox_to_categorize,
-                            pendingInboxCount.value.toInt(),
-                            pendingInboxCount.value.toInt(),
-                        )
-                    else
-                        stringResource(R.string.settings_inbox_subtitle),
-                leading = {
-                    IconTile(icon = R.drawable.ic_tabler_inbox)
-                },
-                trailing = {
-                    if (pendingInboxCount.value > 0) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .background(
-                                    color = colors.accent,
-                                    shape = MoneyShapes.pill,
-                                )
-                                .padding(
-                                    horizontal = 8.dp,
-                                    vertical = 2.dp,
-                                )
-                        ) {
-                            Text(
-                                text = pendingInboxCount.value.toString(),
-                                style = MoneyTheme.typography.small,
-                                color = colors.onAccent,
-                            )
-                        }
-                    }
-                    RowChevron()
-                },
-                onClick = onInboxClicked,
             )
         }
 
@@ -551,8 +506,6 @@ fun PreferencesScreen(
     onAppLockClicked = remember { viewModel::onAppLockClicked },
     isNotificationAccessGranted = viewModel.isNotificationAccessGranted.collectAsState(),
     onNotificationAccessClicked = remember { viewModel::onNotificationAccessClicked },
-    pendingInboxCount = viewModel.pendingInboxCount.collectAsState(),
-    onInboxClicked = remember { viewModel::onInboxClicked },
 )
 
 @Preview(
@@ -581,7 +534,5 @@ private fun PreferencesScreenPreview(
         isSyncErrorsNoticeVisible = true.let(::mutableStateOf),
         isNotificationAccessGranted = false.let(::mutableStateOf),
         onNotificationAccessClicked = {},
-        pendingInboxCount = 2L.let(::mutableStateOf),
-        onInboxClicked = {},
     )
 }

@@ -39,6 +39,7 @@ import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
 import ua.com.radiokot.money.inbox.data.PowerSyncInboxRepository
 import ua.com.radiokot.money.inbox.data.PowerSyncMostUsedAccountSource
 import ua.com.radiokot.money.inbox.data.PowerSyncPayeeRuleRepository
+import ua.com.radiokot.money.inbox.logic.AcceptInboxSuggestionUseCase
 import ua.com.radiokot.money.inbox.logic.CardAccountResolver
 import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
 import ua.com.radiokot.money.inbox.logic.DefaultCardAccountResolver
@@ -188,6 +189,17 @@ val inboxModule = module {
         } bind CompleteInboxItemUseCase::class
 
         factory {
+            AcceptInboxSuggestionUseCase(
+                accountRepository = get(),
+                categoryRepository = get(),
+                payeeRuleRepository = get(),
+                cardAccountResolver = get(),
+                transferFundsUseCase = get(),
+                completeInboxItemUseCase = get(),
+            )
+        } bind AcceptInboxSuggestionUseCase::class
+
+        factory {
             UndoInboxItemUseCase(
                 inboxRepository = get(),
                 revertTransferUseCase = get(),
@@ -201,9 +213,12 @@ val inboxModule = module {
             InboxScreenViewModel(
                 inboxRepository = get(),
                 accountRepository = get(),
-                cardAccountPreferences = get(),
-                cardAccountResolver = get(),
+                categoryRepository = get(),
+                payeeRuleRepository = get(),
+                transferHistoryRepository = get(),
                 undoInboxItemUseCase = get(),
+                acceptInboxSuggestionUseCase = get(),
+                autoBookPreferences = get(),
             )
         } bind InboxScreenViewModel::class
 
@@ -214,9 +229,7 @@ val inboxModule = module {
                 accountRepository = get(),
                 categoryRepository = get(),
                 transferHistoryRepository = get(),
-                cardAccountResolver = get(),
-                transferFundsUseCase = get(),
-                completeInboxItemUseCase = get(),
+                acceptInboxSuggestionUseCase = get(),
                 undoInboxItemUseCase = get(),
                 autoBookPreferences = get(),
             )

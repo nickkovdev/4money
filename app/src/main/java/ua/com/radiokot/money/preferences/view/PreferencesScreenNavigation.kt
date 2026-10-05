@@ -53,7 +53,6 @@ fun NavGraphBuilder.preferencesScreen(
     onBack: () -> Unit,
     onProceedToPasscodeSetup: () -> Unit,
     onSignedOut: () -> Unit,
-    onProceedToInbox: () -> Unit,
 ) = composable(
     route = PreferencesScreenRoute,
     enterTransition = {
@@ -97,9 +96,6 @@ fun NavGraphBuilder.preferencesScreen(
                             }
                         }
                     }
-
-                PreferencesScreenViewModel.Event.ProceedToInbox ->
-                    onProceedToInbox()
 
                 PreferencesScreenViewModel.Event.ProceedToSignOutConfirmation -> {
                     isSignOutConfirmationShown = true

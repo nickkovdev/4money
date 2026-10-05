@@ -26,7 +26,8 @@
 
         <activity
             android:name=".home.view.HomeActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -72,11 +73,6 @@
 
         <activity
             android:name=".accounts.view.ArchivedAccountsActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustNothing" />
-
-        <activity
-            android:name=".inbox.view.InboxActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustNothing" />
 

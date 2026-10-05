@@ -42,6 +42,7 @@
     <!-- Home and privacy -->
     <string name="home_tab_accounts">Accounts</string>
     <string name="home_tab_categories">Categories</string>
+    <string name="home_tab_inbox">Inbox</string>
     <string name="home_tab_history">History</string>
     <string name="home_tab_overview">Overview</string>
     <string name="home_profile_and_settings">Profile and settings</string>
@@ -180,10 +181,20 @@
     <string name="inbox_title">Inbox</string>
     <string name="inbox_rules">Rules</string>
     <string name="inbox_nothing_to_sort">Nothing to sort</string>
-    <string name="inbox_to_sort">%1$d to sort</string>
     <string name="inbox_progress_to_sort">%1$d of %2$d to sort</string>
     <string name="inbox_sort_as_cards">Sort as cards</string>
-    <string name="inbox_section_pending">To categorize</string>
+    <string name="inbox_section_waiting">Waiting for a category</string>
+    <string name="inbox_section_recorded_today">Recorded today</string>
+    <string name="inbox_other">Other…</string>
+    <string name="inbox_sort_as_cards_count">%1$d →</string>
+    <plurals name="inbox_subtitle_waiting">
+        <item quantity="one">%d payment waits for a category</item>
+        <item quantity="other">%d payments wait for a category</item>
+    </plurals>
+    <plurals name="inbox_subtitle_recorded_today">
+        <item quantity="one">%d recorded today</item>
+        <item quantity="other">%d recorded today</item>
+    </plurals>
     <string name="inbox_all_sorted">All sorted</string>
     <string name="inbox_empty_text">New bank payments that need a category will appear here.</string>
     <string name="inbox_dismiss">Dismiss</string>
@@ -191,7 +202,6 @@
     <string name="inbox_card_title">Card •%1$s</string>
     <string name="inbox_card_subtitle">%1$s · tap to change</string>
     <string name="inbox_most_used_account">Most used account</string>
-    <string name="inbox_section_recorded">Recorded</string>
     <string name="inbox_item_foreign_currency">%1$s · foreign currency</string>
     <string name="inbox_private_title">Bank payment</string>
     <string name="inbox_undo_failed">Failed to undo: %1$s</string>
@@ -297,11 +307,6 @@
     <string name="settings_notification_access_hint">Allow it so SEB payments become expenses automatically</string>
     <string name="settings_granted">Granted</string>
     <string name="settings_allow">Allow</string>
-    <plurals name="settings_inbox_to_categorize">
-        <item quantity="one">%d to categorize</item>
-        <item quantity="other">%d to categorize</item>
-    </plurals>
-    <string name="settings_inbox_subtitle">Bank payments and rules</string>
     <string name="settings_currency">Currency</string>
     <string name="settings_currency_placeholder">Primary currency code</string>
     <string name="settings_currency_primary">Primary</string>

@@ -113,12 +113,3 @@ fun viewAmountOf(item: InboxItem): ViewAmount? {
         ),
     )
 }
-
-@Immutable
-class ViewCardAccountItem(
-    val cardLast4: String,
-    /**
-     * Null if not mapped: the most used account is used.
-     */
-    val accountTitle: String?,
-)

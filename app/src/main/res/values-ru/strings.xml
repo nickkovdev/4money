@@ -38,6 +38,7 @@
     <!-- Home and privacy -->
     <string name="home_tab_accounts">Счета</string>
     <string name="home_tab_categories">Категории</string>
+    <string name="home_tab_inbox">Входящие</string>
     <string name="home_tab_history">История</string>
     <string name="home_tab_overview">Обзор</string>
     <string name="home_profile_and_settings">Профиль и настройки</string>
@@ -178,10 +179,24 @@
     <string name="inbox_title">Входящие</string>
     <string name="inbox_rules">Правила</string>
     <string name="inbox_nothing_to_sort">Нечего разбирать</string>
-    <string name="inbox_to_sort">К разбору: %1$d</string>
     <string name="inbox_progress_to_sort">%1$d из %2$d к разбору</string>
     <string name="inbox_sort_as_cards">Разобрать карточками</string>
-    <string name="inbox_section_pending">Нужна категория</string>
+    <string name="inbox_section_waiting">Ждут категорию</string>
+    <string name="inbox_section_recorded_today">Записано сегодня</string>
+    <string name="inbox_other">Другая…</string>
+    <string name="inbox_sort_as_cards_count">%1$d →</string>
+    <plurals name="inbox_subtitle_waiting">
+        <item quantity="one">%d платёж ждёт категорию</item>
+        <item quantity="few">%d платежа ждут категорию</item>
+        <item quantity="many">%d платежей ждут категорию</item>
+        <item quantity="other">%d платежа ждут категорию</item>
+    </plurals>
+    <plurals name="inbox_subtitle_recorded_today">
+        <item quantity="one">%d записан сегодня</item>
+        <item quantity="few">%d записано сегодня</item>
+        <item quantity="many">%d записано сегодня</item>
+        <item quantity="other">%d записано сегодня</item>
+    </plurals>
     <string name="inbox_all_sorted">Всё разобрано</string>
     <string name="inbox_empty_text">Новые банковские платежи, которым нужна категория, появятся здесь.</string>
     <string name="inbox_dismiss">Убрать</string>
@@ -189,7 +204,6 @@
     <string name="inbox_card_title">Карта •%1$s</string>
     <string name="inbox_card_subtitle">%1$s · нажмите, чтобы изменить</string>
     <string name="inbox_most_used_account">Самый частый счёт</string>
-    <string name="inbox_section_recorded">Записано</string>
     <string name="inbox_item_foreign_currency">%1$s · иностранная валюта</string>
     <string name="inbox_private_title">Банковский платёж</string>
     <string name="inbox_undo_failed">Не удалось отменить: %1$s</string>
@@ -295,13 +309,6 @@
     <string name="settings_notification_access_hint">Разрешите, чтобы платежи SEB автоматически становились расходами</string>
     <string name="settings_granted">Разрешено</string>
     <string name="settings_allow">Разрешить</string>
-    <plurals name="settings_inbox_to_categorize">
-        <item quantity="one">%d ждёт категории</item>
-        <item quantity="few">%d ждут категории</item>
-        <item quantity="many">%d ждут категории</item>
-        <item quantity="other">%d ждут категории</item>
-    </plurals>
-    <string name="settings_inbox_subtitle">Банковские платежи и правила</string>
     <string name="settings_currency">Валюта</string>
     <string name="settings_currency_placeholder">Код основной валюты</string>
     <string name="settings_currency_primary">Основная</string>

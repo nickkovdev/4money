@@ -31,10 +31,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
-import ua.com.radiokot.money.inbox.logic.LearnedRule
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.accounts.data.Account
 import ua.com.radiokot.money.accounts.data.AccountRepository
@@ -46,9 +43,8 @@ import ua.com.radiokot.money.inbox.data.InboxItem
 import ua.com.radiokot.money.inbox.data.InboxRepository
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
-import ua.com.radiokot.money.inbox.logic.CardAccountResolver
-import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
-import ua.com.radiokot.money.inbox.logic.InboxCardAcceptance
+import ua.com.radiokot.money.inbox.logic.AcceptInboxSuggestionUseCase
+import ua.com.radiokot.money.inbox.logic.InboxSuggestionLookup
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
 import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferences
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
@@ -59,10 +55,8 @@ import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
 import ua.com.radiokot.money.transfers.history.data.TransferHistoryRepository
-import ua.com.radiokot.money.transfers.logic.TransferFundsUseCase
 import ua.com.radiokot.money.transfers.view.TransferCounterpartySelectionResult
 import ua.com.radiokot.money.transfers.view.TransferSheetRoute
-import java.util.UUID
 import ua.com.radiokot.money.uikit.ViewText
 import ua.com.radiokot.money.uikit.failureText
 
@@ -76,9 +70,7 @@ class InboxCardsViewModel(
     private val accountRepository: AccountRepository,
     private val categoryRepository: CategoryRepository,
     private val transferHistoryRepository: TransferHistoryRepository,
-    private val cardAccountResolver: CardAccountResolver,
-    private val transferFundsUseCase: TransferFundsUseCase,
-    private val completeInboxItemUseCase: CompleteInboxItemUseCase,
+    private val acceptInboxSuggestionUseCase: AcceptInboxSuggestionUseCase,
     private val undoInboxItemUseCase: UndoInboxItemUseCase,
     private val autoBookPreferences: AutoBookPreferences,
 ) : ViewModel() {
@@ -103,22 +95,14 @@ class InboxCardsViewModel(
     private val _undo = MutableStateFlow<ViewInboxCardUndo?>(null)
     val undo = _undo.asStateFlow()
 
-    private class Lookup(
-        val accountsById: Map<String, Account>,
-        val categoriesById: Map<String, Category>,
-        val subcategoriesById: Map<String, Subcategory>,
-        val rules: List<PayeeRule>,
-        val history: List<Transfer>,
-    )
-
-    private val lookupFlow: Flow<Lookup> =
+    private val lookupFlow: Flow<InboxSuggestionLookup> =
         combine(
             accountRepository.getAccountsFlow(),
             categoryRepository.getSubcategoriesByCategoriesFlow(),
             payeeRuleRepository.getRulesFlow(),
             history,
         ) { accounts, subcategoriesByCategories, rules, history ->
-            Lookup(
+            InboxSuggestionLookup(
                 accountsById = accounts.associateBy(Account::id),
                 categoriesById = subcategoriesByCategories.keys.associateBy(Category::id),
                 subcategoriesById = subcategoriesByCategories.values
@@ -192,64 +176,19 @@ class InboxCardsViewModel(
 
     private fun toViewCard(
         item: InboxItem,
-        lookup: Lookup,
+        lookup: InboxSuggestionLookup,
         rememberOverride: Boolean?,
     ): ViewInboxCard {
         val isIncoming = item.direction == InboxItem.Direction.Incoming
         val normalizedPayee = item.payee
             ?.let(PayeeNormalizer::normalize)
             .orEmpty()
-        val rulesOfDirection = lookup.rules.filter { rule ->
-            val category = rule.categoryId?.let(lookup.categoriesById::get)
-            category == null || category.isIncome == isIncoming
-        }
-        val historyOfDirection = lookup.history.mapNotNull { transfer ->
-            val categoryCounterparty =
-                if (isIncoming)
-                    transfer.source as? TransferCounterparty.Category
-                else
-                    transfer.destination as? TransferCounterparty.Category
-            categoryCounterparty
-                ?.takeIf { it.category.isIncome == isIncoming }
-                ?.let { counterparty ->
-                    InboxCardSuggester.HistoryEntry(
-                        normalizedMemo = transfer.memo
-                            ?.let(PayeeNormalizer::normalize)
-                            .orEmpty(),
-                        category = InboxCardSuggester.CategoryKey(
-                            categoryId = counterparty.category.id,
-                            subcategoryId = counterparty.subcategory?.id,
-                        ),
-                    )
-                }
-        }
-        val result = InboxCardSuggester.suggest(
-            normalizedPayee = normalizedPayee,
-            rules = rulesOfDirection,
-            history = historyOfDirection,
-            amount = item.amount,
+        val result = lookup.suggest(
+            item = item,
             useHistory = autoBookPreferences.isLearnFromHistoryEnabled,
-            isUsable = { key ->
-                val category = lookup.categoriesById[key.categoryId]
-                category != null
-                        && !category.isArchived
-                        && category.isIncome == isIncoming
-                        && (key.subcategoryId == null
-                        || lookup.subcategoriesById[key.subcategoryId]?.categoryId == category.id)
-            },
         )
 
-        fun viewCategory(key: InboxCardSuggester.CategoryKey): ViewInboxCardCategory? {
-            val category = lookup.categoriesById[key.categoryId]
-                ?: return null
-            return ViewInboxCardCategory(
-                key = key,
-                title = category.title,
-                subcategoryTitle = key.subcategoryId?.let(lookup.subcategoriesById::get)?.title,
-                colorScheme = category.colorScheme,
-                icon = category.icon,
-            )
-        }
+        fun viewCategory(key: InboxCardSuggester.CategoryKey) = lookup.viewCategory(key)
 
         val suggestion = result.suggestion?.category?.let(::viewCategory)
         val account = item.accountId?.let(lookup.accountsById::get)
@@ -437,170 +376,70 @@ class InboxCardsViewModel(
         if (item.id in inFlightKeys.value) {
             return
         }
+        // Learn an exact rule only when the card asks to remember.
+        // Read before the card is hidden by the in-flight mark.
+        val remember = cardsWithItems.value
+            .firstOrNull { (_, cardItem) -> cardItem.id == item.id }
+            ?.first
+            ?.isRememberOn == true
         inFlightKeys.value += item.id
 
         viewModelScope.launch {
-            val account = resolveAccount(item)
-            val category = categoryRepository.getCategory(categoryKey.categoryId)
-            val subcategory = categoryKey.subcategoryId?.let { categoryRepository.getSubcategory(it) }
-
-            if (account == null || category == null) {
-                inFlightKeys.value -= item.id
-                _events.emit(Event.ShowError(ViewText.Res(R.string.inbox_no_account_or_category)))
-                return@launch
-            }
-
-            when (val decision = InboxCardAcceptance.decide(item, account, category, subcategory)) {
-                is InboxCardAcceptance.Decision.OpenSheet -> {
-                    // The sheet completes the item; until then it is a regular pending card.
-                    inFlightKeys.value -= item.id
-                    _events.emit(Event.ProceedToTransfer(decision.route))
-                }
-
-                is InboxCardAcceptance.Decision.Record -> {
-                    val transferId = UUID.randomUUID().toString()
-                    // Learn an exact rule only when the card asks to remember.
-                    val rememberPattern = item.payee
-                        ?.let(PayeeNormalizer::normalize)
-                        ?.takeIf(String::isNotEmpty)
-                        ?.takeIf {
-                            cardsWithItems.value
-                                .firstOrNull { (_, cardItem) -> cardItem.id == item.id }
-                                ?.first
-                                ?.isRememberOn == true
-                        }
-                    val rulesBefore = payeeRuleRepository.getRules()
-                    var learnedRuleId: String? = null
-
-                    log.debug {
-                        "record(): recording:" +
-                                "\nitem=$item," +
-                                "\ndecision=$decision"
-                    }
-
-                    val recorded = transferFundsUseCase(
-                        sourceId = decision.sourceId,
-                        sourceAmount = decision.sourceAmount,
-                        destinationId = decision.destinationId,
-                        destinationAmount = decision.destinationAmount,
-                        memo = decision.memo,
-                        dateTime = item.receivedAt,
-                        transferId = transferId,
-                    ).onSuccess {
-                        completeInboxItemUseCase(
-                            itemId = item.id,
-                            transferId = transferId,
-                            rememberPayeePattern = rememberPattern,
-                            sourceId = decision.sourceId,
-                            destinationId = decision.destinationId,
-                        ).onFailure { error ->
-                            log.error(error) {
-                                "record(): failed to complete the item"
-                            }
-                        }
-
-                        if (rememberPattern != null) {
-                            // The rule cache is refreshed by the database watch, wait for it a bit.
-                            val rulesAfter = withTimeoutOrNull(RULES_REFRESH_TIMEOUT_MS) {
-                                payeeRuleRepository
-                                    .getRulesFlow()
-                                    .first { rules ->
-                                        rules.any { rule ->
-                                            rule.payeePattern == rememberPattern
-                                                    && rule.matchType == PayeeRule.MatchType.Exact
-                                                    && rule.amountRange == null
-                                        }
-                                    }
-                            } ?: payeeRuleRepository.getRules()
-                            learnedRuleId = LearnedRule.createdRuleId(
-                                rulesBefore = rulesBefore,
-                                rulesAfter = rulesAfter,
-                                payeePattern = rememberPattern,
-                            )
-                        }
-
-                        recordRuleHitIfFollowed(item, categoryKey)
-                    }
-
-                    // Once the item leaves the pending list, the in-flight mark is no longer needed.
-                    inFlightKeys.value -= item.id
-
-                    recorded
-                        .onSuccess {
-                            lastAction = LastAction.Recorded(
-                                item = item.copy(
-                                    status = InboxItem.Status.Done,
-                                    transferId = transferId,
-                                ),
-                                learnedRuleId = learnedRuleId,
-                            )
-                            showUndo(
-                                ViewText.Res(
-                                    id =
-                                        if (learnedRuleId != null)
-                                            R.string.inbox_cards_recorded_remembered
-                                        else
-                                            R.string.inbox_cards_recorded,
-                                    args = listOf(categoryTitle ?: category.title),
-                                )
-                            )
-                        }
-                        .onFailure { error ->
-                            log.error(error) {
-                                "record(): failed to record"
-                            }
-                            _events.emit(Event.ShowError(
-                                failureText(
-                                    withReasonId = R.string.inbox_cards_record_failed,
-                                    withoutReasonId = R.string.inbox_cards_record_failed_no_reason,
-                                    reason = error.message,
-                                )
-                            ))
-                        }
-                }
-            }
-        }
-    }
-
-    private suspend fun recordRuleHitIfFollowed(
-        item: InboxItem,
-        categoryKey: InboxCardSuggester.CategoryKey,
-    ) {
-        val normalizedPayee = item.payee
-            ?.let(PayeeNormalizer::normalize)
-            ?: return
-        val rule = ua.com.radiokot.money.inbox.logic.PayeeRuleMatcher.match(
-            normalizedPayee = normalizedPayee,
-            rules = payeeRuleRepository.getRules(),
-            amount = item.amount,
-        ) ?: return
-        if (rule.categoryId == categoryKey.categoryId) {
-            payeeRuleRepository.recordHit(rule.id, item.receivedAt)
-        }
-    }
-
-    private suspend fun resolveAccount(item: InboxItem): Account? {
-        val usableAccounts = accountRepository
-            .getAccounts()
-            .filterNot(Account::isArchived)
-        val accountId = item.accountId
-            ?.takeIf { id -> usableAccounts.any { it.id == id } }
-            ?: cardAccountResolver.resolve(
-                cardLast4 = item.cardLast4,
-                ruleAccountId = null,
-                usableAccountIds = usableAccounts.mapTo(mutableSetOf(), Account::id),
-                sourcePackage = item.sourcePackage,
+            val result = acceptInboxSuggestionUseCase(
+                item = item,
+                categoryId = categoryKey.categoryId,
+                subcategoryId = categoryKey.subcategoryId,
+                remember = remember,
             )
 
-        val account = usableAccounts.firstOrNull { it.id == accountId }
-        if (account == null) {
-            log.warn {
-                "resolveAccount(): no account to pay from or receive to"
+            // Once the item leaves the pending list, the in-flight mark is no longer needed.
+            inFlightKeys.value -= item.id
+
+            when (result) {
+                AcceptInboxSuggestionUseCase.Result.NoAccountOrCategory ->
+                    _events.emit(Event.ShowError(ViewText.Res(R.string.inbox_no_account_or_category)))
+
+                is AcceptInboxSuggestionUseCase.Result.OpenSheet ->
+                    // The sheet completes the item; until then it is a regular pending card.
+                    _events.emit(Event.ProceedToTransfer(result.route))
+
+                is AcceptInboxSuggestionUseCase.Result.Recorded -> {
+                    lastAction = LastAction.Recorded(
+                        item = result.item,
+                        learnedRuleId = result.learnedRuleId,
+                    )
+                    showUndo(
+                        ViewText.Res(
+                            id =
+                                if (result.learnedRuleId != null)
+                                    R.string.inbox_cards_recorded_remembered
+                                else
+                                    R.string.inbox_cards_recorded,
+                            args = listOf(categoryTitle ?: result.categoryTitle),
+                        )
+                    )
+                }
+
+                is AcceptInboxSuggestionUseCase.Result.Failed ->
+                    _events.emit(Event.ShowError(
+                        failureText(
+                            withReasonId = R.string.inbox_cards_record_failed,
+                            withoutReasonId = R.string.inbox_cards_record_failed_no_reason,
+                            reason = result.error.message,
+                        )
+                    ))
             }
-            _events.emit(Event.ShowError(ViewText.Res(R.string.inbox_no_account)))
         }
-        return account
     }
+
+    private suspend fun resolveAccount(item: InboxItem): Account? =
+        acceptInboxSuggestionUseCase
+            .resolveAccount(item)
+            .also { account ->
+                if (account == null) {
+                    _events.emit(Event.ShowError(ViewText.Res(R.string.inbox_no_account)))
+                }
+            }
 
     fun onUndoClicked() {
         val action = lastAction
@@ -695,7 +534,5 @@ class InboxCardsViewModel(
          * Recent transfers to learn suggestions from, newest first.
          */
         const val HISTORY_LIMIT = 400
-
-        const val RULES_REFRESH_TIMEOUT_MS = 3000L
     }
 }
