@@ -30,6 +30,7 @@ Brief: [BRIEF.md](BRIEF.md).
 | F2 (branch `feature/category-sheet-privacy`) | Category sheet from Overview: tap a category (top list or the inline-expanded "All categories") → sheet in the category colour with N transactions, total, share of the period and the period total, subcategory shares, Expense/Income and Transactions actions. Privacy mode: eye button next to the profile button in every tab header (stored in prefs `privacy`), headline amounts `•••`, the rest as % of the relevant total, no amount in the "Payments to sort" notification. Plan with rulings: `docs/superpowers/plans/2026-10-02-category-sheet-privacy.md`. |
 | F3 (branch `feature/localization-ru`) | Localization: English base + complete Russian, Settings → Language (System / English / Русский) via per-app locales, locale-aware dates (nominative month headers, genitive day lines) and amounts (ru: "1 234,56 €", comma keypad), plurals, notifications. Plan with rulings: `docs/superpowers/plans/2026-10-03-localization-ru.md`. |
 | F4 (branch `feature/autobook-sources-inbox-tab`) | Inbox tab and user-configured notification sources: the Inbox is the centre tab of the bottom bar (badge with the pending count; the "Payments to sort" notification opens it; `InboxActivity` removed). Settings → Auto-booking (`AutoBookActivity`): Sources (apps with a notification access switch, SEB Latvia as a built-in preset), a setup wizard (add app → pick a sample notification → teach a template by tapping words as amount / currency / payee / card / varies → test against recent notifications → card accounts → behaviour switches → Done), Cards and accounts, Payee rules, Test text. Templates are synced rows (`money.notification_templates`); the listener only reacts to packages in the active set (cached in prefs); recent money-like notifications are buffered on the device only (`noBackupFilesDir`, 50 entries, 7 days). Plan with rulings: `docs/superpowers/plans/2026-10-05-autobook-sources-inbox-tab.md`. **Needs a migration and a sync-config update before the install, see below.** |
+| F5 (branch `feature/home-widget`) | Home screen widget "Quick entry" (Glance, 3×1, resizable horizontally): three round buttons, ↑ income, the app logo with a badge = pending Inbox count (tap → Inbox tab), ↓ expense. Income/expense open `QuickTransferActivity`, a translucent activity in its own task: category grid → transfer sheet, default account = last used for the category, else the most used; ✓ saves and returns to the launcher. Badge updated on inbox changes, sign-out and theme change (debounced, no polling, no services); colours follow the app theme. Locked/signed-out states go through the passcode/sign-in. EN + RU. No migration or sync-config change. Plan with rulings: `docs/superpowers/plans/2026-10-05-home-widget.md`. |
 
 ## Install order (important)
 
@@ -86,13 +87,7 @@ automatically. Order:
 ## Backlog (owner ideas, later)
 
 - Privacy mode: done in F2 (see above).
-- **Home screen widget (1Money-style).** A compact widget of three round buttons: left "↑ income"
-  (income colour), centre the app logo with a badge = pending Inbox count (tap → Inbox tab),
-  right "↓ expense" (expense colour). Income/expense open a translucent quick-entry activity over
-  the home screen: category picker grid (as in the transfer flow) → transfer sheet with the keypad,
-  default account = last used; closing returns to the launcher, no app UI behind. Glance (or
-  RemoteViews) widget, badge updated when inbox items change (no polling), dark/light following the
-  app theme, resizable 3×1. Own icons only (Tabler), no 1Money assets.
+- Home screen widget: done in F5 (see above).
 
 ## F2 device checklist
 
@@ -131,3 +126,18 @@ Do the install order above first. Use only invented/test data in anything you sc
 - Sign out and back in (without killing the app): no crash; sign-out clears the recent-notification buffer (a device-wide file, cleared by the sign-out use case) and closes the session scope, which stops the old source registry; sign-in creates the new registry right away (off the main thread), so the cached active packages follow the new account's templates, including ones synced from another device, before any screen is opened; the listener keeps working after sign-in.
 - Launcher icons of installed apps appear in the app picker (package visibility via `<queries>`), letter tiles otherwise.
 - RU locale: the whole flow in Russian (Settings → Language), plurals for source and kind counts and the badge, nothing left in English except app names and user data; then switch back.
+
+## F5 device checklist
+
+- Add the widget from the launcher's widget picker: label "Quick entry" / "Быстрый ввод", description and preview shown; default 3×1, resize horizontally to 2 and 4+ cells: circles spread, nothing clipped.
+- Theme: System (toggle the phone's dark mode, the widget follows), Paper, Midnight, Ember, Aurora: colours change within a second of switching in Settings → Appearance.
+- Badge: equals the Inbox tab badge; hidden at 0; post a test notification from a source, the badge increments within ~1 s without opening the app; sorting in the app decrements it; 100+ shows "99+" (only if such data exists, else skip).
+- Centre tap: the app opens on the Inbox tab (cold start and app already open).
+- ↓: dimmed launcher, Expense category grid; pick a category, the transfer sheet opens with that category and its last used account (a category never used: the most used account); type an amount, ✓: saved, back on the launcher; the transfer is in History.
+- ↑: Income categories; same flow; the income account is the destination.
+- Back / tap outside on the grid and on the sheet: back on the launcher, nothing saved; the quick entry does not show in Recents; opening the app afterwards shows the app's own last screen, not the quick entry.
+- Passcode on, app locked (background > threshold): ↓ shows the unlock screen first, then the grid; cancelling unlock returns to the launcher.
+- Signed out: badge hidden; ↓ opens the sign-in screen; after signing in the badge reappears.
+- Privacy mode on: category amounts and balances in the grid/sheet masked as in the app; the keypad shows the typed amount.
+- Russian: widget label, description and TalkBack descriptions ("Добавить расход", "Открыть «Входящие», ждут 3 платежа").
+- Battery: no new periodic work (`adb shell dumpsys jobscheduler | grep radiokot` shows only the existing BackgroundSync/CurrencyPricesUpdate) and no persistent service.

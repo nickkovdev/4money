@@ -287,3 +287,42 @@ state when nothing waits. `InboxActivity`, the Settings Inbox row and the inbox 
 - All strings en + ru; privacy mode masks amounts on the new screens; theme tokens and uikit components only.
 
 **Decisions.** Recorded in the plan's Rulings section.
+
+## F5. Home screen widget (designed 2026-10-05, approved by the owner)
+
+Plan: `docs/superpowers/plans/2026-10-05-home-widget.md` (branch `feature/home-widget`).
+
+**Widget.** "Quick entry" / "Быстрый ввод": a Glance app widget, default 3×1, resizable horizontally, with no
+container background and three round 48 dp buttons spread evenly across the width: left "↑ income" (income
+colour), centre the app logo with a badge, right "↓ expense" (expense colour). Icons are the Tabler
+`ic_tabler_arrow_up/down`. `updatePeriodMillis = 0`: no periodic updates. Picker preview: `previewLayout` (API 31+)
+and a drawable `previewImage` (older), no bitmaps. Code under `widget/` (`logic/`: badge text, palette, debounced
+trigger, updater, badge starter; `view/`: `QuickEntryWidget`, its receiver; `HomeWidgetModule`).
+
+**Badge.** The pending Inbox count on the centre button: hidden at 0, the number for 1..99, "99+" above. No
+signed-in session → no badge. Tap on the centre → `HomeActivity` on the Inbox tab (`EXTRA_OPEN_INBOX`).
+
+**Updates (no polling, no services).** A root-scope updater with a 500 ms debounce is triggered by: the pending
+count flow collected in a session-scoped coroutine scope (started by a `UserSessionScopeListener`, cancelled when
+the scope closes), the session scope closing (the badge disappears after sign-out), the notification listener
+right after it stores a pending item, and a theme mode change. Count read is a single `COUNT(*)`; errors mean no
+badge and are logged, never crash the widget.
+
+**Quick entry.** Income/expense start `QuickTransferActivity` (`transfers/view/`), a translucent activity in its
+own task (`taskAffinity` `.quickentry`, excluded from Recents, not exported, started with NEW_TASK + CLEAR_TASK so
+a second tap restarts the flow and finishing returns to the launcher). Flow: the category grid (the existing
+counterparty selection sheet, categories only, for the chosen direction) → the transfer sheet with the keypad. Default
+account: last used for the category, else the most used account, else the account selection sheet (optional
+`fallbackAccount` of `TransfersNavigator`, the main app is unchanged). The checkmark saves and finishes; back or a
+tap outside finishes without saving. Unlike the launcher shortcuts it is not incognito: it requires a session
+(no session → the sign-in screen in the app's own task) and unlocking (passcode) like other entry points, and the
+sheets follow privacy mode like the normal transfer sheet.
+
+**Theme.** The exact palette of the app theme: day colours = `moneyColorsOf(mode, isSystemDark = false)`, night
+colours = the same with `isSystemDark = true` through Glance day/night colour providers, so System follows the
+launcher's night mode and explicit modes are fixed. Translucent tint tokens are not used.
+
+**Other.** Strings en + ru (label, description, accessibility descriptions); glance-appwidget 1.2.0 added. No
+migration and no sync-config change.
+
+**Decisions.** Recorded in the plan's Rulings section (`docs/superpowers/plans/2026-10-05-home-widget.md`).
