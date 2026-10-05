@@ -500,6 +500,7 @@
     <string name="setup_test_not_understood">Не понято</string>
     <string name="setup_test_time_card">%1$s · карта …%2$s</string>
     <string name="setup_test_kinds_hint">Видов может быть несколько: оплата картой, платёж со счёта, входящий перевод. Каждый настраивается так же, за минуту.</string>
+    <string name="setup_test_teach_first">Сначала научите хотя бы один вид: вернитесь и отметьте уведомление или нажмите «Научить ещё одному виду».</string>
     <string name="setup_accounts_title">Куда записывать</string>
     <string name="setup_accounts_save_failed">Не удалось сохранить. Попробуйте ещё раз.</string>
 </resources>

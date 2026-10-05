@@ -269,6 +269,36 @@ class SourceSetupStateTest {
         assertEquals(listOf(second, firstAgain), state.drafts)
     }
 
+    @Test
+    fun canFinish_falseWithoutDraftsPresetOrTemplates() {
+        val state = SourceSetupState.initial("com.example.bank")
+
+        assertFalse(state.canFinish(hasPreset = false, hasTemplates = false))
+    }
+
+    @Test
+    fun canFinish_trueWithADraft() {
+        val state = SourceSetupState.initial("com.example.bank")
+            .withDraft(draftTemplate("draft"))
+
+        assertTrue(state.canFinish(hasPreset = false, hasTemplates = false))
+    }
+
+    @Test
+    fun canFinish_trueWithAPresetOrExistingTemplates() {
+        val state = SourceSetupState.initial("com.example.bank")
+
+        assertTrue(state.canFinish(hasPreset = true, hasTemplates = false))
+        assertTrue(state.canFinish(hasPreset = false, hasTemplates = true))
+    }
+
+    @Test
+    fun canFinish_falseWithoutPackage() {
+        val state = SourceSetupState.initial(null).copy(drafts = listOf(draftTemplate("d")))
+
+        assertFalse(state.canFinish(hasPreset = true, hasTemplates = true))
+    }
+
     private fun draftTemplate(id: String, sampleText: String = "sample") =
         testTemplate(id = id, sourcePackage = "com.example.bank")
             .copy(sampleText = sampleText)

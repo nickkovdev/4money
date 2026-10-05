@@ -70,13 +70,25 @@ fun SourceSetupTestStep(
     packageName: String?,
     appLabel: State<String?>,
     result: TestRunResult?,
+    canFinish: Boolean,
     onTeachAnotherClicked: () -> Unit,
     onNextClicked: () -> Unit,
 ) = SetupStepLayout(
     footer = {
+        if (!canFinish) {
+            Text(
+                text = stringResource(R.string.setup_test_teach_first),
+                style = MoneyTheme.typography.caption,
+                color = MoneyTheme.colors.ink2,
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+            )
+        }
+
         MoneyButton(
             text = stringResource(R.string.setup_next),
             style = MoneyButtonStyle.Filled,
+            isEnabled = canFinish,
             onClick = onNextClicked,
             modifier = Modifier
                 .fillMaxWidth()

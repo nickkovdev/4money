@@ -153,6 +153,7 @@ fun SourceSetupScreen(
                         packageName = state.packageName,
                         appLabel = viewModel.chosenAppLabel.collectAsState(),
                         result = viewModel.testRun.collectAsState().value,
+                        canFinish = viewModel.canFinish.collectAsState().value,
                         onTeachAnotherClicked = viewModel::onTeachAnotherClicked,
                         onNextClicked = viewModel::onNextClicked,
                     )

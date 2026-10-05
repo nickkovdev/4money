@@ -115,6 +115,13 @@ data class SourceSetupState(
         }
 
     /**
+     * Whether the wizard can end with a working source: an app is chosen and it has
+     * a taught kind, a built-in preset or earlier templates. Otherwise Done would save nothing.
+     */
+    fun canFinish(hasPreset: Boolean, hasTemplates: Boolean): Boolean =
+        packageName != null && (drafts.isNotEmpty() || hasPreset || hasTemplates)
+
+    /**
      * "Teach another kind": from the Test step back to choosing a sample, the drafts are kept.
      */
     fun teachAnother(): SourceSetupState =

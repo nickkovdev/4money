@@ -484,6 +484,7 @@
     <string name="setup_test_not_understood">Not understood</string>
     <string name="setup_test_time_card">%1$s · card …%2$s</string>
     <string name="setup_test_kinds_hint">There can be several kinds: a card payment, an account payment, an incoming transfer. Each is taught the same way, in a minute.</string>
+    <string name="setup_test_teach_first">Teach at least one kind first: go back and mark a notification, or press “Teach another kind”.</string>
     <string name="setup_accounts_title">Where to record</string>
     <string name="setup_accounts_save_failed">Could not save. Try again.</string>
 </resources>

@@ -323,6 +323,23 @@ class SourceSetupViewModel(
             .flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    /**
+     * Whether the wizard can end: a taught kind, a preset or earlier templates exist.
+     */
+    val canFinish: StateFlow<Boolean> =
+        combine(
+            _state,
+            registry.sourcesFlow,
+        ) { state, sources ->
+            val source = sources.firstOrNull { it.packageName == state.packageName }
+
+            state.canFinish(
+                hasPreset = source?.preset != null,
+                hasTemplates = source?.templates?.isNotEmpty() == true,
+            )
+        }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
     fun onTeachAnotherClicked() {
         _state.update { it.teachAnother().withNotifications(allNotifications.value) }
     }
@@ -457,7 +474,7 @@ class SourceSetupViewModel(
         val state = _state.value
         val packageName = state.packageName
             ?: return
-        if (_isSaving.value) {
+        if (_isSaving.value || !canFinish.value) {
             return
         }
 
