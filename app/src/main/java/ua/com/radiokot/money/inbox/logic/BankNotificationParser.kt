@@ -33,12 +33,3 @@ interface BankNotificationParser {
      */
     fun parse(title: String?, text: String): ParsedBankNotification
 }
-
-/**
- * Packages the listener reacts to. Everything else (incl. Google Wallet duplicates) is ignored.
- */
-object BankNotificationSources {
-    val packageNames: Set<String> = setOf(
-        SebLatviaNotificationParser.PACKAGE_NAME,
-    )
-}

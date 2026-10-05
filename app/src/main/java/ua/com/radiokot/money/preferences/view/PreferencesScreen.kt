@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -75,7 +76,6 @@ import ua.com.radiokot.money.uikit.theme.MoneyColors
 import ua.com.radiokot.money.uikit.theme.MoneyShapes
 import ua.com.radiokot.money.uikit.theme.MoneySpacing
 import ua.com.radiokot.money.uikit.theme.MoneyTheme
-import androidx.compose.ui.res.pluralStringResource
 
 @Composable
 private fun PreferencesScreen(
@@ -95,9 +95,8 @@ private fun PreferencesScreen(
     onSignOutClicked: () -> Unit,
     isSyncErrorsNoticeVisible: State<Boolean>,
     isNotificationAccessGranted: State<Boolean>,
-    onNotificationAccessClicked: () -> Unit,
-    pendingInboxCount: State<Long>,
-    onInboxClicked: () -> Unit,
+    activeSourceCount: State<Int>,
+    onAutoBookClicked: () -> Unit,
 ) = Column(
     modifier = modifier
 ) {
@@ -234,96 +233,29 @@ private fun PreferencesScreen(
         }
 
         SectionHeader(
-            title = stringResource(R.string.settings_bank_notifications),
+            title = stringResource(R.string.settings_autobook),
             modifier = Modifier
                 .padding(top = MoneySpacing.section)
         )
 
         ListGroup {
             ListRow(
-                title = stringResource(R.string.settings_notification_access),
-                subtitle =
+                title = stringResource(R.string.settings_autobook_row),
+                subtitle = stringResource(
                     if (isNotificationAccessGranted.value)
-                        stringResource(R.string.settings_notification_access_granted)
+                        R.string.settings_autobook_access_granted
                     else
-                        stringResource(R.string.settings_notification_access_hint),
+                        R.string.settings_autobook_access_missing
+                ) + " · " + pluralStringResource(
+                    R.plurals.settings_autobook_active_sources,
+                    activeSourceCount.value,
+                    activeSourceCount.value,
+                ),
                 leading = {
                     IconTile(icon = R.drawable.ic_tabler_bell)
                 },
-                trailing =
-                    if (isNotificationAccessGranted.value) {
-                        {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_tabler_circle_check),
-                                contentDescription = stringResource(R.string.settings_granted),
-                                tint = colors.income,
-                                modifier = Modifier
-                                    .size(22.dp)
-                            )
-                        }
-                    } else {
-                        {
-                            MoneyButton(
-                                text = stringResource(R.string.settings_allow),
-                                style = MoneyButtonStyle.Filled,
-                                onClick = onNotificationAccessClicked,
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                    horizontal = 14.dp,
-                                    vertical = 8.dp,
-                                ),
-                                modifier = Modifier
-                                    .height(36.dp)
-                            )
-                        }
-                    },
-                onClick =
-                    if (isNotificationAccessGranted.value)
-                        null
-                    else
-                        onNotificationAccessClicked,
-            )
-
-            ListDivider(startInset = 16.dp + 36.dp + 14.dp)
-
-            ListRow(
-                title = stringResource(R.string.inbox_title),
-                subtitle =
-                    if (pendingInboxCount.value > 0)
-                        pluralStringResource(
-                            R.plurals.settings_inbox_to_categorize,
-                            pendingInboxCount.value.toInt(),
-                            pendingInboxCount.value.toInt(),
-                        )
-                    else
-                        stringResource(R.string.settings_inbox_subtitle),
-                leading = {
-                    IconTile(icon = R.drawable.ic_tabler_inbox)
-                },
-                trailing = {
-                    if (pendingInboxCount.value > 0) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .background(
-                                    color = colors.accent,
-                                    shape = MoneyShapes.pill,
-                                )
-                                .padding(
-                                    horizontal = 8.dp,
-                                    vertical = 2.dp,
-                                )
-                        ) {
-                            Text(
-                                text = pendingInboxCount.value.toString(),
-                                style = MoneyTheme.typography.small,
-                                color = colors.onAccent,
-                            )
-                        }
-                    }
-                    RowChevron()
-                },
-                onClick = onInboxClicked,
+                trailing = { RowChevron() },
+                onClick = onAutoBookClicked,
             )
         }
 
@@ -550,9 +482,8 @@ fun PreferencesScreen(
     isAppLockEnabled = viewModel.isAppLockEnabled.collectAsState(),
     onAppLockClicked = remember { viewModel::onAppLockClicked },
     isNotificationAccessGranted = viewModel.isNotificationAccessGranted.collectAsState(),
-    onNotificationAccessClicked = remember { viewModel::onNotificationAccessClicked },
-    pendingInboxCount = viewModel.pendingInboxCount.collectAsState(),
-    onInboxClicked = remember { viewModel::onInboxClicked },
+    activeSourceCount = viewModel.activeSourceCount.collectAsState(),
+    onAutoBookClicked = remember { viewModel::onAutoBookClicked },
 )
 
 @Preview(
@@ -580,8 +511,7 @@ private fun PreferencesScreenPreview(
         onSignOutClicked = {},
         isSyncErrorsNoticeVisible = true.let(::mutableStateOf),
         isNotificationAccessGranted = false.let(::mutableStateOf),
-        onNotificationAccessClicked = {},
-        pendingInboxCount = 2L.let(::mutableStateOf),
-        onInboxClicked = {},
+        activeSourceCount = 2.let(::mutableStateOf),
+        onAutoBookClicked = {},
     )
 }

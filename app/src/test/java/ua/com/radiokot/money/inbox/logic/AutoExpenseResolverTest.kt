@@ -104,4 +104,26 @@ class AutoExpenseResolverTest {
         )
         assertTrue(AutoExpenseResolver.resolve(incomingPayment, rule, eurAccount, incomeCategory) is Resolution.Create)
     }
+
+    @Test
+    fun recordRuleIsPendingWhenRecordingIsOff() {
+        assertEquals(
+            Resolution.Pending(PendingReason.AutoRecordDisabled),
+            AutoExpenseResolver.resolve(payment, rule, eurAccount, eurCategory, recordKnownPayees = false),
+        )
+        // Not matched: the earlier reasons still win.
+        assertEquals(
+            Resolution.Pending(PendingReason.NoRule),
+            AutoExpenseResolver.resolve(payment, null, eurAccount, null, recordKnownPayees = false),
+        )
+    }
+
+    @Test
+    fun askRuleStaysAskRequestedWhenRecordingIsOff() {
+        val askRule = rule.copy(action = PayeeRule.Action.Ask)
+        assertEquals(
+            Resolution.Pending(PendingReason.AskRequested),
+            AutoExpenseResolver.resolve(payment, askRule, eurAccount, null, recordKnownPayees = false),
+        )
+    }
 }

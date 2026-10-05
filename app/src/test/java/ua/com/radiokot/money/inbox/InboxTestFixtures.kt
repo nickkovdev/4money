@@ -14,6 +14,7 @@ import ua.com.radiokot.money.currency.data.Amount
 import ua.com.radiokot.money.currency.data.Currency
 import ua.com.radiokot.money.inbox.data.InboxItem
 import ua.com.radiokot.money.inbox.data.InboxRepository
+import ua.com.radiokot.money.inbox.data.SourceStats
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
@@ -76,6 +77,11 @@ class FakeInboxRepository : InboxRepository {
 
     override fun getKnownCardLast4Flow(): Flow<List<String>> =
         items.map { list -> list.mapNotNull(InboxItem::cardLast4).distinct().sorted() }
+
+    val sourceStats = MutableStateFlow<Map<String, SourceStats>>(emptyMap())
+
+    override fun getSourceStatsFlow(since: LocalDateTime): Flow<Map<String, SourceStats>> =
+        sourceStats
 
     override suspend fun markDone(itemId: String, transferId: String) =
         update(itemId) { it.copy(status = InboxItem.Status.Done, transferId = transferId) }

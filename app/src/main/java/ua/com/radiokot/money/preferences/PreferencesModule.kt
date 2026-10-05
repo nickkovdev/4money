@@ -47,11 +47,11 @@ val preferencesModule = module {
                 currencyPreferences = get(),
                 session = get(),
                 syncErrorRepository = get(),
-                inboxRepository = get(),
                 signOutUseCase = get(),
                 appLock = get(),
                 disableAppLockUseCase = get(),
                 themePreferences = get(),
+                sourceRegistry = get(),
             )
         } bind PreferencesScreenViewModel::class
     }

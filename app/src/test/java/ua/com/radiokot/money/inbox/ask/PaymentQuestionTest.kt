@@ -38,6 +38,7 @@ class PaymentQuestionTest {
             PendingReason.CategoryDirectionMismatch,
             PendingReason.CategoryCurrencyMismatch,
             PendingReason.UnsupportedPrecision,
+            PendingReason.AutoRecordDisabled,
         ).forEach { reason ->
             Assert.assertFalse(reason.name, PaymentQuestion.shouldAsk(reason))
         }

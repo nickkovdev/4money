@@ -28,13 +28,16 @@ interface CardAccountResolver {
      * @param usableAccountIds IDs of existing non-archived accounts;
      * a mapped, rule or most used account not among them is skipped.
      *
+     * @param sourcePackage the notification source, whose account serves payments without a card
      * @return the account to use: the account mapped to [cardLast4] in settings,
-     * otherwise [ruleAccountId], otherwise the most used account.
+     * otherwise, if there is no card, the account of [sourcePackage], then [ruleAccountId],
+     * otherwise the most used account.
      */
     suspend fun resolve(
         cardLast4: String?,
         ruleAccountId: String?,
         usableAccountIds: Set<String>,
+        sourcePackage: String? = null,
     ): String?
 }
 
@@ -47,10 +50,15 @@ class DefaultCardAccountResolver(
         cardLast4: String?,
         ruleAccountId: String?,
         usableAccountIds: Set<String>,
+        sourcePackage: String?,
     ): String? =
         cardLast4
             ?.let(cardAccountPreferences::getAccountIdForCard)
             ?.takeIf(usableAccountIds::contains)
+            ?: sourcePackage
+                ?.takeIf { cardLast4 == null }
+                ?.let(cardAccountPreferences::getAccountIdForSource)
+                ?.takeIf(usableAccountIds::contains)
             ?: ruleAccountId?.takeIf(usableAccountIds::contains)
             ?: mostUsedAccountSource.getMostUsedAccountId()?.takeIf(usableAccountIds::contains)
 }

@@ -20,10 +20,17 @@
 package ua.com.radiokot.money.inbox
 
 import android.content.Context
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.koin.dsl.onClose
+import ua.com.radiokot.money.auth.logic.UserSessionScopeListener
 import ua.com.radiokot.money.auth.logic.sessionScope
 import ua.com.radiokot.money.inbox.data.CardAccountPreferences
 import ua.com.radiokot.money.inbox.data.CardAccountPreferencesOnPrefs
@@ -33,18 +40,41 @@ import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
 import ua.com.radiokot.money.inbox.data.PowerSyncInboxRepository
 import ua.com.radiokot.money.inbox.data.PowerSyncMostUsedAccountSource
 import ua.com.radiokot.money.inbox.data.PowerSyncPayeeRuleRepository
+import ua.com.radiokot.money.inbox.logic.AcceptInboxSuggestionUseCase
 import ua.com.radiokot.money.inbox.logic.CardAccountResolver
 import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
 import ua.com.radiokot.money.inbox.logic.DefaultCardAccountResolver
 import ua.com.radiokot.money.inbox.logic.ProcessBankNotificationUseCase
-import ua.com.radiokot.money.inbox.logic.SebLatviaNotificationParser
 import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
 import ua.com.radiokot.money.inbox.ask.PaymentQuestionNotifier
+import ua.com.radiokot.money.inbox.listener.BankNotificationListenerService
+import ua.com.radiokot.money.inbox.sources.data.ActiveNotificationsSource
+import ua.com.radiokot.money.inbox.sources.data.AndroidAppInfoSource
+import ua.com.radiokot.money.inbox.sources.data.AppInfoSource
+import ua.com.radiokot.money.inbox.sources.data.AutoBookBehaviour
+import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferences
+import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferencesOnPrefs
+import ua.com.radiokot.money.inbox.sources.data.FileRecentNotificationBuffer
+import ua.com.radiokot.money.inbox.sources.data.RecentNotificationBuffer
+import ua.com.radiokot.money.inbox.sources.logic.BankNotificationParsing
+import ua.com.radiokot.money.inbox.sources.logic.BuiltInPresets
+import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistry
+import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistryStarter
+import ua.com.radiokot.money.inbox.sources.logic.SaveSourceSetupUseCase
+import ua.com.radiokot.money.inbox.templates.data.NotificationTemplateRepository
+import ua.com.radiokot.money.inbox.templates.data.PowerSyncNotificationTemplateRepository
+import ua.com.radiokot.money.inbox.sources.view.CardAccountsScreenViewModel
+import ua.com.radiokot.money.inbox.sources.view.SourcesScreenViewModel
+import ua.com.radiokot.money.inbox.sources.view.setup.SourceSetupViewModel
+import ua.com.radiokot.money.inbox.sources.view.TestTextScreenViewModel
 import ua.com.radiokot.money.inbox.view.InboxCardsViewModel
 import ua.com.radiokot.money.inbox.view.InboxScreenViewModel
 import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
 import ua.com.radiokot.money.transfers.history.data.TransferHistoryRepository
 import ua.com.radiokot.money.transfers.transfersModule
+import java.io.File
+
+private const val SOURCES_COROUTINE_SCOPE = "notification-sources"
 
 val inboxModule = module {
     includes(
@@ -60,7 +90,50 @@ val inboxModule = module {
         )
     } bind CardAccountPreferences::class
 
+    single {
+        AutoBookPreferencesOnPrefs(
+            preferences = androidContext().getSharedPreferences(
+                "autobook",
+                Context.MODE_PRIVATE,
+            ),
+            presetPackageNames = BuiltInPresets.all.map { it.packageName },
+        )
+    } bind AutoBookPreferences::class
+
+    single {
+        FileRecentNotificationBuffer(
+            file = File(androidContext().noBackupFilesDir, "recent_money_notifications.json"),
+        )
+    } bind RecentNotificationBuffer::class
+
+    single {
+        BankNotificationListenerService.ActiveNotifications()
+    } bind ActiveNotificationsSource::class
+
+    single {
+        NotificationSourceRegistryStarter()
+    } bind UserSessionScopeListener::class
+
+    single {
+        AndroidAppInfoSource(
+            context = androidContext(),
+        )
+    } bind AppInfoSource::class
+
     sessionScope {
+
+        // Cancelled when the session ends, stopping the registry's collection.
+        scoped(named(SOURCES_COROUTINE_SCOPE)) {
+            CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        } onClose { it?.cancel() }
+
+        scoped {
+            NotificationSourceRegistry(
+                templateRepository = get(),
+                autoBookPreferences = get(),
+                scope = get(named(SOURCES_COROUTINE_SCOPE)),
+            )
+        } bind BankNotificationParsing::class
 
         scoped {
             PowerSyncInboxRepository(
@@ -73,6 +146,12 @@ val inboxModule = module {
                 database = get(),
             )
         } bind PayeeRuleRepository::class
+
+        scoped {
+            PowerSyncNotificationTemplateRepository(
+                database = get(),
+            )
+        } bind NotificationTemplateRepository::class
 
         scoped {
             PowerSyncMostUsedAccountSource(
@@ -90,15 +169,21 @@ val inboxModule = module {
         // Scoped, not factory: the instance mutex must be shared.
         scoped {
             ProcessBankNotificationUseCase(
-                parsers = listOf(
-                    SebLatviaNotificationParser(),
-                ),
+                parsing = get(),
                 inboxRepository = get(),
                 payeeRuleRepository = get(),
                 accountRepository = get(),
                 categoryRepository = get(),
                 cardAccountResolver = get(),
                 transferFundsUseCase = get(),
+                behaviour = {
+                    val preferences = get<AutoBookPreferences>()
+                    AutoBookBehaviour(
+                        recordKnownPayees = preferences.isRecordKnownPayeesEnabled,
+                        askInNotification = preferences.isAskInNotificationEnabled,
+                        learnFromHistory = preferences.isLearnFromHistoryEnabled,
+                    )
+                },
             )
         } bind ProcessBankNotificationUseCase::class
 
@@ -111,8 +196,18 @@ val inboxModule = module {
                 categoryRepository = get(),
                 transferHistoryRepository = get(),
                 privacyPreferences = get(),
+                autoBookPreferences = get(),
             )
         } bind PaymentQuestionNotifier::class
+
+        factory {
+            SaveSourceSetupUseCase(
+                templateRepository = get(),
+                cardAccountPreferences = get(),
+                autoBookPreferences = get(),
+                recentNotificationBuffer = get(),
+            )
+        } bind SaveSourceSetupUseCase::class
 
         factory {
             CompleteInboxItemUseCase(
@@ -120,6 +215,17 @@ val inboxModule = module {
                 payeeRuleRepository = get(),
             )
         } bind CompleteInboxItemUseCase::class
+
+        factory {
+            AcceptInboxSuggestionUseCase(
+                accountRepository = get(),
+                categoryRepository = get(),
+                payeeRuleRepository = get(),
+                cardAccountResolver = get(),
+                transferFundsUseCase = get(),
+                completeInboxItemUseCase = get(),
+            )
+        } bind AcceptInboxSuggestionUseCase::class
 
         factory {
             UndoInboxItemUseCase(
@@ -135,9 +241,12 @@ val inboxModule = module {
             InboxScreenViewModel(
                 inboxRepository = get(),
                 accountRepository = get(),
-                cardAccountPreferences = get(),
-                cardAccountResolver = get(),
+                categoryRepository = get(),
+                payeeRuleRepository = get(),
+                transferHistoryRepository = get(),
                 undoInboxItemUseCase = get(),
+                acceptInboxSuggestionUseCase = get(),
+                autoBookPreferences = get(),
             )
         } bind InboxScreenViewModel::class
 
@@ -148,10 +257,9 @@ val inboxModule = module {
                 accountRepository = get(),
                 categoryRepository = get(),
                 transferHistoryRepository = get(),
-                cardAccountResolver = get(),
-                transferFundsUseCase = get(),
-                completeInboxItemUseCase = get(),
+                acceptInboxSuggestionUseCase = get(),
                 undoInboxItemUseCase = get(),
+                autoBookPreferences = get(),
             )
         } bind InboxCardsViewModel::class
 
@@ -161,5 +269,47 @@ val inboxModule = module {
                 categoryRepository = get(),
             )
         } bind RulesScreenViewModel::class
+
+        viewModel {
+            SourcesScreenViewModel(
+                registry = get(),
+                appInfoSource = get(),
+                recentNotificationBuffer = get(),
+                inboxRepository = get(),
+                payeeRuleRepository = get(),
+            )
+        } bind SourcesScreenViewModel::class
+
+        viewModel { params ->
+            SourceSetupViewModel(
+                packageName = params.getOrNull<String>(),
+                registry = get(),
+                appInfoSource = get(),
+                recentNotificationBuffer = get(),
+                activeNotificationsSource = get(),
+                accountRepository = get(),
+                cardAccountPreferences = get(),
+                autoBookPreferences = get(),
+                saveSourceSetup = get(),
+            )
+        } bind SourceSetupViewModel::class
+
+        viewModel {
+            TestTextScreenViewModel(
+                registry = get(),
+                appInfoSource = get(),
+            )
+        } bind TestTextScreenViewModel::class
+
+        viewModel {
+            CardAccountsScreenViewModel(
+                inboxRepository = get(),
+                accountRepository = get(),
+                registry = get(),
+                cardAccountPreferences = get(),
+                autoBookPreferences = get(),
+                appInfoSource = get(),
+            )
+        } bind CardAccountsScreenViewModel::class
     }
 }

@@ -97,6 +97,7 @@ object InboxCardSuggester {
      * @param history recent transfers of the card direction, newest first
      * @param isUsable whether a category still exists and is not archived
      * @param amount the payment amount for amount range rules, null if unknown
+     * @param useHistory whether [history] may suggest a category; false leaves only rules
      */
     fun suggest(
         normalizedPayee: String,
@@ -107,15 +108,17 @@ object InboxCardSuggester {
         amount: java.math.BigDecimal? = null,
         ruleMatcher: (normalizedPayee: String, rules: List<PayeeRule>, amount: java.math.BigDecimal?) -> PayeeRule? =
             PayeeRuleMatcher::match,
+        useHistory: Boolean = true,
     ): Result {
+        val usedHistory = if (useHistory) history else emptyList()
         val payeeRanking = rank(
-            history
+            usedHistory
                 .filter { normalizedPayee.isNotEmpty() && it.normalizedMemo == normalizedPayee }
                 .map(HistoryEntry::category)
                 .filter(isUsable)
         )
         val overallRanking = rank(
-            history
+            usedHistory
                 .map(HistoryEntry::category)
                 .filter(isUsable)
         )

@@ -24,29 +24,28 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import kotlinx.serialization.Serializable
 import ua.com.radiokot.money.R
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.view.TransferSheetRoute
-import ua.com.radiokot.money.uikit.ViewText
 import ua.com.radiokot.money.uikit.failureText
 import ua.com.radiokot.money.uikit.resolve
 
-@Serializable
-object InboxScreenRoute
+const val InboxTabRoute = "inbox"
 
 /**
+ * The centre tab of the home screen.
+ *
  * @param viewModel activity-level instance, as it also receives selection results
  */
-fun NavGraphBuilder.inboxScreen(
+fun NavGraphBuilder.inboxTab(
     viewModel: InboxScreenViewModel,
     onProceedToCategorySelection: (accountId: TransferCounterpartyId.Account, isIncome: Boolean) -> Unit,
-    onProceedToAccountSelection: () -> Unit,
     onProceedToTransfer: (TransferSheetRoute) -> Unit,
     onProceedToRules: () -> Unit,
     onProceedToCards: () -> Unit,
-    onClose: () -> Unit,
-) = composable<InboxScreenRoute> {
+) = composable(
+    route = InboxTabRoute,
+) {
 
     val context = LocalContext.current
 
@@ -56,17 +55,19 @@ fun NavGraphBuilder.inboxScreen(
                 is InboxScreenViewModel.Event.ProceedToCategorySelection ->
                     onProceedToCategorySelection(event.accountId, event.isIncome)
 
-                InboxScreenViewModel.Event.ProceedToAccountSelection ->
-                    onProceedToAccountSelection()
-
                 is InboxScreenViewModel.Event.ProceedToTransfer ->
                     onProceedToTransfer(event.route)
+
+                InboxScreenViewModel.Event.ProceedToCards ->
+                    onProceedToCards()
 
                 InboxScreenViewModel.Event.ProceedToRules ->
                     onProceedToRules()
 
-                InboxScreenViewModel.Event.Close ->
-                    onClose()
+                is InboxScreenViewModel.Event.ShowError ->
+                    Toast
+                        .makeText(context, event.text.resolve(context), Toast.LENGTH_LONG)
+                        .show()
 
                 is InboxScreenViewModel.Event.ShowUndoError ->
                     Toast
@@ -84,8 +85,7 @@ fun NavGraphBuilder.inboxScreen(
         }
     }
 
-    InboxScreen(
+    InboxTabScreen(
         viewModel = viewModel,
-        onSortAsCardsClicked = onProceedToCards,
     )
 }

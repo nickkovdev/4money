@@ -12,6 +12,14 @@
         <!-- To write logs to the Documents folder -->
     </uses-permission>
 
+    <!-- The app list of the auto-booking setup and the labels and icons of the sources. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <application
         android:name=".MoneyApp"
         android:allowBackup="true"
@@ -26,7 +34,8 @@
 
         <activity
             android:name=".home.view.HomeActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -76,9 +85,9 @@
             android:windowSoftInputMode="adjustNothing" />
 
         <activity
-            android:name=".inbox.view.InboxActivity"
+            android:name=".inbox.sources.view.AutoBookActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustNothing" />
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".lock.view.UnlockActivity"

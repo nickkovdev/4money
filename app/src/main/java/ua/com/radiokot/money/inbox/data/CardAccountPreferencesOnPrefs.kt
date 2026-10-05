@@ -32,6 +32,8 @@ class CardAccountPreferencesOnPrefs(
 
     private val knownCardsKey = "known_cards"
     private val cardAccountsStateFlow = MutableStateFlow(readCardAccounts())
+    private val knownSourcesKey = "known_sources"
+    private val sourceAccountsStateFlow = MutableStateFlow(readSourceAccounts())
 
     private fun getKey(cardLast4: String) =
         "card_account_$cardLast4"
@@ -58,6 +60,34 @@ class CardAccountPreferencesOnPrefs(
             .getStringSet(knownCardsKey, emptySet())!!
             .forEach { cardLast4 ->
                 getAccountIdForCard(cardLast4)?.also { put(cardLast4, it) }
+            }
+    }
+
+    private fun getSourceKey(sourcePackage: String) =
+        "source_account_$sourcePackage"
+
+    override fun getAccountIdForSource(sourcePackage: String): String? =
+        preferences.getString(getSourceKey(sourcePackage), null)
+
+    override fun setAccountIdForSource(sourcePackage: String, accountId: String) {
+        preferences.edit {
+            putStringSet(
+                knownSourcesKey,
+                preferences.getStringSet(knownSourcesKey, emptySet())!! + sourcePackage
+            )
+            putString(getSourceKey(sourcePackage), accountId)
+        }
+        sourceAccountsStateFlow.update { it + (sourcePackage to accountId) }
+    }
+
+    override fun getSourceAccountsFlow(): Flow<Map<String, String>> =
+        sourceAccountsStateFlow.asStateFlow()
+
+    private fun readSourceAccounts(): Map<String, String> = buildMap {
+        preferences
+            .getStringSet(knownSourcesKey, emptySet())!!
+            .forEach { sourcePackage ->
+                getAccountIdForSource(sourcePackage)?.also { put(sourcePackage, it) }
             }
     }
 }

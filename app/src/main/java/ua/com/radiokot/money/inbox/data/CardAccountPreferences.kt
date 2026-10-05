@@ -31,4 +31,13 @@ interface CardAccountPreferences {
     fun setAccountIdForCard(cardLast4: String, accountId: String)
 
     fun getCardAccountsFlow(): Flow<Map<String, String>>
+
+    /**
+     * The account for payments of the source [sourcePackage] that carry no card.
+     */
+    fun getAccountIdForSource(sourcePackage: String): String?
+
+    fun setAccountIdForSource(sourcePackage: String, accountId: String)
+
+    fun getSourceAccountsFlow(): Flow<Map<String, String>>
 }

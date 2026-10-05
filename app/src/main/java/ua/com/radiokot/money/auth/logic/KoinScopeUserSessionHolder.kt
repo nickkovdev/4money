@@ -39,6 +39,10 @@ import ua.com.radiokot.money.auth.data.UserSession
 
 const val DI_SCOPE_SESSION = "user-session"
 
+/**
+ * Notifies every [UserSessionScopeListener] defined in the root scope
+ * once a session scope is created.
+ */
 class KoinScopeUserSessionHolder(
     private val koin: Koin,
 ) : UserSessionHolder {
@@ -46,11 +50,15 @@ class KoinScopeUserSessionHolder(
     override fun set(session: UserSession): Unit = with(koin) {
         closeExistingScope()
 
-        createScope(
+        val sessionScope = createScope(
             scopeId = DI_SCOPE_SESSION,
             qualifier = _q<UserSession>(),
             source = session
         )
+
+        getAll<UserSessionScopeListener>().forEach { listener ->
+            listener.onSessionScopeCreated(sessionScope)
+        }
     }
 
     override fun clear() {

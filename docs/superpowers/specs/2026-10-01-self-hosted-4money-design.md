@@ -235,3 +235,55 @@ are `AppCompatActivity`).
 - Theme names Paper / Midnight / Ember / Aurora stay as proper names in both languages (their subtitles
   are translated); privacy symbols (`•••`, `—`) and `N%` stay as they are.
 - `app_name` and the pure-format `template_category_subcategory` are `translatable="false"`.
+
+## F4. Inbox tab and user-configured notification sources (designed 2026-10-04, approved by the owner)
+
+Plan: `docs/superpowers/plans/2026-10-05-autobook-sources-inbox-tab.md` (branch `feature/autobook-sources-inbox-tab`).
+Supersedes the C/D decision "only SEB Latvia is a source": SEB stays as a built-in preset, any other app can be
+taught by the user.
+
+**A. Inbox as a main tab.** The bottom bar has five tabs: Accounts, Categories, **Inbox** (centre, badge = pending
+count), History, Overview. The tab: title, "N payments wait for a category · M recorded today", a big primary
+"Sort as cards (N)" button (the existing cards screen), "Waiting" (pending items: payee, time · account, amount, the
+suggested category as a one-tap chip and an "Other…" chip opening the prefilled transfer sheet), "Recorded today"
+(today's done items with an Undo icon button, existing undo use case), a rules icon button in the header, an empty
+state when nothing waits. `InboxActivity`, the Settings Inbox row and the inbox part of the profile dot are gone; the
+"Payments to sort" notification opens the Inbox tab.
+
+**B. Sources.**
+- Table `money.notification_templates` (per user, RLS, synced): `id, user_id default auth.uid(), source_package,
+  name, direction ('outgoing'|'incoming'), pattern (generated regex), fields jsonb (capture group numbers of amount,
+  currency, payee, card; whether the text has a time), sample_text, is_enabled, created_at` (local wall-clock
+  timestamp like `transfers.time`). Migration `supabase/migrations/20261006000000_money_notification_templates.sql`
+  (grants, `powersync` publication, `atomic_crud` whitelist), select in `deploy/powersync/sync-config.yaml`.
+- A source is a package with at least one template, or a built-in preset. SEB Latvia (`se.seb.latvia`) is a preset
+  with three kinds (card payment, account payment, incoming payment) using the existing parser unchanged; it shows
+  as configured and can be switched off (device-local). The listener handles enabled presets plus packages with at
+  least one enabled template; for a package the preset is tried first, then its enabled templates by `created_at`;
+  first match wins; no match → a raw pending inbox item as before.
+- Template builder (pure): the sample `title + "\n" + text` is tokenized (words, numbers incl. thousands
+  separators, dates, times, punctuation); the user marks amount, currency, payee (one contiguous run, matched
+  lazily so other payees of any length fit), card digits (optional) and "varies" (any text, e.g. a purpose);
+  unmarked words are literal (regex-escaped, case-insensitive), whitespace is flexible, unmarked numbers/dates/times
+  become wildcards. Amount accepts space/NBSP/U+202F/dot/comma thousands separators and a decimal comma or dot
+  (the last separator followed by 1-2 digits is the decimal one); currency is an ISO code or € $ £. Amount and
+  currency are auto-detected on the sample. A template yields the existing `ParsedBankNotification.Payment`
+  (direction from the template, `hasTimestamp` when the sample has a time), so rules, dedup, inbox, auto-expense
+  and the question notification are unchanged.
+- Recent-notification buffer, device only (a private no-backup file, never synced or logged): the last 50
+  notifications of the last 7 days from any app whose text looks like money (amount next to a currency), used by
+  the wizard; plus the listener's active notifications when the wizard opens. Cleared when notification access is
+  found revoked and when a source is set up. Battery: one cheap regex per posted notification of a non-source app.
+- Wizard (6 steps): intro + notification access (Android 13+ restricted settings hint) → choose app (detected
+  money-like apps with counts, Google Wallet duplicate warning, all launchable apps) → pick a sample → mark tokens +
+  Expense/Income + live preview → test against the buffer ("4 of 5", misses listed, "Teach another kind" loops to
+  the sample step for the same app) → accounts (card last 4 → account, no card → account) and behaviour → Done saves
+  the templates enabled.
+- Behaviour (device-local, global, default on = previous behaviour): record known payees immediately (off → a rule
+  match waits in the Inbox), ask in the notification (off → no "Payments to sort" notification), learn from history
+  (off → suggestions only from rules).
+- Settings: "Bank notifications" becomes "Auto-booking" → Sources screen (access status, source cards with kinds as
+  chips, enable switch, "Set up"/"Teach another kind", "Add app", Cards and accounts, Payee rules, Test text).
+- All strings en + ru; privacy mode masks amounts on the new screens; theme tokens and uikit components only.
+
+**Decisions.** Recorded in the plan's Rulings section.
