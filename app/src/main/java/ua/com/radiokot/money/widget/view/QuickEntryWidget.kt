@@ -146,7 +146,7 @@ private fun QuickEntryWidgetContent(
         verticalAlignment = Alignment.CenterVertically,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(GlanceModifier.width(8.dp))
+        // A tight centred group, the buttons don't spread over the widget width.
         RoundButton(
             background = color { it.income },
             icon = R.drawable.ic_tabler_arrow_up,
@@ -156,13 +156,13 @@ private fun QuickEntryWidgetContent(
                 QuickTransferActivity.intent(context, QuickTransferDirection.Income)
             ),
         )
-        Spacer(GlanceModifier.defaultWeight())
+        Spacer(GlanceModifier.width(BUTTON_GAP))
         InboxButton(
             pendingCount = pendingCount,
             badgeBackground = color { it.badge },
             badgeText = color { it.onBadge },
         )
-        Spacer(GlanceModifier.defaultWeight())
+        Spacer(GlanceModifier.width(BUTTON_GAP))
         RoundButton(
             background = color { it.expense },
             icon = R.drawable.ic_tabler_arrow_down,
@@ -172,9 +172,10 @@ private fun QuickEntryWidgetContent(
                 QuickTransferActivity.intent(context, QuickTransferDirection.Expense)
             ),
         )
-        Spacer(GlanceModifier.width(8.dp))
     }
 }
+
+private val BUTTON_GAP = 10.dp
 
 @Composable
 private fun RoundButton(
