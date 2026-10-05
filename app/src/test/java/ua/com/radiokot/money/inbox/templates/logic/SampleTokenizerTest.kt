@@ -1,3 +1,22 @@
+/* Copyright 2025 Oleg Koretsky
+
+   This file is part of the 4Money,
+   a budget tracking Android app.
+
+   4Money is free software: you can redistribute it
+   and/or modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
+
+   4Money is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+   See the GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with 4Money. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package ua.com.radiokot.money.inbox.templates.logic
 
 import org.junit.Assert.assertEquals
@@ -7,6 +26,9 @@ import org.junit.Test
 import ua.com.radiokot.money.inbox.templates.logic.SampleToken.Kind
 import java.text.Normalizer
 
+private val NBSP = Char(0x00A0)
+private val NNBSP = Char(0x202F)
+
 class SampleTokenizerTest {
 
     private fun tokenize(text: String) =
@@ -14,7 +36,7 @@ class SampleTokenizerTest {
 
     @Test
     fun normalize() {
-        assertEquals("1 500,00 EUR", SampleTokenizer.normalize("  1 500,00 EUR \n"))
+        assertEquals("1 500,00 EUR", SampleTokenizer.normalize("  1${NBSP}500,00${NNBSP}EUR \n"))
         assertEquals(
             "Jūs",
             SampleTokenizer.normalize(Normalizer.normalize("Jūs", Normalizer.Form.NFD)),
@@ -80,7 +102,7 @@ class SampleTokenizerTest {
         assertEquals(listOf(Kind.Amount, Kind.Currency), t.map(SampleToken::kind))
 
         assertEquals(listOf("1 234 567.89"), tokenize("1 234 567.89").map(SampleToken::text))
-        assertEquals(listOf("1 500,00"), tokenize("1 500,00").map(SampleToken::text))
+        assertEquals(listOf("1 500,00"), tokenize("1${NBSP}500,00").map(SampleToken::text))
     }
 
     @Test

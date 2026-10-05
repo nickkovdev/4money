@@ -1,3 +1,22 @@
+/* Copyright 2025 Oleg Koretsky
+
+   This file is part of the 4Money,
+   a budget tracking Android app.
+
+   4Money is free software: you can redistribute it
+   and/or modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
+
+   4Money is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+   See the GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with 4Money. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package ua.com.radiokot.money.inbox.templates.logic
 
 import org.junit.Assert.assertEquals
@@ -138,6 +157,59 @@ class TemplateBuilderTest {
             mapOf(1 to TokenRole.Amount, 2 to TokenRole.Currency, 3 to TokenRole.Payee, 5 to TokenRole.Payee),
         )
         assertEquals(TemplateBuilder.Result.Invalid(Problem.PayeeNotContiguous), result)
+    }
+
+    @Test
+    fun payeeNextToVaries() {
+        // Paid0 3,40(1) EUR2 SHOP3 parking4 lot5 .6
+        val tokens = SampleTokenizer.tokenize("Paid 3,40 EUR SHOP parking lot.")
+        val base = mapOf(1 to TokenRole.Amount, 2 to TokenRole.Currency, 3 to TokenRole.Payee)
+        assertEquals(
+            TemplateBuilder.Result.Invalid(Problem.PayeeNextToVaries),
+            TemplateBuilder.build(tokens, base + (4 to TokenRole.Varies)),
+        )
+        assertEquals(
+            TemplateBuilder.Result.Invalid(Problem.PayeeNextToVaries),
+            TemplateBuilder.build(tokens, base - 3 + (4 to TokenRole.Payee) + (3 to TokenRole.Varies)),
+        )
+        // A literal in between is fine.
+        assertTrue(TemplateBuilder.build(tokens, base + (5 to TokenRole.Varies)) is TemplateBuilder.Result.Built)
+    }
+
+    @Test
+    fun sampleDoesNotMatch() {
+        // Paid0 3,40(1) EUR2 SHOP3 card4 A5 ·6 12(7)
+        val tokens = SampleTokenizer.tokenize("Paid 3,40 EUR SHOP card A ·12")
+        val base = mapOf(1 to TokenRole.Amount, 2 to TokenRole.Currency, 3 to TokenRole.Payee)
+        // A card mark on a word.
+        assertEquals(
+            TemplateBuilder.Result.Invalid(Problem.SampleDoesNotMatch),
+            TemplateBuilder.build(tokens, base + (5 to TokenRole.Card)),
+        )
+        // 2 digits match the card group but give no last 4.
+        assertEquals(
+            TemplateBuilder.Result.Invalid(Problem.SampleDoesNotMatch),
+            TemplateBuilder.build(tokens, base + (7 to TokenRole.Card)),
+        )
+        // A payee of only a dot is empty after the cleanup.
+        assertEquals(
+            TemplateBuilder.Result.Invalid(Problem.SampleDoesNotMatch),
+            TemplateBuilder.build(
+                SampleTokenizer.tokenize("Paid 3,40 EUR ."),
+                mapOf(1 to TokenRole.Amount, 2 to TokenRole.Currency, 3 to TokenRole.Payee),
+            ),
+        )
+        assertTrue(TemplateBuilder.build(tokens, base) is TemplateBuilder.Result.Built)
+    }
+
+    @Test
+    fun digitsInsideAWordBecomeWildcards() {
+        val tokens = SampleTokenizer.tokenize("Paid 3,40 EUR SHOP24 Nr.A12345")
+        val built = built(
+            tokens,
+            mapOf(1 to TokenRole.Amount, 2 to TokenRole.Currency, 3 to TokenRole.Payee),
+        )
+        assertTrue(built.pattern, built.pattern.endsWith("Nr\\s*\\.\\s*A\\d+\\s*$"))
     }
 
     @Test

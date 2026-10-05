@@ -1,3 +1,22 @@
+/* Copyright 2025 Oleg Koretsky
+
+   This file is part of the 4Money,
+   a budget tracking Android app.
+
+   4Money is free software: you can redistribute it
+   and/or modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
+
+   4Money is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+   See the GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with 4Money. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package ua.com.radiokot.money.inbox.templates.logic
 
 import kotlinx.datetime.LocalDateTime
@@ -9,6 +28,9 @@ import ua.com.radiokot.money.inbox.templates.data.NotificationTemplate
 import ua.com.radiokot.money.inbox.templates.data.TemplateFields
 import java.math.BigDecimal
 import java.text.Normalizer
+
+private val NBSP = Char(0x00A0)
+private val NNBSP = Char(0x202F)
 
 class TemplateMatcherTest {
 
@@ -78,7 +100,7 @@ class TemplateMatcherTest {
         )
         assertEquals(
             BigDecimal("1024.15"),
-            matchSebCard("Jūs samaksājāt 1 024,15 EUR par 05/10/2026 18:40 karte...1234 SHOP .")?.amount,
+            matchSebCard("Jūs samaksājāt 1${NBSP}024,15${NNBSP}EUR par 05/10/2026 18:40 karte...1234 SHOP .")?.amount,
         )
         assertEquals(
             "COFFEE POINT",
@@ -269,8 +291,72 @@ class TemplateMatcherTest {
 
     @Test
     fun longTextDoesNotHang() {
-        val text = "Jūs samaksājāt 3,40 EUR par 04/10/2026 09:12 karte...1234 " + "A ".repeat(5_000) + "."
+        val text = "Jūs samaksājāt 3,40 EUR par 04/10/2026 09:12 karte...1234 " + "A ".repeat(1_900) + "."
         assertEquals(BigDecimal("3.40"), matchSebCard(text)?.amount)
+    }
+
+    @Test
+    fun inputLongerThanTheCapIsNotMatched() {
+        val prefix = "Jūs samaksājāt 3,40 EUR par 04/10/2026 09:12 karte...1234 "
+        val fitting = prefix + "A".repeat(4096 - sebTitle.length - 1 - prefix.length - 2) + " ."
+        assertEquals(4096, SampleTokenizer.composeInput(sebTitle, fitting).length)
+        assertEquals(BigDecimal("3.40"), matchSebCard(fitting)?.amount)
+
+        val tooLong = prefix + "A".repeat(4096) + " ."
+        assertNull(matchSebCard(tooLong))
+    }
+
+    @Test
+    fun balanceSignMayFlip() {
+        val positive = "Jūs samaksājāt 30,00 EUR EXAMPLE SIA par parking. Konta bilance: 120,00 EUR"
+        val negative = "Jūs samaksājāt 30,00 EUR EXAMPLE SIA par parking. Konta bilance: -5,00 EUR"
+        val marks = mapOf(
+            2 to TokenRole.Amount, 3 to TokenRole.Currency,
+            4 to TokenRole.Payee, 5 to TokenRole.Payee,
+            7 to TokenRole.Varies, 8 to TokenRole.Varies,
+        )
+        fun template(sample: String) =
+            TemplateBuilder.build(SampleTokenizer.tokenize(sample), marks) as TemplateBuilder.Result.Built
+
+        val fromPositive = template(positive)
+        val fromNegative = template(negative)
+        listOf(fromPositive, fromNegative).forEach { built ->
+            listOf(positive, negative, negative.replace("-5,00", "−5,00")).forEach { text ->
+                assertEquals(
+                    BigDecimal("30.00"),
+                    TemplateMatcher.match(built.pattern, built.fields, false, null, text)?.amount,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun signOfTheMarkedAmountStaysLiteral() {
+        // −0 18,40(1) €2 COFFEE3 POINT4
+        val built = TemplateBuilder.build(
+            SampleTokenizer.tokenize("−18,40 € COFFEE POINT"),
+            mapOf(1 to TokenRole.Amount, 2 to TokenRole.Currency, 3 to TokenRole.Payee, 4 to TokenRole.Payee),
+        ) as TemplateBuilder.Result.Built
+        assertNull(TemplateMatcher.match(built.pattern, built.fields, false, null, "+18,40 € COFFEE POINT"))
+    }
+
+    @Test
+    fun digitRunsInsideWordsAreWildcards() {
+        val sample = "Paid 3,40 EUR at SHOP Ref TX1234567"
+        val built = build(
+            sample,
+            marksByText = mapOf("3,40" to TokenRole.Amount, "EUR" to TokenRole.Currency, "SHOP" to TokenRole.Payee),
+        )
+        assertEquals(
+            "SHOP",
+            TemplateMatcher.match(built.pattern, built.fields, false, null, "Paid 3,40 EUR at SHOP Ref TX7654321")?.payee,
+        )
+        assertEquals(
+            "SHOP",
+            TemplateMatcher.match(built.pattern, built.fields, false, null, "Paid 3,40 EUR at SHOP Ref tx1")?.payee,
+        )
+        assertNull(TemplateMatcher.match(built.pattern, built.fields, false, null, "Paid 3,40 EUR at SHOP Ref TY7654321"))
+        assertNull(TemplateMatcher.match(built.pattern, built.fields, false, null, "Paid 3,40 EUR at SHOP Ref TX"))
     }
 
     private fun build(sample: String, title: String? = null, marksByText: Map<String, TokenRole>): TemplateBuilder.Result.Built {
@@ -349,17 +435,19 @@ class TemplateMatcherTest {
 
     @Test
     fun manyTemplatesStayCorrectBeyondTheCache() {
+        // Distinct literal words, as digits inside words are wildcards.
         repeat(40) { n ->
+            val word = "x".repeat(n + 1)
             val built = build(
-                "Paid 3,40 EUR at SHOP ref$n",
+                "Paid 3,40 EUR at SHOP ref $word",
                 marksByText = mapOf("3,40" to TokenRole.Amount, "EUR" to TokenRole.Currency, "SHOP" to TokenRole.Payee),
             )
             assertEquals(
                 "SHOP",
-                TemplateMatcher.match(built.pattern, built.fields, false, null, "Paid 3,40 EUR at SHOP ref$n")?.payee,
+                TemplateMatcher.match(built.pattern, built.fields, false, null, "Paid 3,40 EUR at SHOP ref $word")?.payee,
             )
             assertNull(
-                TemplateMatcher.match(built.pattern, built.fields, false, null, "Paid 3,40 EUR at SHOP ref${n + 100}")
+                TemplateMatcher.match(built.pattern, built.fields, false, null, "Paid 3,40 EUR at SHOP ref ${word}x")
             )
         }
     }
@@ -373,7 +461,7 @@ class TemplateMatcherTest {
                 "3,40" to TokenRole.Amount, "EUR" to TokenRole.Currency,
             ),
         )
-        val text = "From " + "x for y note ".repeat(80) + "z. Paid 3,40 XYZ"
+        val text = "From " + "x for y note ".repeat(80) + "z. Paid 3,40 EU1"
         assertNull(TemplateMatcher.match(built.pattern, built.fields, false, null, text))
     }
 }

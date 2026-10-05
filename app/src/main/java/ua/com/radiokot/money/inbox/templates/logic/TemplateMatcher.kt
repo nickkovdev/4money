@@ -30,6 +30,9 @@ import ua.com.radiokot.money.inbox.templates.data.TemplateFields
 object TemplateMatcher {
 
     private const val CACHE_SIZE = 32
+
+    // Longer texts are not bank notifications; this also bounds backtracking time.
+    private const val MAX_INPUT_LENGTH = 4096
     private val options = setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
     private val whitespace = Regex("\\s+")
 
@@ -45,7 +48,8 @@ object TemplateMatcher {
      * @param fields capture group numbers of the [pattern]
      *
      * @return the payment, or null when the template does not match or the captured
-     * amount, currency or payee are not valid; never throws
+     * amount, currency or payee are not valid, or the input is longer than 4096 chars;
+     * never throws
      */
     fun match(
         pattern: String,
@@ -54,8 +58,9 @@ object TemplateMatcher {
         title: String?,
         text: String,
     ): ParsedBankNotification.Payment? = try {
-        compile(pattern)
-            ?.matchEntire(SampleTokenizer.composeInput(title, text))
+        SampleTokenizer.composeInput(title, text)
+            .takeIf { it.length <= MAX_INPUT_LENGTH }
+            ?.let { input -> compile(pattern)?.matchEntire(input) }
             ?.let { result -> toPayment(result, fields, isIncoming) }
     } catch (e: Exception) {
         null

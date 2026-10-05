@@ -43,6 +43,8 @@ object TemplateBuilder {
     private const val TIME_PATTERN = "\\d{1,2}:\\d{2}(?::\\d{2})?"
     private const val SIGNED_AMOUNT_GROUP = "([-\u2212+]?(?:${TemplateAmounts.AMOUNT_PATTERN}))"
     private const val CURRENCY_GROUP = "(${TemplateAmounts.CURRENCY_PATTERN})"
+    private const val OPTIONAL_SIGN = "[-−+]?"
+    private const val DIGITS = "\\d+"
     private const val CARD_GROUP = "(\\d{2,6})"
     private const val PAYEE_GROUP = "(.+?)"
     private const val VARIES = ".+?"
@@ -109,6 +111,18 @@ object TemplateBuilder {
         SeveralAmounts,
         SeveralCurrencies,
         SeveralCards,
+
+        /**
+         * A payee run touches a "varies" run with nothing literal in between,
+         * so the payee boundary can't be found.
+         */
+        PayeeNextToVaries,
+
+        /**
+         * The built template does not parse its own sample into a valid amount, currency
+         * and payee (and a card, when one is marked), e.g. the card mark is not on 4-6 digits.
+         */
+        SampleDoesNotMatch,
     }
 
     /**
@@ -154,6 +168,10 @@ object TemplateBuilder {
             positionsOf(TokenRole.Card).size > 1 ->
                 Problem.SeveralCards
 
+            marks[tokens.getOrNull(payees.first() - 1)?.index] == TokenRole.Varies
+                    || marks[tokens.getOrNull(payees.last() + 1)?.index] == TokenRole.Varies ->
+                Problem.PayeeNextToVaries
+
             else ->
                 null
         }
@@ -161,6 +179,34 @@ object TemplateBuilder {
             return Result.Invalid(problem)
         }
 
+        val built = buildPattern(tokens, marks)
+
+        val sample = buildString {
+            tokens.forEach { token ->
+                if (token.spaceBefore) {
+                    append(' ')
+                }
+                append(token.text)
+            }
+        }
+        val parsedSample = TemplateMatcher.match(
+            pattern = built.pattern,
+            fields = built.fields,
+            isIncoming = false,
+            title = null,
+            text = sample,
+        )
+        if (parsedSample == null || built.fields.card != null && parsedSample.cardLast4 == null) {
+            return Result.Invalid(Problem.SampleDoesNotMatch)
+        }
+
+        return built
+    }
+
+    private fun buildPattern(
+        tokens: List<SampleToken>,
+        marks: Map<Int, TokenRole>,
+    ): Result.Built {
         val pattern = StringBuilder("^\\s*")
         var groupCount = 0
         var amountGroup = 0
@@ -209,7 +255,10 @@ object TemplateBuilder {
                 }
 
                 else ->
-                    pattern.append(unmarkedTokenPattern(token))
+                    if (!isSignOfUnmarkedNumber(tokens, marks, position)) {
+                        pattern.append(unmarkedTokenPattern(token))
+                    }
+                    // Else the number wildcard right after carries the optional sign.
             }
             position++
         }
@@ -250,11 +299,34 @@ object TemplateBuilder {
         return name.take(MAX_NAME_LENGTH).trimEnd()
     }
 
+    /**
+     * @return whether the token at the [position] is an unmarked lone sign glued to an unmarked
+     * number or amount, e.g. a balance, whose sign may differ next time.
+     * The sign of a marked amount stays literal, as it may tell the direction.
+     */
+    private fun isSignOfUnmarkedNumber(
+        tokens: List<SampleToken>,
+        marks: Map<Int, TokenRole>,
+        position: Int,
+    ): Boolean {
+        val token = tokens[position]
+        val next = tokens.getOrNull(position + 1)
+            ?: return false
+
+        return token.kind == SampleToken.Kind.Punctuation
+                && token.text in signs
+                && marks[token.index] == null
+                && !next.spaceBefore
+                && (next.kind == SampleToken.Kind.Amount || next.kind == SampleToken.Kind.Number)
+                && marks[next.index] == null
+    }
+
     private fun unmarkedTokenPattern(token: SampleToken): String = when (token.kind) {
-        // A Number may be an integer amount (a balance) that has decimals next time.
+        // A Number may be an integer amount (a balance) that has decimals next time,
+        // a balance may change its sign.
         SampleToken.Kind.Amount,
         SampleToken.Kind.Number ->
-            "(?:${TemplateAmounts.AMOUNT_PATTERN})"
+            "$OPTIONAL_SIGN(?:${TemplateAmounts.AMOUNT_PATTERN})"
 
         SampleToken.Kind.Date ->
             DATE_PATTERN
@@ -272,12 +344,26 @@ object TemplateBuilder {
     }
 
     // Escaping each metachar keeps the pattern readable, unlike \Q…\E.
+    // Digit runs inside a word ("SHOP24", "TX1234567") are wildcards, the letters stay literal.
     private fun escapeLiteral(text: String): String = buildString(text.length * 2) {
+        var previousWasDigit = false
         text.forEach { char ->
-            if (char in REGEX_META_CHARS) {
-                append('\\')
+            val isDigit = char in '0'..'9'
+            when {
+                isDigit && !previousWasDigit ->
+                    append(DIGITS)
+
+                isDigit ->
+                    Unit
+
+                else -> {
+                    if (char in REGEX_META_CHARS) {
+                        append('\\')
+                    }
+                    append(char)
+                }
             }
-            append(char)
+            previousWasDigit = isDigit
         }
     }
 }

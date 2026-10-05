@@ -67,6 +67,9 @@ object TemplateAmounts {
         Currency.getAvailableCurrencies().mapTo(HashSet(), Currency::getCurrencyCode)
     }
 
+    private val NO_BREAK_SPACE = Char(0x00A0)
+    private val NARROW_NO_BREAK_SPACE = Char(0x202F)
+
     private val signChars = charArrayOf('-', '−', '+')
 
     /**
@@ -79,8 +82,8 @@ object TemplateAmounts {
      */
     fun parseAmount(text: String): BigDecimal? {
         val unsigned = text
-            .replace(' ', ' ')
-            .replace(' ', ' ')
+            .replace(NO_BREAK_SPACE, ' ')
+            .replace(NARROW_NO_BREAK_SPACE, ' ')
             .trim()
             .trimStart(*signChars)
 
