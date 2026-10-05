@@ -291,7 +291,7 @@ object MoneyTextHeuristic {
   // 2) Marks: amount, currency, card=1234, payee=COFFEE+POINT; Built; then match():
   //    same sample → Payment(3.40, "EUR", "1234", "COFFEE POINT", isIncoming=false, hasTimestamp=true)
   //    "Jūs samaksājāt 1 024,15 EUR par 05/10/2026 18:40 karte...1234 SOME LONGER SHOP NAME RIGA ." → 1024.15, payee "SOME LONGER SHOP NAME RIGA"
-  //    "Jūs samaksājāt 7,80 USD par 2/10/2026 22:05 karte...0000 BOLT ." → 7.80 USD, card 0000, payee BOLT
+  //    "Jūs samaksājāt 7,80 USD par 2/10/2026 22:05 karte...0000 TAXI EXAMPLE ." → 7.80 USD, card 0000, payee "TAXI EXAMPLE"
   //    another kind "EXAMPLE SIA samaksāja 1000,00 EUR par Darba alga." → null
   // 3) Revolut-like, payee in title: title "Coffee Point", text "Paid €3.40 with card ·1234"
   //    marks payee=title words, currency=€, amount=3.40, card=1234 → matches title "Fuelstop Riga", text "Paid €18.40 with card ·1234".

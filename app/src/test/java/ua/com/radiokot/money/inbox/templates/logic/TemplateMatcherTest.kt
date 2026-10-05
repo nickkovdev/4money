@@ -73,11 +73,11 @@ class TemplateMatcherTest {
         assertEquals(BigDecimal("1024.15"), longer.amount)
         assertEquals("SOME LONGER SHOP NAME RIGA", longer.payee)
 
-        val usd = matchSebCard("Jūs samaksājāt 7,80 USD par 2/10/2026 22:05 karte...0000 BOLT .")!!
+        val usd = matchSebCard("Jūs samaksājāt 7,80 USD par 2/10/2026 22:05 karte...0000 TAXI EXAMPLE .")!!
         assertEquals(BigDecimal("7.80"), usd.amount)
         assertEquals("USD", usd.currencyCode)
         assertEquals("0000", usd.cardLast4)
-        assertEquals("BOLT", usd.payee)
+        assertEquals("TAXI EXAMPLE", usd.payee)
 
         val integer = matchSebCard("Jūs samaksājāt 15 EUR par 03/10/2026 18:40 karte...1111 CAFE EXAMPLE .")!!
         assertEquals(BigDecimal("15"), integer.amount)
@@ -171,6 +171,19 @@ class TemplateMatcherTest {
             )?.currencyCode,
         )
         assertNull(TemplateMatcher.match(built.pattern, built.fields, false, null, "Paid €18.40 with card ·1234"))
+
+        // 2-6 digits match; the last 4 are the card, fewer than 4 are no card.
+        val sixDigits = TemplateMatcher.match(
+            built.pattern, built.fields, false,
+            "Fuelstop", "Paid €18.40 with card ·001234",
+        )
+        assertEquals("1234", sixDigits?.cardLast4)
+        val twoDigits = TemplateMatcher.match(
+            built.pattern, built.fields, false,
+            "Fuelstop", "Paid €18.40 with card ·12",
+        )
+        assertEquals("Fuelstop", twoDigits?.payee)
+        assertNull(twoDigits?.cardLast4)
     }
 
     @Test

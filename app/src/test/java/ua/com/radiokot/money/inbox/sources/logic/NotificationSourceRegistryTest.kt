@@ -53,7 +53,7 @@ class NotificationSourceRegistryTest {
     private val bank = EXAMPLE_PACKAGE
 
     private val sebSamples = listOf(
-        "Jauna rezervācija" to "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .",
+        "Jauna rezervācija" to "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 COFFEE POINT .",
         "Jauns darījums" to "Jūs samaksājāt 30,00 EUR EXAMPLE SIA par parking. Konta bilance:",
         "Jauns darījums" to "EXAMPLE SIA samaksāja 1000,00 EUR par Darba alga. Konta bilance:",
     )
@@ -112,7 +112,8 @@ class NotificationSourceRegistryTest {
             assertEquals(expected, registry.parse(seb, title, text))
         }
 
-        awaitUntil { registry.sourcesFlow.value.isNotEmpty() }
+        // With no templates the loaded sources equal the initial ones,
+        // so there is nothing to wait for.
         val source = registry.sourcesFlow.value.single()
         assertEquals(seb, source.packageName)
         assertSame(SebLatviaPreset, source.preset)
@@ -204,7 +205,9 @@ class NotificationSourceRegistryTest {
         assertEquals("EXAMPLE SIA", payment.payee)
         assertTrue(payment.isIncoming)
 
-        awaitUntil { registry.sourcesFlow.value.isNotEmpty() }
+        // The initial sources hold the preset without templates already:
+        // wait for the template to load.
+        awaitUntil { registry.sourcesFlow.value.singleOrNull()?.templates?.isNotEmpty() == true }
         val source = registry.sourcesFlow.value.single()
         assertSame(SebLatviaPreset, source.preset)
         assertEquals(listOf("seb-extra"), source.templates.map(NotificationTemplate::id))
