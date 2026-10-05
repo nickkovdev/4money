@@ -23,14 +23,26 @@ personal category names or other personal data. `app/local.properties`, `local.p
 | C/D | SEB Latvia bank notification listener → payee rules → auto expense / income or Inbox | merged, **verified on device** 2026-10-02 (card, account and incoming payments; rules learned; no `sync_errors`) |
 | E | 1Money-style UI: dark theme, Tabler icons, Categories ring, Overview tab, period swipe, animations, swipe-to-edit/delete, redesigned transfer sheet | merged, in use; being replaced by F |
 | F | Full redesign (themes Midnight/Paper/Ember/Aurora, new components), Inbox swipe cards, payee rules by amount, "ask in the notification" | branch `feature/redesign`, **not verified on device, needs a migration first**: see `docs/redesign/PROGRESS.md` |
+| F4 | Inbox centre tab and user-configured notification sources (Settings → Auto-booking: sources, teach-by-example wizard, templates, cards and accounts) | branch `feature/autobook-sources-inbox-tab`, **not verified on device, needs a migration and a sync-config update first**: see `docs/redesign/PROGRESS.md` (F4 install order) |
 
 Key places:
 - Server schema/RPCs: `supabase/migrations/` (applied in order: `20261001000000_money_schema.sql`,
-  `20261002000000_money_rules_inbox.sql`, `20261003000000_money_inbox_direction.sql`).
+  `20261002000000_money_rules_inbox.sql`, `20261003000000_money_inbox_direction.sql`,
+  `20261005000000_money_payee_rule_ranges.sql` (F), `20261006000000_money_notification_templates.sql` (F4)).
+  The last two are written but **not applied** until the owner does it.
 - PowerSync deployment: `deploy/powersync/` (compose, `service.yaml`, `sync-config.yaml`).
 - 1Money importer: `tools/onemoney-import/onemoney_to_4money.py` (table semantics documented inside).
 - Icons: `tools/icons/import_tabler.py` (Tabler Icons, MIT, pinned version) → `*_itemicon` drawables.
 - Notifications: `app/src/main/java/ua/com/radiokot/money/inbox/` (listener, SEB parser, rules, Inbox).
+  F4 sources (all under `inbox/`):
+  - `sources/logic/NotificationSourceRegistry.kt`: the set of sources, active-package cache, parsing entry point;
+    `NotificationSourcePreset.kt`: built-in presets (SEB Latvia, wraps `logic/SebLatviaNotificationParser.kt`).
+  - `templates/`: `data/` (synced `NotificationTemplate`, `TemplateFields`, PowerSync repository) and `logic/`
+    (`SampleTokenizer`, `TemplateBuilder`, `TemplateMatcher`, `MoneyTextHeuristic`).
+  - `sources/data/`: recent-notification buffer (device-only JSON file), active notifications, `AutoBookPreferences`.
+  - `sources/view/`: `AutoBookActivity` (Sources, Cards and accounts, Test text, Payee rules) and
+    `sources/view/setup/` (the setup wizard, `SourceSetupViewModel`).
+  - The Inbox is a tab in `HomeActivity` (`EXTRA_OPEN_INBOX`); `InboxActivity` is gone.
 - Theme: `MoneyTheme` (search for it), choice in Settings → Appearance.
 
 ## Infrastructure
@@ -109,7 +121,7 @@ never dump everything into a chat.
    - Swipes: horizontal on empty space = month; vertical fling must scroll; row left-swipe = edit/delete,
      delete undo within 4 s; deleting then switching tab still commits.
    - Transfer sheet: two halves, subcategory chips, keypad "=" then ✓, date key, edit/income/account→account.
-   - Notifications: Settings → Bank notifications → grant access (Android 13+: App info → ⋮ →
+   - Notifications (F4 checklist in `docs/redesign/PROGRESS.md`): Settings → Auto-booking → Sources → grant access (Android 13+: App info → ⋮ →
      "Allow restricted settings"). A SEB card payment → pending Inbox item within a second (no network),
      card row shown; categorize with "Remember" → rule; same merchant again → auto expense with payee memo,
      Undo works; foreign currency → always pending; Google Wallet ignored; after sync rows appear in
@@ -132,7 +144,8 @@ never dump everything into a chat.
 ## Decisions worth knowing
 
 - Rules/inbox live inside the app (local-first, no network per notification) — battery is a hard requirement.
-- Only `se.seb.latvia` is a source; Google Wallet posts duplicates and is ignored.
+- ~~Only `se.seb.latvia` is a source~~ **Superseded by F4:** sources are the SEB Latvia built-in preset plus apps the user teaches in Settings → Auto-booking (templates in `money.notification_templates`, synced). Google Wallet still posts duplicates and is ignored unless the user adds it.
+- F4 privacy/battery: the listener does no I/O for a non-source package; recent money-like notifications are kept only on the device (50 entries, 7 days) and never logged; no network anywhere in the feature. Rulings: `docs/superpowers/plans/2026-10-05-autobook-sources-inbox-tab.md`.
 - Dedup = hash(package, title, text) for recognized payments: two identical payments in the same minute count once.
 - Foreign-currency payments never auto-create an expense.
 - No 1Money assets copied (proprietary); icons are Tabler (MIT).
