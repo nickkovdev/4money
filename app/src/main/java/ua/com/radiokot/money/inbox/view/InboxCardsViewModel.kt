@@ -50,6 +50,7 @@ import ua.com.radiokot.money.inbox.logic.CardAccountResolver
 import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
 import ua.com.radiokot.money.inbox.logic.InboxCardAcceptance
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
+import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferences
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
 import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
 import ua.com.radiokot.money.lazyLogger
@@ -79,6 +80,7 @@ class InboxCardsViewModel(
     private val transferFundsUseCase: TransferFundsUseCase,
     private val completeInboxItemUseCase: CompleteInboxItemUseCase,
     private val undoInboxItemUseCase: UndoInboxItemUseCase,
+    private val autoBookPreferences: AutoBookPreferences,
 ) : ViewModel() {
 
     private val log by lazyLogger("InboxCardsVM")
@@ -226,6 +228,7 @@ class InboxCardsViewModel(
             rules = rulesOfDirection,
             history = historyOfDirection,
             amount = item.amount,
+            useHistory = autoBookPreferences.isLearnFromHistoryEnabled,
             isUsable = { key ->
                 val category = lookup.categoriesById[key.categoryId]
                 category != null
@@ -586,6 +589,7 @@ class InboxCardsViewModel(
                 cardLast4 = item.cardLast4,
                 ruleAccountId = null,
                 usableAccountIds = usableAccounts.mapTo(mutableSetOf(), Account::id),
+                sourcePackage = item.sourcePackage,
             )
 
         val account = usableAccounts.firstOrNull { it.id == accountId }

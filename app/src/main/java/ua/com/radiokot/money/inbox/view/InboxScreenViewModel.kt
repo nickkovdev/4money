@@ -121,6 +121,7 @@ class InboxScreenViewModel(
                         .getAccounts()
                         .filterNot(Account::isArchived)
                         .mapTo(mutableSetOf(), Account::id),
+                    sourcePackage = inboxItem.sourcePackage,
                 )
 
             if (accountId == null) {

@@ -48,4 +48,30 @@ interface AutoBookPreferences {
     fun getCachedActivePackages(): Set<String>
 
     fun setCachedActivePackages(packages: Set<String>)
+
+    /**
+     * Whether a payee with a "record" rule is booked without asking, true by default.
+     */
+    var isRecordKnownPayeesEnabled: Boolean
+
+    /**
+     * Whether a question notification is posted for an "ask" rule, true by default.
+     */
+    var isAskInNotificationEnabled: Boolean
+
+    /**
+     * Whether the recent history suggests categories, true by default.
+     */
+    var isLearnFromHistoryEnabled: Boolean
+
+    fun getBehaviourFlow(): Flow<AutoBookBehaviour>
 }
+
+/**
+ * The global auto-booking switches.
+ */
+data class AutoBookBehaviour(
+    val recordKnownPayees: Boolean,
+    val askInNotification: Boolean,
+    val learnFromHistory: Boolean,
+)

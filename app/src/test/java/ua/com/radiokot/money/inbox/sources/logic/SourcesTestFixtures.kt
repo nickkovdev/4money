@@ -23,8 +23,10 @@ package ua.com.radiokot.money.inbox.sources.logic
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDateTime
+import ua.com.radiokot.money.inbox.sources.data.AutoBookBehaviour
 import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferences
 import ua.com.radiokot.money.inbox.templates.data.NotificationTemplate
 import ua.com.radiokot.money.inbox.templates.data.TemplateFields
@@ -61,6 +63,13 @@ class FakeAutoBookPreferences(
     private val presetEnabled = MutableStateFlow(presetPackages.associateWith { true })
     private var cachedActivePackages: Set<String>? = null
     val cachedSets = mutableListOf<Set<String>>()
+
+    override var isRecordKnownPayeesEnabled = true
+    override var isAskInNotificationEnabled = true
+    override var isLearnFromHistoryEnabled = true
+
+    override fun getBehaviourFlow(): Flow<AutoBookBehaviour> =
+        flowOf(AutoBookBehaviour(isRecordKnownPayeesEnabled, isAskInNotificationEnabled, isLearnFromHistoryEnabled))
 
     override fun isPresetEnabled(packageName: String): Boolean =
         presetEnabled.value[packageName] ?: true

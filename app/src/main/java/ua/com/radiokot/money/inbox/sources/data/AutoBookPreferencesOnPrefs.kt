@@ -36,6 +36,7 @@ class AutoBookPreferencesOnPrefs(
 
     private val activePackagesKey = "active_packages"
     private val presetEnabledStateFlow = MutableStateFlow(readPresetEnabled())
+    private val behaviourStateFlow = MutableStateFlow(readBehaviour())
 
     private fun getPresetDisabledKey(packageName: String) =
         "preset_disabled_$packageName"
@@ -72,4 +73,39 @@ class AutoBookPreferencesOnPrefs(
 
     private fun readPresetEnabled(): Map<String, Boolean> =
         presetPackageNames.associateWith(::isPresetEnabled)
+
+    override var isRecordKnownPayeesEnabled: Boolean
+        get() = preferences.getBoolean(RECORD_KNOWN_PAYEES_KEY, true)
+        set(value) = setBehaviour(RECORD_KNOWN_PAYEES_KEY, value)
+
+    override var isAskInNotificationEnabled: Boolean
+        get() = preferences.getBoolean(ASK_IN_NOTIFICATION_KEY, true)
+        set(value) = setBehaviour(ASK_IN_NOTIFICATION_KEY, value)
+
+    override var isLearnFromHistoryEnabled: Boolean
+        get() = preferences.getBoolean(LEARN_FROM_HISTORY_KEY, true)
+        set(value) = setBehaviour(LEARN_FROM_HISTORY_KEY, value)
+
+    override fun getBehaviourFlow(): Flow<AutoBookBehaviour> =
+        behaviourStateFlow.asStateFlow()
+
+    @Synchronized
+    private fun setBehaviour(key: String, value: Boolean) {
+        preferences.edit {
+            putBoolean(key, value)
+        }
+        behaviourStateFlow.value = readBehaviour()
+    }
+
+    private fun readBehaviour() = AutoBookBehaviour(
+        recordKnownPayees = isRecordKnownPayeesEnabled,
+        askInNotification = isAskInNotificationEnabled,
+        learnFromHistory = isLearnFromHistoryEnabled,
+    )
+
+    private companion object {
+        const val RECORD_KNOWN_PAYEES_KEY = "record_known_payees"
+        const val ASK_IN_NOTIFICATION_KEY = "ask_in_notification"
+        const val LEARN_FROM_HISTORY_KEY = "learn_from_history"
+    }
 }

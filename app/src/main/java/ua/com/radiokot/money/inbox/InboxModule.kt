@@ -47,6 +47,7 @@ import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
 import ua.com.radiokot.money.inbox.ask.PaymentQuestionNotifier
 import ua.com.radiokot.money.inbox.listener.BankNotificationListenerService
 import ua.com.radiokot.money.inbox.sources.data.ActiveNotificationsSource
+import ua.com.radiokot.money.inbox.sources.data.AutoBookBehaviour
 import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferences
 import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferencesOnPrefs
 import ua.com.radiokot.money.inbox.sources.data.FileRecentNotificationBuffer
@@ -155,6 +156,14 @@ val inboxModule = module {
                 categoryRepository = get(),
                 cardAccountResolver = get(),
                 transferFundsUseCase = get(),
+                behaviour = {
+                    val preferences = get<AutoBookPreferences>()
+                    AutoBookBehaviour(
+                        recordKnownPayees = preferences.isRecordKnownPayeesEnabled,
+                        askInNotification = preferences.isAskInNotificationEnabled,
+                        learnFromHistory = preferences.isLearnFromHistoryEnabled,
+                    )
+                },
             )
         } bind ProcessBankNotificationUseCase::class
 
@@ -167,6 +176,7 @@ val inboxModule = module {
                 categoryRepository = get(),
                 transferHistoryRepository = get(),
                 privacyPreferences = get(),
+                autoBookPreferences = get(),
             )
         } bind PaymentQuestionNotifier::class
 
@@ -208,6 +218,7 @@ val inboxModule = module {
                 transferFundsUseCase = get(),
                 completeInboxItemUseCase = get(),
                 undoInboxItemUseCase = get(),
+                autoBookPreferences = get(),
             )
         } bind InboxCardsViewModel::class
 

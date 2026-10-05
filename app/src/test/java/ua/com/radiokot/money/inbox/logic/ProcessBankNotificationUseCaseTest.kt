@@ -18,6 +18,7 @@ import ua.com.radiokot.money.inbox.data.IncomingBankNotification
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.logic.AutoExpenseResolver.PendingReason
 import ua.com.radiokot.money.inbox.logic.ProcessBankNotificationUseCase.Outcome
+import ua.com.radiokot.money.inbox.sources.data.AutoBookBehaviour
 import ua.com.radiokot.money.inbox.sources.logic.BankNotificationParsing
 import ua.com.radiokot.money.inbox.sources.logic.EXAMPLE_PACKAGE
 import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistry
@@ -75,6 +76,11 @@ class ProcessBankNotificationUseCaseTest {
         categories: List<Category> = listOf(testCategory("cat-food")),
         ruleRepository: FakePayeeRuleRepository = FakePayeeRuleRepository(rules),
         templates: List<NotificationTemplate> = emptyList(),
+        behaviour: AutoBookBehaviour = AutoBookBehaviour(
+            recordKnownPayees = true,
+            askInNotification = true,
+            learnFromHistory = true,
+        ),
     ) = ProcessBankNotificationUseCase(
         parsing = sourcesParsing(templates),
         inboxRepository = inbox,
@@ -86,10 +92,12 @@ class ProcessBankNotificationUseCaseTest {
                 cardLast4: String?,
                 ruleAccountId: String?,
                 usableAccountIds: Set<String>,
+                sourcePackage: String?,
             ) =
                 ruleAccountId ?: "acc-main"
         },
         transferFundsUseCase = transfers,
+        behaviour = { behaviour },
         timeZone = { TimeZone.UTC },
         newId = { "id-${nextId++}" },
     )
@@ -114,6 +122,17 @@ class ProcessBankNotificationUseCaseTest {
         assertEquals(InboxItem.Status.Done, item.status)
         assertEquals(call.transferId, item.transferId)
         assertEquals("rule-1" to LocalDateTime(2026, 10, 2, 8, 6), ruleRepository.hits.single())
+    }
+
+    @Test
+    fun pendingWhenRecordingKnownPayeesIsOff() = runBlocking {
+        val off = AutoBookBehaviour(recordKnownPayees = false, askInNotification = true, learnFromHistory = true)
+
+        val outcome = useCase(behaviour = off).invoke(eurPayment).getOrThrow()
+
+        assertEquals(Outcome.Pending(itemId = "id-0", reason = PendingReason.AutoRecordDisabled), outcome)
+        assertTrue(transfers.calls.isEmpty())
+        assertEquals(InboxItem.Status.Pending, inbox.items.value.single().status)
     }
 
     @Test

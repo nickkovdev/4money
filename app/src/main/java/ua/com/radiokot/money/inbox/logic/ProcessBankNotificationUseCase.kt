@@ -32,6 +32,7 @@ import ua.com.radiokot.money.inbox.data.IncomingBankNotification
 import ua.com.radiokot.money.inbox.data.ParsedBankNotification
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
+import ua.com.radiokot.money.inbox.sources.data.AutoBookBehaviour
 import ua.com.radiokot.money.inbox.sources.logic.BankNotificationParsing
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import ua.com.radiokot.money.transfers.logic.TransferFundsUseCase
@@ -52,6 +53,8 @@ class ProcessBankNotificationUseCase(
     private val categoryRepository: CategoryRepository,
     private val cardAccountResolver: CardAccountResolver,
     private val transferFundsUseCase: TransferFundsUseCase,
+    // Resolved per notification: the switches may change while the process lives.
+    private val behaviour: () -> AutoBookBehaviour,
     // Resolved per call: the listener process may outlive a time zone change.
     private val timeZone: () -> TimeZone = { TimeZone.currentSystemDefault() },
     private val newId: () -> String = { UUID.randomUUID().toString() },
@@ -118,6 +121,7 @@ class ProcessBankNotificationUseCase(
                     cardLast4 = payment?.cardLast4,
                     ruleAccountId = rule?.accountId,
                     usableAccountIds = accountsById.keys,
+                    sourcePackage = notification.packageName,
                 )
                 ?.let(accountsById::get)
 
@@ -132,6 +136,7 @@ class ProcessBankNotificationUseCase(
                     )
                 },
                 category = rule?.let { getCategoryRef(it) },
+                recordKnownPayees = behaviour().recordKnownPayees,
             )
 
             val item = InboxItem(

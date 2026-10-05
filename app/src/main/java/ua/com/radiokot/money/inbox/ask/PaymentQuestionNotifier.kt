@@ -39,6 +39,7 @@ import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
 import ua.com.radiokot.money.inbox.logic.AutoExpenseResolver
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
+import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferences
 import ua.com.radiokot.money.inbox.view.InboxActivity
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.privacy.data.PrivacyPreferences
@@ -63,6 +64,7 @@ class PaymentQuestionNotifier(
     private val categoryRepository: CategoryRepository,
     private val transferHistoryRepository: TransferHistoryRepository,
     private val privacyPreferences: PrivacyPreferences,
+    private val autoBookPreferences: AutoBookPreferences,
 ) {
     private val log by lazyLogger("PaymentQuestionNotifier")
 
@@ -70,7 +72,7 @@ class PaymentQuestionNotifier(
         itemId: String,
         reason: AutoExpenseResolver.PendingReason,
     ) {
-        if (!PaymentQuestion.shouldAsk(reason)) {
+        if (!PaymentQuestion.shouldAsk(reason) || !autoBookPreferences.isAskInNotificationEnabled) {
             return
         }
 
@@ -104,7 +106,8 @@ class PaymentQuestionNotifier(
             .filter { it.currency == account.currency }
             .associateBy { it.id }
         val normalizedPayee = item.payee?.let(PayeeNormalizer::normalize).orEmpty()
-        val history = runCatching {
+        val useHistory = autoBookPreferences.isLearnFromHistoryEnabled
+        val history = if (!useHistory) emptyList() else runCatching {
             transferHistoryRepository
                 .getTransferHistoryPage(
                     cursor = null,
@@ -132,6 +135,7 @@ class PaymentQuestionNotifier(
                 )
             },
             isUsable = { key -> key.categoryId in categories },
+            useHistory = useHistory,
             amount = amount,
         )
         val actionCategories = PaymentQuestion.actionCategories(suggestions)
