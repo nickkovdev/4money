@@ -70,6 +70,15 @@
             android:theme="@style/TransparentActivity"
             android:windowSoftInputMode="adjustNothing" />
 
+        <!-- Quick entry from the home screen widget: its own task, back returns to the launcher. -->
+        <activity
+            android:name=".transfers.view.QuickTransferActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:taskAffinity="${applicationId}.quickentry"
+            android:theme="@style/TransparentActivity"
+            android:windowSoftInputMode="adjustNothing" />
+
         <activity
             android:name=".accounts.view.EditAccountActivity"
             android:exported="false" />
