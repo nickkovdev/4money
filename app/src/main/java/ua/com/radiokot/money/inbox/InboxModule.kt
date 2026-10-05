@@ -62,6 +62,7 @@ import ua.com.radiokot.money.inbox.templates.data.NotificationTemplateRepository
 import ua.com.radiokot.money.inbox.templates.data.PowerSyncNotificationTemplateRepository
 import ua.com.radiokot.money.inbox.sources.view.CardAccountsScreenViewModel
 import ua.com.radiokot.money.inbox.sources.view.SourcesScreenViewModel
+import ua.com.radiokot.money.inbox.sources.view.setup.SourceSetupViewModel
 import ua.com.radiokot.money.inbox.sources.view.TestTextScreenViewModel
 import ua.com.radiokot.money.inbox.view.InboxCardsViewModel
 import ua.com.radiokot.money.inbox.view.InboxScreenViewModel
@@ -262,6 +263,16 @@ val inboxModule = module {
                 payeeRuleRepository = get(),
             )
         } bind SourcesScreenViewModel::class
+
+        viewModel { params ->
+            SourceSetupViewModel(
+                packageName = params.getOrNull<String>(),
+                registry = get(),
+                appInfoSource = get(),
+                recentNotificationBuffer = get(),
+                activeNotificationsSource = get(),
+            )
+        } bind SourceSetupViewModel::class
 
         viewModel {
             TestTextScreenViewModel(

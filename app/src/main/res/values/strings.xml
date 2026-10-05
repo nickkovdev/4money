@@ -403,4 +403,45 @@
         <item quantity="one">%d active source</item>
         <item quantity="other">%d active sources</item>
     </plurals>
+
+    <string name="setup_step_description">Step %1$d of %2$d</string>
+    <string name="setup_next">Next</string>
+    <string name="setup_later">Later</string>
+    <string name="setup_intro_title">Expenses record themselves</string>
+    <string name="setup_intro_text">4Money reads the notifications your bank sends about payments and files them under the right category right away.</string>
+    <string name="setup_intro_example_1_title">The bank sends a notification</string>
+    <string name="setup_intro_example_1_text">“Payment 3.40 EUR, Coffee Point”</string>
+    <string name="setup_intro_example_2_title">A known payee is recorded</string>
+    <string name="setup_intro_example_2_text">Rule: Coffee Point → Food</string>
+    <string name="setup_intro_example_3_title">A new one goes to Inbox</string>
+    <string name="setup_intro_example_3_text">One swipe, and the rule is remembered</string>
+    <string name="setup_intro_privacy">Everything is processed on the phone. Notification texts are not sent to a server, and only the apps you choose are read.</string>
+    <string name="setup_intro_restricted_hint">If Android says the setting is restricted: App info → ⋮ → Allow restricted settings</string>
+    <string name="setup_intro_grant">Allow access to notifications</string>
+    <string name="setup_app_title">Where to read from</string>
+    <string name="setup_app_text">We found apps that recently sent notifications with amounts. Choose your bank.</string>
+    <string name="setup_app_none_found">No app has sent notifications with amounts yet. Choose your bank from all the apps.</string>
+    <string name="setup_app_looks_like_bank">Look like a bank</string>
+    <plurals name="setup_app_count_week">
+        <item quantity="one">%d notification with an amount this week</item>
+        <item quantity="other">%d notifications with an amount this week</item>
+    </plurals>
+    <plurals name="setup_app_count_today">
+        <item quantity="one">%d notification with an amount today</item>
+        <item quantity="other">%d notifications with an amount today</item>
+    </plurals>
+    <string name="setup_app_wallet_warning">Duplicates the bank\'s notifications, better choose the bank itself</string>
+    <string name="setup_app_not_listed">Not in the list</string>
+    <string name="setup_app_pick_all">Choose from all apps</string>
+    <string name="setup_app_pick_all_hint">If the bank has not sent anything yet</string>
+    <string name="setup_apps_title">All apps</string>
+    <string name="setup_apps_search">Search apps</string>
+    <string name="setup_apps_already_source">Already a source</string>
+    <string name="setup_apps_empty">No apps found</string>
+    <string name="setup_sample_title">Payment example</string>
+    <string name="setup_sample_text">Choose a notification about a purchase. We will learn to understand the others from it.</string>
+    <string name="setup_sample_empty_title">Nothing to choose from yet</string>
+    <string name="setup_sample_hint">Don\'t see the right one? Pay for something by card, and the notification will appear here.</string>
+    <string name="setup_sample_use">Use this</string>
+    <string name="setup_sample_app_time">%1$s · %2$s</string>
 </resources>

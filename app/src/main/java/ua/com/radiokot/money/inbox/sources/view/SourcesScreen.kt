@@ -340,7 +340,7 @@ private fun KindChip(
  * "Today 09:12" or "3 October 09:12" in the app locale.
  */
 @Composable
-private fun rememberLastReceivedFormatter(): (LocalDateTime) -> String {
+internal fun rememberLastReceivedFormatter(): (LocalDateTime) -> String {
     val resources = LocalResources.current
     val locale = rememberAppLocale()
 

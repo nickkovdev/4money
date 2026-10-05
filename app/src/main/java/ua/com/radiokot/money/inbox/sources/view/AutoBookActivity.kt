@@ -41,6 +41,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import ua.com.radiokot.money.MoneyAppActivity
 import ua.com.radiokot.money.MoneyAppModalBottomSheetHost
 import ua.com.radiokot.money.auth.logic.UserSessionScope
+import ua.com.radiokot.money.inbox.sources.view.setup.SourceSetupRoute
+import ua.com.radiokot.money.inbox.sources.view.setup.sourceSetupScreen
 import ua.com.radiokot.money.inbox.view.RulesScreenRoute
 import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
 import ua.com.radiokot.money.inbox.view.rulesScreen
@@ -106,12 +108,17 @@ private fun Content(
 
         sourcesScreen(
             viewModel = sourcesViewModel,
-            // The setup wizard comes next.
-            onProceedToWizard = { _ -> },
+            onProceedToWizard = { packageName ->
+                navController.navigate(SourceSetupRoute(packageName))
+            },
             onProceedToCards = { navController.navigate(CardAccountsScreenRoute) },
             onProceedToRules = { navController.navigate(RulesScreenRoute) },
             onProceedToTestText = { navController.navigate(TestTextScreenRoute) },
             onClose = finishActivity,
+        )
+
+        sourceSetupScreen(
+            onClose = navController::navigateUp,
         )
 
         testTextScreen(

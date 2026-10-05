@@ -413,4 +413,49 @@
         <item quantity="many">%d активных источников</item>
         <item quantity="other">%d активного источника</item>
     </plurals>
+
+    <string name="setup_step_description">Шаг %1$d из %2$d</string>
+    <string name="setup_next">Дальше</string>
+    <string name="setup_later">Позже</string>
+    <string name="setup_intro_title">Расходы запишутся сами</string>
+    <string name="setup_intro_text">4Money читает уведомления вашего банка о списаниях и зачислениях и сразу заносит их в нужную категорию.</string>
+    <string name="setup_intro_example_1_title">Банк присылает уведомление</string>
+    <string name="setup_intro_example_1_text">«Оплата 3,40 EUR, Coffee Point»</string>
+    <string name="setup_intro_example_2_title">Знакомый получатель — записано</string>
+    <string name="setup_intro_example_2_text">Правило: Coffee Point → Еда</string>
+    <string name="setup_intro_example_3_title">Новый — во Входящие</string>
+    <string name="setup_intro_example_3_text">Один свайп, и правило запомнится</string>
+    <string name="setup_intro_privacy">Всё обрабатывается на телефоне. Текст уведомлений не отправляется на сервер, читаются только выбранные вами приложения.</string>
+    <string name="setup_intro_restricted_hint">Если Android пишет, что настройка ограничена: О приложении → ⋮ → Разрешить ограниченные настройки</string>
+    <string name="setup_intro_grant">Дать доступ к уведомлениям</string>
+    <string name="setup_app_title">Откуда читать</string>
+    <string name="setup_app_text">Мы нашли приложения, которые недавно присылали уведомления с суммами. Выберите свой банк.</string>
+    <string name="setup_app_none_found">Пока ни одно приложение не присылало уведомлений с суммами. Выберите банк из всех приложений.</string>
+    <string name="setup_app_looks_like_bank">Похожи на банк</string>
+    <plurals name="setup_app_count_week">
+        <item quantity="one">%d уведомление с суммой за неделю</item>
+        <item quantity="few">%d уведомления с суммой за неделю</item>
+        <item quantity="many">%d уведомлений с суммой за неделю</item>
+        <item quantity="other">%d уведомления с суммой за неделю</item>
+    </plurals>
+    <plurals name="setup_app_count_today">
+        <item quantity="one">%d уведомление с суммой за сегодня</item>
+        <item quantity="few">%d уведомления с суммой за сегодня</item>
+        <item quantity="many">%d уведомлений с суммой за сегодня</item>
+        <item quantity="other">%d уведомления с суммой за сегодня</item>
+    </plurals>
+    <string name="setup_app_wallet_warning">Дублирует уведомления банка — лучше выбрать сам банк</string>
+    <string name="setup_app_not_listed">Нет в списке</string>
+    <string name="setup_app_pick_all">Выбрать из всех приложений</string>
+    <string name="setup_app_pick_all_hint">Если банк ещё ничего не присылал</string>
+    <string name="setup_apps_title">Все приложения</string>
+    <string name="setup_apps_search">Поиск приложений</string>
+    <string name="setup_apps_already_source">Уже источник</string>
+    <string name="setup_apps_empty">Приложения не найдены</string>
+    <string name="setup_sample_title">Пример списания</string>
+    <string name="setup_sample_text">Выберите уведомление о покупке. По нему мы научимся понимать остальные.</string>
+    <string name="setup_sample_empty_title">Пока нечего выбрать</string>
+    <string name="setup_sample_hint">Нет нужного? Оплатите что-нибудь картой — уведомление появится здесь.</string>
+    <string name="setup_sample_use">Использовать это</string>
+    <string name="setup_sample_app_time">%1$s · %2$s</string>
 </resources>
