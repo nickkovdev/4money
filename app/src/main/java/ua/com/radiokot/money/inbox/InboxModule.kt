@@ -30,6 +30,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.dsl.onClose
+import ua.com.radiokot.money.auth.logic.UserSessionScopeListener
 import ua.com.radiokot.money.auth.logic.sessionScope
 import ua.com.radiokot.money.inbox.data.CardAccountPreferences
 import ua.com.radiokot.money.inbox.data.CardAccountPreferencesOnPrefs
@@ -58,6 +59,7 @@ import ua.com.radiokot.money.inbox.sources.data.RecentNotificationBuffer
 import ua.com.radiokot.money.inbox.sources.logic.BankNotificationParsing
 import ua.com.radiokot.money.inbox.sources.logic.BuiltInPresets
 import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistry
+import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistryStarter
 import ua.com.radiokot.money.inbox.sources.logic.SaveSourceSetupUseCase
 import ua.com.radiokot.money.inbox.templates.data.NotificationTemplateRepository
 import ua.com.radiokot.money.inbox.templates.data.PowerSyncNotificationTemplateRepository
@@ -107,6 +109,10 @@ val inboxModule = module {
     single {
         BankNotificationListenerService.ActiveNotifications()
     } bind ActiveNotificationsSource::class
+
+    single {
+        NotificationSourceRegistryStarter()
+    } bind UserSessionScopeListener::class
 
     single {
         AndroidAppInfoSource(

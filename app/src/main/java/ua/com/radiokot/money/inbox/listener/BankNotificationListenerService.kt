@@ -65,15 +65,19 @@ class BankNotificationListenerService :
     override fun onListenerConnected() {
         instance = this
 
-        // Created early, so the active package cache follows the templates
-        // synced from other devices even before a source notification comes.
+        // Normally created at the session start already; resolved here as well
+        // so the active package cache follows the templates synced from other devices
+        // even before a source notification comes. Off the main thread:
+        // creating it opens the database.
         getKoin().getScopeOrNull(DI_SCOPE_SESSION)?.also { sessionScope ->
-            runCatching { sessionScope.get<NotificationSourceRegistry>() }
-                .onFailure { error ->
-                    log.error(error) {
-                        "onListenerConnected(): failed to get the source registry"
+            coroutineScope.launch {
+                runCatching { sessionScope.get<NotificationSourceRegistry>() }
+                    .onFailure { error ->
+                        log.error(error) {
+                            "onListenerConnected(): failed to get the source registry"
+                        }
                     }
-                }
+            }
         }
 
         val activeNotifications = try {
