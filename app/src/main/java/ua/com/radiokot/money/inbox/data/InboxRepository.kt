@@ -20,6 +20,7 @@
 package ua.com.radiokot.money.inbox.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.LocalDateTime
 
 interface InboxRepository {
 
@@ -44,6 +45,12 @@ interface InboxRepository {
      */
     fun getKnownCardLast4Flow(): Flow<List<String>>
 
+    /**
+     * @param since local wall-clock start of the recognized count period
+     * @return stats by source package, only for packages that have items
+     */
+    fun getSourceStatsFlow(since: LocalDateTime): Flow<Map<String, SourceStats>>
+
     suspend fun markDone(itemId: String, transferId: String)
 
     /**
@@ -53,3 +60,14 @@ interface InboxRepository {
 
     suspend fun dismiss(itemId: String)
 }
+
+/**
+ * Per-source numbers for the Sources screen.
+ *
+ * @param recognizedCount items of the period with a parsed amount
+ * @param lastReceivedAt the newest item of the source, any time
+ */
+data class SourceStats(
+    val recognizedCount: Int,
+    val lastReceivedAt: LocalDateTime?,
+)

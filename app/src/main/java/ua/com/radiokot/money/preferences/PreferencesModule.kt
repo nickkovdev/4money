@@ -51,6 +51,7 @@ val preferencesModule = module {
                 appLock = get(),
                 disableAppLockUseCase = get(),
                 themePreferences = get(),
+                sourceRegistry = get(),
             )
         } bind PreferencesScreenViewModel::class
     }

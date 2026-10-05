@@ -303,10 +303,7 @@
     <string name="settings_theme_midnight_subtitle">Тёмная, холодный синий</string>
     <string name="settings_theme_ember_subtitle">Тёмная, тёплый янтарь</string>
     <string name="settings_theme_aurora_subtitle">Тёмная, глубокий бирюзовый</string>
-    <string name="settings_bank_notifications">Банковские уведомления</string>
     <string name="settings_notification_access">Доступ к уведомлениям</string>
-    <string name="settings_notification_access_granted">Платежи SEB записываются из уведомлений</string>
-    <string name="settings_notification_access_hint">Разрешите, чтобы платежи SEB автоматически становились расходами</string>
     <string name="settings_granted">Разрешено</string>
     <string name="settings_allow">Разрешить</string>
     <string name="settings_currency">Валюта</string>
@@ -341,4 +338,79 @@
     <string name="lock_use_passcode">Ввести код-пароль</string>
     <string name="lock_enter_passcode">Введите код-пароль</string>
     <string name="lock_incorrect">Неверный код-пароль</string>
+
+    <string name="sources_title">Автоучёт</string>
+    <string name="sources_section_sources">Источники</string>
+    <string name="sources_section_more">Ещё</string>
+    <string name="sources_access_granted">Разрешён</string>
+    <string name="sources_access_missing">Разрешите, чтобы платежи записывались из уведомлений</string>
+    <string name="sources_meta_last">Последнее: %1$s</string>
+    <string name="sources_meta_nothing_yet">Пока ничего не приходило</string>
+    <string name="sources_meta_no_kinds">Видов пока нет</string>
+    <plurals name="sources_recognized_month">
+        <item quantity="one">%d платёж распознан за месяц</item>
+        <item quantity="few">%d платежа распознано за месяц</item>
+        <item quantity="many">%d платежей распознано за месяц</item>
+        <item quantity="other">%d платежа распознано за месяц</item>
+    </plurals>
+    <string name="sources_kind_card_payment">Оплата картой</string>
+    <string name="sources_kind_account_payment">Платёж со счёта</string>
+    <string name="sources_kind_incoming_payment">Зачисление</string>
+    <string name="sources_teach_another">Научить ещё одному виду</string>
+    <string name="sources_set_up">Настроить</string>
+    <string name="sources_add_app">Добавить приложение</string>
+    <string name="sources_cards_title">Карты и счета</string>
+    <string name="sources_cards_subtitle">Куда записывать платежи каждой карты</string>
+    <string name="sources_rules_none">Правил пока нет</string>
+    <plurals name="sources_rules_count">
+        <item quantity="one">%d правило</item>
+        <item quantity="few">%d правила</item>
+        <item quantity="many">%d правил</item>
+        <item quantity="other">%d правила</item>
+    </plurals>
+    <plurals name="sources_rules_by_amount">
+        <item quantity="one">%d по сумме</item>
+        <item quantity="few">%d по сумме</item>
+        <item quantity="many">%d по сумме</item>
+        <item quantity="other">%d по сумме</item>
+    </plurals>
+    <string name="sources_test_title">Проверить текст</string>
+    <string name="sources_test_subtitle">Вставьте уведомление и посмотрите, что распознаётся</string>
+
+    <string name="test_title_placeholder">Заголовок (необязательно)</string>
+    <string name="test_text_placeholder">Текст уведомления</string>
+    <string name="test_empty_title">Вставьте уведомление</string>
+    <string name="test_empty_text">Каждый источник и вид пробуется на нём. Ничего не сохраняется.</string>
+    <string name="test_nothing_matched">Этот текст ничего не распознаёт</string>
+    <string name="test_no_match">Не распознано: %1$d</string>
+    <string name="test_builtin">Встроенный</string>
+    <string name="test_card">Карта •%1$s</string>
+    <string name="test_no_card">Без карты</string>
+    <string name="test_outgoing">Расход</string>
+    <string name="test_incoming">Доход</string>
+
+    <string name="cards_section_cards">Карты</string>
+    <string name="cards_section_without_card">Платежи без карты</string>
+    <string name="cards_choose_account">Выберите счёт</string>
+    <string name="cards_without_card">%1$s · без карты</string>
+    <string name="cards_empty_text">Карты появятся здесь после первого платежа.</string>
+    <string name="behaviour_section">Поведение</string>
+    <string name="behaviour_record_title">Записывать сразу знакомых</string>
+    <string name="behaviour_record_text">Если для получателя есть правило</string>
+    <string name="behaviour_ask_title">Спрашивать в уведомлении</string>
+    <string name="behaviour_ask_text">Кнопки категорий прямо в шторке для правил «Спросить»</string>
+    <string name="behaviour_learn_title">Учиться на истории</string>
+    <string name="behaviour_learn_text">Предлагать категорию, куда вы уже записывали этого получателя</string>
+    <string name="behaviour_footer">Незнакомые получатели и платежи в другой валюте всегда попадают во Входящие.</string>
+
+    <string name="settings_autobook">Автоучёт</string>
+    <string name="settings_autobook_row">Источники уведомлений</string>
+    <string name="settings_autobook_access_granted">Доступ разрешён</string>
+    <string name="settings_autobook_access_missing">Доступ не разрешён</string>
+    <plurals name="settings_autobook_active_sources">
+        <item quantity="one">%d активный источник</item>
+        <item quantity="few">%d активных источника</item>
+        <item quantity="many">%d активных источников</item>
+        <item quantity="other">%d активного источника</item>
+    </plurals>
 </resources>

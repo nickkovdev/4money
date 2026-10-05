@@ -25,7 +25,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import ua.com.radiokot.money.uikit.MoneyDialog
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -39,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.compose.viewmodel.koinViewModel
 import ua.com.radiokot.money.inbox.listener.NotificationAccess
 import androidx.compose.ui.res.stringResource
@@ -47,11 +45,11 @@ import ua.com.radiokot.money.R
 
 const val PreferencesScreenRoute = "preferences"
 
-private val log = KotlinLogging.logger("PreferencesScreen")
 
 fun NavGraphBuilder.preferencesScreen(
     onBack: () -> Unit,
     onProceedToPasscodeSetup: () -> Unit,
+    onProceedToAutoBook: () -> Unit,
     onSignedOut: () -> Unit,
 ) = composable(
     route = PreferencesScreenRoute,
@@ -84,18 +82,9 @@ fun NavGraphBuilder.preferencesScreen(
                 PreferencesScreenViewModel.Event.SignedOut ->
                     onSignedOut()
 
-                PreferencesScreenViewModel.Event.ProceedToNotificationAccessSettings ->
-                    try {
-                        context.startActivity(NotificationAccess.getSettingsIntent(context))
-                    } catch (_: ActivityNotFoundException) {
-                        try {
-                            context.startActivity(NotificationAccess.getFallbackSettingsIntent())
-                        } catch (e: ActivityNotFoundException) {
-                            log.error(e) {
-                                "No notification access settings screen"
-                            }
-                        }
-                    }
+                PreferencesScreenViewModel.Event.ProceedToAutoBook ->
+                    onProceedToAutoBook()
+
 
                 PreferencesScreenViewModel.Event.ProceedToSignOutConfirmation -> {
                     isSignOutConfirmationShown = true

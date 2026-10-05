@@ -38,6 +38,7 @@ import ua.com.radiokot.money.auth.data.UserSession
 import ua.com.radiokot.money.auth.logic.SignOutUseCase
 import ua.com.radiokot.money.currency.data.CurrencyPreferences
 import ua.com.radiokot.money.eventSharedFlow
+import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistry
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.lock.logic.AppLock
 import ua.com.radiokot.money.lock.logic.DisableAppLockUseCase
@@ -54,6 +55,7 @@ class PreferencesScreenViewModel(
     appLock: AppLock,
     private val disableAppLockUseCase: DisableAppLockUseCase,
     private val themePreferences: ThemePreferences,
+    sourceRegistry: NotificationSourceRegistry,
 ) : ViewModel() {
 
     private val log by lazyLogger("PreferencesScreenVM")
@@ -93,8 +95,13 @@ class PreferencesScreenViewModel(
         _isNotificationAccessGranted.value = isGranted
     }
 
-    fun onNotificationAccessClicked() {
-        _events.tryEmit(Event.ProceedToNotificationAccessSettings)
+    val activeSourceCount: StateFlow<Int> =
+        sourceRegistry.sourcesFlow
+            .map { sources -> sources.count { it.isEnabled } }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
+    fun onAutoBookClicked() {
+        _events.tryEmit(Event.ProceedToAutoBook)
     }
 
     val themeMode: StateFlow<ThemeMode> =
@@ -227,7 +234,7 @@ class PreferencesScreenViewModel(
 
         object ProceedToPasscodeSetup : Event
         object SignedOut : Event
-        object ProceedToNotificationAccessSettings : Event
+        object ProceedToAutoBook : Event
 
         /**
          * Pass the confirmation to [onSignOutConfirmed].

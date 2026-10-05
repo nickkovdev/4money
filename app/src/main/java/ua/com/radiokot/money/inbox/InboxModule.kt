@@ -48,6 +48,8 @@ import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
 import ua.com.radiokot.money.inbox.ask.PaymentQuestionNotifier
 import ua.com.radiokot.money.inbox.listener.BankNotificationListenerService
 import ua.com.radiokot.money.inbox.sources.data.ActiveNotificationsSource
+import ua.com.radiokot.money.inbox.sources.data.AndroidAppInfoSource
+import ua.com.radiokot.money.inbox.sources.data.AppInfoSource
 import ua.com.radiokot.money.inbox.sources.data.AutoBookBehaviour
 import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferences
 import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferencesOnPrefs
@@ -58,6 +60,9 @@ import ua.com.radiokot.money.inbox.sources.logic.BuiltInPresets
 import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistry
 import ua.com.radiokot.money.inbox.templates.data.NotificationTemplateRepository
 import ua.com.radiokot.money.inbox.templates.data.PowerSyncNotificationTemplateRepository
+import ua.com.radiokot.money.inbox.sources.view.CardAccountsScreenViewModel
+import ua.com.radiokot.money.inbox.sources.view.SourcesScreenViewModel
+import ua.com.radiokot.money.inbox.sources.view.TestTextScreenViewModel
 import ua.com.radiokot.money.inbox.view.InboxCardsViewModel
 import ua.com.radiokot.money.inbox.view.InboxScreenViewModel
 import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
@@ -100,6 +105,12 @@ val inboxModule = module {
     single {
         BankNotificationListenerService.ActiveNotifications()
     } bind ActiveNotificationsSource::class
+
+    single {
+        AndroidAppInfoSource(
+            context = androidContext(),
+        )
+    } bind AppInfoSource::class
 
     sessionScope {
 
@@ -241,5 +252,33 @@ val inboxModule = module {
                 categoryRepository = get(),
             )
         } bind RulesScreenViewModel::class
+
+        viewModel {
+            SourcesScreenViewModel(
+                registry = get(),
+                appInfoSource = get(),
+                recentNotificationBuffer = get(),
+                inboxRepository = get(),
+                payeeRuleRepository = get(),
+            )
+        } bind SourcesScreenViewModel::class
+
+        viewModel {
+            TestTextScreenViewModel(
+                registry = get(),
+                appInfoSource = get(),
+            )
+        } bind TestTextScreenViewModel::class
+
+        viewModel {
+            CardAccountsScreenViewModel(
+                inboxRepository = get(),
+                accountRepository = get(),
+                registry = get(),
+                cardAccountPreferences = get(),
+                autoBookPreferences = get(),
+                appInfoSource = get(),
+            )
+        } bind CardAccountsScreenViewModel::class
     }
 }

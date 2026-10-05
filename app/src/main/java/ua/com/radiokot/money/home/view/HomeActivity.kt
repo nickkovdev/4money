@@ -125,6 +125,7 @@ import ua.com.radiokot.money.inbox.view.InboxCardsViewModel
 import ua.com.radiokot.money.inbox.view.InboxScreenViewModel
 import ua.com.radiokot.money.inbox.view.InboxTabItems
 import ua.com.radiokot.money.inbox.view.InboxTabRoute
+import ua.com.radiokot.money.inbox.sources.view.AutoBookActivity
 import ua.com.radiokot.money.inbox.view.RulesScreenRoute
 import ua.com.radiokot.money.inbox.view.RulesScreenViewModel
 import ua.com.radiokot.money.inbox.view.inboxCardsScreen
@@ -413,6 +414,9 @@ private fun HomeScreen(
                     context.startActivity(
                         Intent(context, SetUpPasscodeActivity::class.java)
                     )
+                },
+                onProceedToAutoBook = {
+                    context.startActivity(AutoBookActivity.getIntent(context))
                 },
                 onSignedOut = goToAuth,
             )

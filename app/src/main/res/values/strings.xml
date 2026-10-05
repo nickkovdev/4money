@@ -301,10 +301,7 @@
     <string name="settings_theme_midnight_subtitle">Dark, cool blue</string>
     <string name="settings_theme_ember_subtitle">Dark, warm amber</string>
     <string name="settings_theme_aurora_subtitle">Dark, deep teal</string>
-    <string name="settings_bank_notifications">Bank notifications</string>
     <string name="settings_notification_access">Notification access</string>
-    <string name="settings_notification_access_granted">SEB payments are recorded from notifications</string>
-    <string name="settings_notification_access_hint">Allow it so SEB payments become expenses automatically</string>
     <string name="settings_granted">Granted</string>
     <string name="settings_allow">Allow</string>
     <string name="settings_currency">Currency</string>
@@ -339,4 +336,71 @@
     <string name="lock_use_passcode">Use passcode</string>
     <string name="lock_enter_passcode">Enter the passcode</string>
     <string name="lock_incorrect">Incorrect passcode</string>
+
+    <string name="sources_title">Auto-booking</string>
+    <string name="sources_section_sources">Sources</string>
+    <string name="sources_section_more">More</string>
+    <string name="sources_access_granted">Granted</string>
+    <string name="sources_access_missing">Allow it so payments are recorded from notifications</string>
+    <string name="sources_meta_last">Last: %1$s</string>
+    <string name="sources_meta_nothing_yet">Nothing received yet</string>
+    <string name="sources_meta_no_kinds">No kinds yet</string>
+    <plurals name="sources_recognized_month">
+        <item quantity="one">%d payment recognized this month</item>
+        <item quantity="other">%d payments recognized this month</item>
+    </plurals>
+    <string name="sources_kind_card_payment">Card payment</string>
+    <string name="sources_kind_account_payment">Account payment</string>
+    <string name="sources_kind_incoming_payment">Incoming payment</string>
+    <string name="sources_teach_another">Teach another kind</string>
+    <string name="sources_set_up">Set up</string>
+    <string name="sources_add_app">Add app</string>
+    <string name="sources_cards_title">Cards and accounts</string>
+    <string name="sources_cards_subtitle">Where the payments of each card are recorded</string>
+    <string name="sources_rules_none">No rules yet</string>
+    <plurals name="sources_rules_count">
+        <item quantity="one">%d rule</item>
+        <item quantity="other">%d rules</item>
+    </plurals>
+    <plurals name="sources_rules_by_amount">
+        <item quantity="one">%d by amount</item>
+        <item quantity="other">%d by amount</item>
+    </plurals>
+    <string name="sources_test_title">Test text</string>
+    <string name="sources_test_subtitle">Paste a notification and see what is recognized</string>
+
+    <string name="test_title_placeholder">Title (optional)</string>
+    <string name="test_text_placeholder">Notification text</string>
+    <string name="test_empty_title">Paste a notification</string>
+    <string name="test_empty_text">Every source and kind is tried on it. Nothing is saved.</string>
+    <string name="test_nothing_matched">Nothing recognizes this text</string>
+    <string name="test_no_match">No match: %1$d</string>
+    <string name="test_builtin">Built-in</string>
+    <string name="test_card">Card •%1$s</string>
+    <string name="test_no_card">No card</string>
+    <string name="test_outgoing">Expense</string>
+    <string name="test_incoming">Income</string>
+
+    <string name="cards_section_cards">Cards</string>
+    <string name="cards_section_without_card">Payments without a card</string>
+    <string name="cards_choose_account">Choose an account</string>
+    <string name="cards_without_card">%1$s · without a card</string>
+    <string name="cards_empty_text">Cards appear here after their first payment.</string>
+    <string name="behaviour_section">Behaviour</string>
+    <string name="behaviour_record_title">Record known payees at once</string>
+    <string name="behaviour_record_text">When there is a rule for the payee</string>
+    <string name="behaviour_ask_title">Ask in the notification</string>
+    <string name="behaviour_ask_text">Category buttons right in the shade for “Ask me” rules</string>
+    <string name="behaviour_learn_title">Learn from history</string>
+    <string name="behaviour_learn_text">Suggest the category where you already recorded this payee</string>
+    <string name="behaviour_footer">Unknown payees and payments in another currency always go to the Inbox.</string>
+
+    <string name="settings_autobook">Auto-booking</string>
+    <string name="settings_autobook_row">Notification sources</string>
+    <string name="settings_autobook_access_granted">Access granted</string>
+    <string name="settings_autobook_access_missing">Access not granted</string>
+    <plurals name="settings_autobook_active_sources">
+        <item quantity="one">%d active source</item>
+        <item quantity="other">%d active sources</item>
+    </plurals>
 </resources>
