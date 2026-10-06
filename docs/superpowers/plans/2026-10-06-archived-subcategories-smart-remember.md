@@ -46,6 +46,13 @@
 14. **Existing rules:** never deleted. A `contains` rule with the same pattern is re-pointed by `saveRuleForPayee` (existing behaviour), exact rules for covered payees stay. `LearnedRule.createdRuleId` finds a new plain rule with the same pattern AND match type; a re-pointed one is not "created" and survives the undo.
 15. **Hint text:** EN "Will match every payee with «%1$s»", RU "Будет срабатывать для всех «%1$s»", where the argument is the selected words with "… " in front when words before are unselected and " …" after when words after are unselected (e.g. «mcdonalds …»).
 
+Rulings made during execution:
+
+16. The archived-key fallback lives in `inbox/logic/ArchivedSubcategoryFallback.kt`, not in `categories/logic/VisibleSubcategories.kt`, so the categories package does not depend on inbox.
+17. (Final review) The app-chosen default never yields a `contains` pattern equal to an existing plain Record `contains` rule with another category/subcategory (it falls back to the whole payee), so a default cannot silently re-point a broader rule.
+18. (Final review) A user-narrowed selection without a significant token (e.g. "ab", "22", "sia") is saved as the whole-payee exact rule and the UI says so ("too short"). Three-letter tokens like "rig" still count as significant (ruling 12's threshold).
+19. Undo does not restore a rule that an explicit user selection re-pointed (existing behaviour per ruling 14); only the default is guarded. Editor drag re-partitioning jitter is left to the device check.
+
 ## Review Focus
 
 1. Saving a category twice in a row with archived subcategories (and adding a new one in between): archived flags survive, the new one is active. Test: `SubcategoryWritesTest` (Task 1).
