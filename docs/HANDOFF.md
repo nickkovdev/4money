@@ -1,4 +1,4 @@
-# Handoff — personal 4Money fork (state as of 2026-10-02)
+# Handoff — personal 4Money fork (state as of 2026-10-05)
 
 For the next agent/session continuing this work on another machine. Read this first, then
 `docs/superpowers/specs/2026-10-01-self-hosted-4money-design.md` (the binding spec) and, if needed,
@@ -24,6 +24,7 @@ personal category names or other personal data. `app/local.properties`, `local.p
 | E | 1Money-style UI: dark theme, Tabler icons, Categories ring, Overview tab, period swipe, animations, swipe-to-edit/delete, redesigned transfer sheet | merged, in use; being replaced by F |
 | F | Full redesign (themes Midnight/Paper/Ember/Aurora, new components), Inbox swipe cards, payee rules by amount, "ask in the notification" | branch `feature/redesign`, **not verified on device, needs a migration first**: see `docs/redesign/PROGRESS.md` |
 | F4 | Inbox centre tab and user-configured notification sources (Settings → Auto-booking: sources, teach-by-example wizard, templates, cards and accounts) | branch `feature/autobook-sources-inbox-tab`, **not verified on device, needs a migration and a sync-config update first**: see `docs/redesign/PROGRESS.md` (F4 install order) |
+| F5 | Home screen widget "Quick entry" (↑ income, logo with Inbox badge, ↓ expense) and the translucent quick-entry flow over the launcher | branch `feature/home-widget`, **not verified on device**; no migration or sync-config change needed, checklist in `docs/redesign/PROGRESS.md` (F5) |
 
 Key places:
 - Server schema/RPCs: `supabase/migrations/` (applied in order: `20261001000000_money_schema.sql`,
@@ -43,6 +44,8 @@ Key places:
   - `sources/view/`: `AutoBookActivity` (Sources, Cards and accounts, Test text, Payee rules) and
     `sources/view/setup/` (the setup wizard, `SourceSetupViewModel`).
   - The Inbox is a tab in `HomeActivity` (`EXTRA_OPEN_INBOX`); `InboxActivity` is gone.
+- Home widget (F5): `widget/` (`logic/` badge, palette, debounced updater; `view/` Glance `QuickEntryWidget` + receiver; `HomeWidgetModule`) and
+  `transfers/view/QuickTransferActivity.kt` (translucent quick entry in its own task, plan `docs/superpowers/plans/2026-10-05-home-widget.md`).
 - Theme: `MoneyTheme` (search for it), choice in Settings → Appearance.
 
 ## Infrastructure

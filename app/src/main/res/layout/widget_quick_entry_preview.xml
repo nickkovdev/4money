@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:importantForAccessibility="no">
+
+    <FrameLayout
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/widget_circle"
+        android:backgroundTint="#137A4C">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_tabler_arrow_up"
+            android:tint="#FFFFFFFF"
+            tools:ignore="UseAppTint" />
+    </FrameLayout>
+
+    <ImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginEnd="28dp"
+        android:background="@drawable/widget_circle"
+        android:src="@drawable/pear_by_francesco_cesqo_stefanini_from_noun_project_cc_by_3_0" />
+
+    <FrameLayout
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/widget_circle"
+        android:backgroundTint="#BF4310">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_tabler_arrow_down"
+            android:tint="#FFFFFFFF"
+            tools:ignore="UseAppTint" />
+    </FrameLayout>
+</LinearLayout>

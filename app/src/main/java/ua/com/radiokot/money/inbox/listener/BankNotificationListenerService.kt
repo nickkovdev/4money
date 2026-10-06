@@ -40,6 +40,7 @@ import ua.com.radiokot.money.inbox.sources.data.RecentNotificationBuffer
 import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistry
 import ua.com.radiokot.money.inbox.templates.logic.MoneyTextHeuristic
 import ua.com.radiokot.money.lazyLogger
+import ua.com.radiokot.money.widget.logic.HomeWidgetUpdater
 
 /**
  * Bound by the system and called only on notifications:
@@ -148,6 +149,9 @@ class BankNotificationListenerService :
                     }
 
                     if (outcome is ProcessBankNotificationUseCase.Outcome.Pending) {
+                        // The widget badge shows the pending count.
+                        runCatching { getKoin().get<HomeWidgetUpdater>().requestUpdate() }
+
                         runCatching {
                             sessionScope
                                 .get<PaymentQuestionNotifier>()

@@ -1,0 +1,57 @@
+/* Copyright 2025 Oleg Koretsky
+
+   This file is part of the 4Money,
+   a budget tracking Android app.
+
+   4Money is free software: you can redistribute it
+   and/or modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
+
+   4Money is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+   See the GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with 4Money. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+package ua.com.radiokot.money.widget.logic
+
+import android.content.Context
+import android.os.SystemClock
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.state.updateAppWidgetState
+import androidx.glance.appwidget.updateAll
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import ua.com.radiokot.money.widget.view.QuickEntryWidget
+
+fun interface HomeWidgetUpdater {
+    fun requestUpdate()
+}
+
+/** Redraws every placed Quick entry widget; bursts collapse into one update. */
+class GlanceHomeWidgetUpdater(
+    context: Context,
+    scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    debounceMs: Long = 500,
+) : HomeWidgetUpdater {
+
+    private val appContext = context.applicationContext
+    private val trigger = DebouncedTrigger(scope, debounceMs) {
+        // A running Glance session only reloads its state on update,
+        // so bump a state key it observes to make it re-read the theme and the count.
+        GlanceAppWidgetManager(appContext).getGlanceIds(QuickEntryWidget::class.java)
+            .forEach { id ->
+                updateAppWidgetState(appContext, id) {
+                    it[QuickEntryWidget.REFRESH_KEY] = SystemClock.elapsedRealtime()
+                }
+            }
+        QuickEntryWidget().updateAll(appContext)
+    }
+
+    override fun requestUpdate() = trigger.trigger()
+}
