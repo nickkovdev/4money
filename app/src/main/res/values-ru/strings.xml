@@ -150,6 +150,7 @@
     <string name="overview_all_categories">Все категории</string>
     <string name="overview_transactions">Операции</string>
     <string name="overview_no_subcategory">Без подкатегории</string>
+    <string name="subcategories_archived_row">Архивные</string>
 
     <!-- Transfers -->
     <string name="transfers_kind_expense">Расход</string>

@@ -104,7 +104,7 @@ private fun CategoryActionSheet(
     modifier: Modifier = Modifier,
     statsPeriod: ViewHistoryPeriod,
     statsAmount: State<ViewAmount>,
-    subcategoryAmounts: State<List<Pair<String?, ViewAmount>>>,
+    subcategoryAmounts: State<List<ViewCategorySheetSubcategoryAmount>>,
     colorScheme: State<ItemColorScheme>,
     title: State<String>,
     icon: State<ItemIcon?>,
@@ -176,7 +176,7 @@ private fun Header(
     modifier: Modifier = Modifier,
     statsPeriod: ViewHistoryPeriod,
     statsAmount: State<ViewAmount>,
-    subcategoryAmounts: State<List<Pair<String?, ViewAmount>>>,
+    subcategoryAmounts: State<List<ViewCategorySheetSubcategoryAmount>>,
     colorScheme: State<ItemColorScheme>,
     title: State<String>,
     icon: State<ItemIcon?>,
@@ -239,8 +239,8 @@ private fun Header(
         val total = statsAmount.value.value
 
         ListGroup {
-            subcategories.forEachIndexed { i, (title, amount) ->
-                key(i, title) {
+            subcategories.forEachIndexed { i, (title, isArchived, amount) ->
+                key(i, title, isArchived) {
                     if (i != 0) {
                         ListDivider()
                     }
@@ -257,7 +257,11 @@ private fun Header(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                text = title ?: stringResource(R.string.categories_sheet_other),
+                                text = title
+                                    ?: if (isArchived)
+                                        stringResource(R.string.subcategories_archived_row)
+                                    else
+                                        stringResource(R.string.categories_sheet_other),
                                 style = MoneyTheme.typography.body,
                                 color =
                                     if (title == null)
@@ -335,19 +339,27 @@ private fun Preview(
             )
         ).let(::mutableStateOf),
         subcategoryAmounts = listOf(
-            "Pharmacy" to ViewAmount(
-                value = BigInteger("10000"),
-                currency = ViewCurrency(
-                    symbol = "$",
-                    precision = 2,
-                )
+            ViewCategorySheetSubcategoryAmount(
+                title = "Pharmacy",
+                isArchived = false,
+                amount = ViewAmount(
+                    value = BigInteger("10000"),
+                    currency = ViewCurrency(
+                        symbol = "$",
+                        precision = 2,
+                    )
+                ),
             ),
-            null to ViewAmount(
-                value = BigInteger("5000"),
-                currency = ViewCurrency(
-                    symbol = "$",
-                    precision = 2,
-                )
+            ViewCategorySheetSubcategoryAmount(
+                title = null,
+                isArchived = false,
+                amount = ViewAmount(
+                    value = BigInteger("5000"),
+                    currency = ViewCurrency(
+                        symbol = "$",
+                        precision = 2,
+                    )
+                ),
             ),
         ).let(::mutableStateOf),
         colorScheme = HardcodedItemColorSchemeRepository()

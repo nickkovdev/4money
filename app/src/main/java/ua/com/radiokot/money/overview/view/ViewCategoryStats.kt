@@ -24,6 +24,7 @@ import ua.com.radiokot.money.R
 import androidx.compose.runtime.Immutable
 import ua.com.radiokot.money.categories.data.Category
 import ua.com.radiokot.money.categories.data.CategoryWithAmountsBySubcategory
+import ua.com.radiokot.money.categories.logic.SubcategoryAmountKey
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.currency.view.ViewAmount
@@ -101,11 +102,22 @@ class ViewCategoryStats(
                     .subcategoryRows(categoryWithAmounts.amountBySubcategory)
                     .map { row ->
                         ViewCategoryStatsSubcategory(
-                            key = row.subcategory?.id ?: "none",
-                            title = row.subcategory?.title
-                                ?.let(ViewText::Plain)
-                                ?: ViewText.Res(R.string.overview_no_subcategory),
-                            isUncategorized = row.subcategory == null,
+                            key = when (val key = row.key) {
+                                is SubcategoryAmountKey.Active -> key.subcategory.id
+                                SubcategoryAmountKey.None -> "none"
+                                SubcategoryAmountKey.Archived -> "archived"
+                            },
+                            title = when (val key = row.key) {
+                                is SubcategoryAmountKey.Active ->
+                                    ViewText.Plain(key.subcategory.title)
+
+                                SubcategoryAmountKey.None ->
+                                    ViewText.Res(R.string.overview_no_subcategory)
+
+                                SubcategoryAmountKey.Archived ->
+                                    ViewText.Res(R.string.subcategories_archived_row)
+                            },
+                            isUncategorized = row.key !is SubcategoryAmountKey.Active,
                             amount = ViewAmount(row.amount, categoryCurrency),
                             fraction = row.fraction,
                         )

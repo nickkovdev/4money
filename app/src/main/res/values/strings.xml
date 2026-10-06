@@ -152,6 +152,7 @@
     <string name="overview_all_categories">All categories</string>
     <string name="overview_transactions">Transactions</string>
     <string name="overview_no_subcategory">No subcategory</string>
+    <string name="subcategories_archived_row">Archived</string>
 
     <!-- Transfers -->
     <string name="transfers_kind_expense">Expense</string>
