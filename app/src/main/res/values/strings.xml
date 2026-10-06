@@ -131,6 +131,9 @@
     <string name="categories_add_subcategory">Add subcategory</string>
     <string name="categories_new_subcategory">New subcategory</string>
     <string name="categories_edit_subcategory">Edit subcategory</string>
+    <string name="categories_subcategory_archived">Archived</string>
+    <string name="categories_subcategory_archive">Archive</string>
+    <string name="categories_subcategory_unarchive">Unarchive</string>
     <plurals name="transaction_count">
         <item quantity="one">%d transaction</item>
         <item quantity="other">%d transactions</item>

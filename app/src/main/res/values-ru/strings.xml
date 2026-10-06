@@ -127,6 +127,9 @@
     <string name="categories_add_subcategory">Добавить подкатегорию</string>
     <string name="categories_new_subcategory">Новая подкатегория</string>
     <string name="categories_edit_subcategory">Подкатегория</string>
+    <string name="categories_subcategory_archived">В архиве</string>
+    <string name="categories_subcategory_archive">В архив</string>
+    <string name="categories_subcategory_unarchive">Вернуть из архива</string>
     <plurals name="transaction_count">
         <item quantity="one">%d операция</item>
         <item quantity="few">%d операции</item>
