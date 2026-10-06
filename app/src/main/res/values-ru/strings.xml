@@ -503,4 +503,13 @@
     <string name="setup_test_teach_first">Сначала научите хотя бы один вид: вернитесь и отметьте уведомление или нажмите «Научить ещё одному виду».</string>
     <string name="setup_accounts_title">Куда записывать</string>
     <string name="setup_accounts_save_failed">Не удалось сохранить. Попробуйте ещё раз.</string>
+    <string name="widget_quick_entry_label">Быстрый ввод</string>
+    <string name="widget_quick_entry_description">Добавляйте доход или расход с главного экрана и видите, сколько платежей ждёт во «Входящих»</string>
+    <string name="widget_open_inbox">Открыть «Входящие»</string>
+    <plurals name="widget_open_inbox_pending">
+        <item quantity="one">Открыть «Входящие», ждёт %d платёж</item>
+        <item quantity="few">Открыть «Входящие», ждут %d платежа</item>
+        <item quantity="many">Открыть «Входящие», ждут %d платежей</item>
+        <item quantity="other">Открыть «Входящие», ждут %d платежа</item>
+    </plurals>
 </resources>

@@ -487,4 +487,11 @@
     <string name="setup_test_teach_first">Teach at least one kind first: go back and mark a notification, or press “Teach another kind”.</string>
     <string name="setup_accounts_title">Where to record</string>
     <string name="setup_accounts_save_failed">Could not save. Try again.</string>
+    <string name="widget_quick_entry_label">Quick entry</string>
+    <string name="widget_quick_entry_description">Add an income or an expense from the home screen and see how many payments wait in the Inbox</string>
+    <string name="widget_open_inbox">Open Inbox</string>
+    <plurals name="widget_open_inbox_pending">
+        <item quantity="one">Open Inbox, %d payment waits</item>
+        <item quantity="other">Open Inbox, %d payments wait</item>
+    </plurals>
 </resources>

@@ -70,6 +70,15 @@
             android:theme="@style/TransparentActivity"
             android:windowSoftInputMode="adjustNothing" />
 
+        <!-- Quick entry from the home screen widget: its own task, back returns to the launcher. -->
+        <activity
+            android:name=".transfers.view.QuickTransferActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:taskAffinity="${applicationId}.quickentry"
+            android:theme="@style/TransparentActivity"
+            android:windowSoftInputMode="adjustNothing" />
+
         <activity
             android:name=".accounts.view.EditAccountActivity"
             android:exported="false" />
@@ -97,6 +106,18 @@
         <activity
             android:name=".lock.view.SetUpPasscodeActivity"
             android:exported="false" />
+
+        <receiver
+            android:name=".widget.view.QuickEntryWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_quick_entry_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_entry_widget_info" />
+        </receiver>
 
         <receiver
             android:name=".inbox.ask.PaymentQuestionReceiver"

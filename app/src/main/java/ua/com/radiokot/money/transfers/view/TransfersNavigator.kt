@@ -28,6 +28,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import ua.com.radiokot.money.accounts.data.Account
 import ua.com.radiokot.money.categories.data.Category
 import ua.com.radiokot.money.routeIs
 import ua.com.radiokot.money.transfers.data.Transfer
@@ -39,6 +40,10 @@ class TransfersNavigator(
     getLastUsedAccountsByCategoryUseCase: GetLastUsedAccountsByCategoryUseCase,
     private val isIncognito: Boolean,
     private val navController: NavController,
+    /**
+     * Account for a category without a last used one; null keeps the account selection.
+     */
+    private val fallbackAccount: (suspend () -> Account?)? = null,
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private val lastUsedAccountsByCategoryFlow = getLastUsedAccountsByCategoryUseCase()
@@ -51,6 +56,7 @@ class TransfersNavigator(
         proceedToTransferWithCategoryJob?.cancel()
         proceedToTransferWithCategoryJob = coroutineScope.launch {
             val lastUsedAccount = lastUsedAccountsByCategoryFlow.first()[category.id]
+                ?: fallbackAccount?.invoke()
             if (lastUsedAccount != null) {
                 navController.navigate(
                     route =

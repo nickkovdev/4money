@@ -63,6 +63,7 @@ import ua.com.radiokot.money.theme.data.ThemePreferences
 import ua.com.radiokot.money.theme.themeModule
 import ua.com.radiokot.money.util.KermitSlf4jLogWriter
 import ua.com.radiokot.money.util.KoinSlf4jLogger
+import ua.com.radiokot.money.widget.logic.HomeWidgetUpdater
 import java.io.File
 import java.lang.Thread.UncaughtExceptionHandler
 import java.util.concurrent.TimeUnit
@@ -127,6 +128,9 @@ class MoneyApp : Application() {
                     }
 
                     AppCompatDelegate.setDefaultNightMode(themeMode.appCompatNightMode)
+
+                    // The widget follows the theme mode.
+                    get<HomeWidgetUpdater>().requestUpdate()
                 }
         }
     }

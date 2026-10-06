@@ -105,7 +105,7 @@ UI_ICONS = [
     "credit-card", "pig-money", "currency-euro", "fingerprint", "alert-triangle", "search",
     "divide", "math-function", "equal", "receipt", "message-question", "grip-vertical", "id",
     "cloud-upload", "arrows-left-right", "dots", "chart-pie", "category", "tag",
-    "bolt", "shield-check", "apps",
+    "bolt", "shield-check", "apps", "arrow-up", "arrow-down",
 ]
 
 SVG_NS = "{http://www.w3.org/2000/svg}"
