@@ -166,7 +166,9 @@
     <string name="transfers_expense_category">Expense category</string>
     <string name="transfers_swap">Swap</string>
     <string name="transfers_note">Note</string>
-    <string name="transfers_remember_for">Remember for “%1$s”</string>
+    <string name="remember_payee_for">Remember for:</string>
+    <string name="remember_payee_contains_hint">Will match every payee with «%1$s»</string>
+    <string name="remember_payee_exact_hint">Only this exact payee</string>
     <string name="transfers_empty_title">No transactions</string>
     <string name="transfers_empty_text">Nothing recorded in this period yet</string>
 

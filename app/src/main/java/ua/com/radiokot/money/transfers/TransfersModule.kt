@@ -112,6 +112,7 @@ val transfersModule = module {
                 transferFundsUseCase = get(),
                 editTransferUseCase = get(),
                 completeInboxItemUseCase = get(),
+                getKnownPayeesUseCase = get(),
             )
         } bind TransferSheetViewModel::class
 

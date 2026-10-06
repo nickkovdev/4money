@@ -164,7 +164,9 @@
     <string name="transfers_expense_category">Категория расхода</string>
     <string name="transfers_swap">Поменять местами</string>
     <string name="transfers_note">Заметка</string>
-    <string name="transfers_remember_for">Запомнить для «%1$s»</string>
+    <string name="remember_payee_for">Запомнить для:</string>
+    <string name="remember_payee_contains_hint">Будет срабатывать для всех «%1$s»</string>
+    <string name="remember_payee_exact_hint">Только этот получатель</string>
     <string name="transfers_empty_title">Нет операций</string>
     <string name="transfers_empty_text">За этот период пока ничего нет</string>
 

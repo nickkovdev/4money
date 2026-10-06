@@ -30,6 +30,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -51,7 +53,10 @@ import ua.com.radiokot.money.coroutineScopeThatCancelsWith
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.eventSharedFlow
 import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
+import ua.com.radiokot.money.inbox.logic.GetKnownPayeesUseCase
+import ua.com.radiokot.money.inbox.logic.PayeeRulePatternSuggester
 import ua.com.radiokot.money.inbox.logic.PayeeWordSelection
+import ua.com.radiokot.money.inbox.view.ViewRememberPayee
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.map
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
@@ -75,6 +80,7 @@ class TransferSheetViewModel(
     private val transferFundsUseCase: TransferFundsUseCase,
     private val editTransferUseCase: EditTransferUseCase,
     private val completeInboxItemUseCase: CompleteInboxItemUseCase,
+    private val getKnownPayeesUseCase: GetKnownPayeesUseCase,
 ) : ViewModel() {
 
     private val log by lazyLogger("TransferSheetVM")
@@ -110,14 +116,26 @@ class TransferSheetViewModel(
      */
     val rememberPayee: String? = parameters.rememberPayee
 
-    /**
-     * [rememberPayee] as shown to the user.
-     */
-    val rememberPayeeDisplayName: String? = parameters.rememberPayeeDisplayName
-        ?: parameters.rememberPayee
     private val _isRememberPayeeEnabled: MutableStateFlow<Boolean> =
         MutableStateFlow(parameters.rememberPayee != null)
     val isRememberPayeeEnabled = _isRememberPayeeEnabled.asStateFlow()
+
+    /**
+     * The words of the payee to remember, the whole payee until the known payees are loaded.
+     */
+    private val rememberSelection: MutableStateFlow<PayeeWordSelection?> =
+        MutableStateFlow(rememberPayee?.let(PayeeWordSelection::whole))
+    private var isRememberSelectionTouched = false
+    private val knownPayees: MutableStateFlow<List<PayeeRulePatternSuggester.KnownPayee>?> =
+        MutableStateFlow(null)
+    val rememberWords: StateFlow<ViewRememberPayee?> =
+        rememberSelection
+            .map { selection -> selection?.let(::ViewRememberPayee) }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.Eagerly,
+                rememberSelection.value?.let(::ViewRememberPayee),
+            )
     private val dateTime: MutableStateFlow<LocalDateTime> =
         MutableStateFlow(
             parameters.dateTime
@@ -215,6 +233,43 @@ class TransferSheetViewModel(
         dateTime
             .map(stateFlowScope, ::ViewDate)
 
+    // Pick the default words to remember for the category, until the user touches the chips.
+    init {
+        if (rememberPayee != null) {
+            viewModelScope.launch {
+                knownPayees.value = runCatching { getKnownPayeesUseCase() }
+                    .onFailure { error ->
+                        log.warn(error) {
+                            "init(): failed to load the known payees, remembering the whole payee"
+                        }
+                    }
+                    .getOrDefault(emptyList())
+            }
+
+            viewModelScope.launch {
+                combine(
+                    knownPayees.filterNotNull(),
+                    combine(_sourceCounterparty, _destinationCounterparty) { source, destination ->
+                        ((source as? TransferCounterparty.Category)
+                            ?: (destination as? TransferCounterparty.Category))
+                            ?.category
+                            ?.id
+                    }
+                        .distinctUntilChanged(),
+                    transform = ::Pair,
+                ).collect { (known, categoryId) ->
+                    if (categoryId != null && !isRememberSelectionTouched) {
+                        rememberSelection.value = PayeeRulePatternSuggester.defaultSelection(
+                            normalizedPayee = rememberPayee,
+                            categoryId = categoryId,
+                            known = known,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     // Reset amounts if counterparty currency changes.
     init {
         viewModelScope.launch {
@@ -290,6 +345,13 @@ class TransferSheetViewModel(
 
     fun onRememberPayeeToggled(isEnabled: Boolean) {
         _isRememberPayeeEnabled.value = isEnabled
+    }
+
+    fun onRememberWordClicked(index: Int) {
+        val selection = rememberSelection.value
+            ?: return
+        isRememberSelectionTouched = true
+        rememberSelection.value = selection.toggle(index)
     }
 
     fun onSourceClicked() {
@@ -517,10 +579,8 @@ class TransferSheetViewModel(
         val dateTime = dateTime.value
         val transferId = UUID.randomUUID().toString()
         val inboxItemId = parameters.inboxItemId
-        // Temporary: the whole payee, exactly. The range editor comes next.
-        val rememberChoice = rememberPayee
+        val rememberChoice = rememberSelection.value
             ?.takeIf { _isRememberPayeeEnabled.value }
-            ?.let(PayeeWordSelection::whole)
             ?.toChoice()
 
         transferJob?.cancel()

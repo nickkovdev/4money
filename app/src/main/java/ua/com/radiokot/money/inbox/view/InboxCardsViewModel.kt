@@ -49,6 +49,7 @@ import ua.com.radiokot.money.inbox.logic.InboxSuggestionLookup
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
 import ua.com.radiokot.money.inbox.sources.data.AutoBookPreferences
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
+import ua.com.radiokot.money.inbox.logic.PayeeWordSelection
 import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.transfers.data.Transfer
@@ -85,6 +86,10 @@ class InboxCardsViewModel(
 
     /** The "Remember" toggles changed by the user, by item ID. */
     private val rememberOverrides = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+
+    /** The words to remember touched by the user, by item ID. */
+    private val rememberSelectionOverrides =
+        MutableStateFlow<Map<String, PayeeWordSelection>>(emptyMap())
 
     /** Items being recorded: hidden right away so the next card shows. */
     private val inFlightKeys = MutableStateFlow<Set<String>>(emptySet())
@@ -135,8 +140,16 @@ class InboxCardsViewModel(
             orderedPendingItems,
             lookupFlow,
             rememberOverrides,
-        ) { items, lookup, overrides ->
-            items.map { item -> toViewCard(item, lookup, overrides[item.id]) to item }
+            rememberSelectionOverrides,
+        ) { items, lookup, overrides, selectionOverrides ->
+            items.map { item ->
+                toViewCard(
+                    item = item,
+                    lookup = lookup,
+                    rememberOverride = overrides[item.id],
+                    rememberSelectionOverride = selectionOverrides[item.id],
+                ) to item
+            }
         }
             .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -184,6 +197,7 @@ class InboxCardsViewModel(
         item: InboxItem,
         lookup: InboxSuggestionLookup,
         rememberOverride: Boolean?,
+        rememberSelectionOverride: PayeeWordSelection?,
     ): ViewInboxCard {
         val isIncoming = item.direction == InboxItem.Direction.Incoming
         val normalizedPayee = item.payee
@@ -197,6 +211,17 @@ class InboxCardsViewModel(
         fun viewCategory(key: InboxCardSuggester.CategoryKey) = lookup.viewCategory(key)
 
         val suggestion = result.suggestion?.category?.let(::viewCategory)
+        val isRememberOn = result.rememberDefault
+            ?.let { default -> rememberOverride ?: default }
+            ?.takeIf { normalizedPayee.isNotEmpty() }
+        val rememberSelection =
+            if (isRememberOn == true)
+                rememberSelectionOverride
+                    ?: result.suggestion?.category?.categoryId
+                        ?.let { categoryId -> lookup.defaultRememberSelection(item, categoryId) }
+                    ?: PayeeWordSelection.whole(normalizedPayee)
+            else
+                null
         val account = item.accountId?.let(lookup.accountsById::get)
         val payeeDisplayName = item.payee
             ?.let(PayeeNormalizer::displayName)
@@ -255,9 +280,8 @@ class InboxCardsViewModel(
                 }
             },
             alternatives = result.alternatives.mapNotNull(::viewCategory),
-            isRememberOn = result.rememberDefault
-                ?.let { default -> rememberOverride ?: default }
-                ?.takeIf { normalizedPayee.isNotEmpty() },
+            isRememberOn = isRememberOn,
+            rememberWords = rememberSelection?.let(::ViewRememberPayee),
             isAmountRulesHinted = result.isPayeeHistoryMixed && normalizedPayee.isNotEmpty(),
         )
     }
@@ -287,6 +311,20 @@ class InboxCardsViewModel(
         isOn: Boolean,
     ) {
         rememberOverrides.value += card.key to isOn
+    }
+
+    fun onRememberWordClicked(
+        card: ViewInboxCard,
+        index: Int,
+    ) {
+        val words = card.rememberWords
+            ?: return
+        val selection = PayeeWordSelection(
+            words = words.words,
+            first = words.first,
+            last = words.last,
+        )
+        rememberSelectionOverrides.value += card.key to selection.toggle(index)
     }
 
     fun onAmountRulesClicked(card: ViewInboxCard) {
@@ -384,15 +422,16 @@ class InboxCardsViewModel(
         }
         // Learn a rule only when the card asks to remember.
         // Read before the card is hidden by the in-flight mark.
-        // Temporary: the default words, the range editor comes next.
+        // The touched words, or the defaults for the category being accepted.
         val isRememberOn = cardsWithItems.value
             .firstOrNull { (_, cardItem) -> cardItem.id == item.id }
             ?.first
             ?.isRememberOn == true
         val remember =
             if (isRememberOn)
-                latestLookup
-                    ?.defaultRememberSelection(item, categoryKey.categoryId)
+                (rememberSelectionOverrides.value[item.id]
+                    ?: latestLookup
+                        ?.defaultRememberSelection(item, categoryKey.categoryId))
                     ?.toChoice()
             else
                 null
