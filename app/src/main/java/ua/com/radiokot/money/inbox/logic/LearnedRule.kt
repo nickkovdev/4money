@@ -29,22 +29,22 @@ object LearnedRule {
     /**
      * @param rulesBefore the rules right before accepting
      * @param rulesAfter the rules after the item was completed with "Remember"
-     * @param payeePattern the normalized payee that was remembered
+     * @param choice the pattern and match type that were remembered
      *
-     * @return the ID of the plain exact rule for [payeePattern] that did not exist before,
+     * @return the ID of the plain rule for [choice] that did not exist before,
      * null if the accept only re-pointed an existing rule (it must survive the Undo).
      */
     fun createdRuleId(
         rulesBefore: List<PayeeRule>,
         rulesAfter: List<PayeeRule>,
-        payeePattern: String,
+        choice: PayeeRememberChoice,
     ): String? {
         val idsBefore = rulesBefore.mapTo(mutableSetOf(), PayeeRule::id)
         return rulesAfter
             .firstOrNull { rule ->
                 rule.id !in idsBefore
-                        && rule.payeePattern == payeePattern
-                        && rule.matchType == PayeeRule.MatchType.Exact
+                        && rule.payeePattern == choice.pattern
+                        && rule.matchType == choice.matchType
                         && rule.amountRange == null
             }
             ?.id

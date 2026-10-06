@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -95,6 +96,10 @@ class InboxCardsViewModel(
     private val _undo = MutableStateFlow<ViewInboxCardUndo?>(null)
     val undo = _undo.asStateFlow()
 
+    /** The latest lookup, to compute the rule to learn at record time. */
+    @Volatile
+    private var latestLookup: InboxSuggestionLookup? = null
+
     private val lookupFlow: Flow<InboxSuggestionLookup> =
         combine(
             accountRepository.getAccountsFlow(),
@@ -112,6 +117,7 @@ class InboxCardsViewModel(
                 history = history,
             )
         }
+            .onEach { latestLookup = it }
 
     private val orderedPendingItems: Flow<List<InboxItem>> =
         combine(
@@ -376,12 +382,20 @@ class InboxCardsViewModel(
         if (item.id in inFlightKeys.value) {
             return
         }
-        // Learn an exact rule only when the card asks to remember.
+        // Learn a rule only when the card asks to remember.
         // Read before the card is hidden by the in-flight mark.
-        val remember = cardsWithItems.value
+        // Temporary: the default words, the range editor comes next.
+        val isRememberOn = cardsWithItems.value
             .firstOrNull { (_, cardItem) -> cardItem.id == item.id }
             ?.first
             ?.isRememberOn == true
+        val remember =
+            if (isRememberOn)
+                latestLookup
+                    ?.defaultRememberSelection(item, categoryKey.categoryId)
+                    ?.toChoice()
+            else
+                null
         inFlightKeys.value += item.id
 
         viewModelScope.launch {

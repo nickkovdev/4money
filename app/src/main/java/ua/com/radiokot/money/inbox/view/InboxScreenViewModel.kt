@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -98,6 +99,10 @@ class InboxScreenViewModel(
             .getRecentDoneItemsFlow(limit = RECENT_DONE_LIMIT)
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    /** The latest lookup, to compute the rule to learn at accept time. */
+    @Volatile
+    private var latestLookup: InboxSuggestionLookup? = null
+
     private val lookupFlow: Flow<InboxSuggestionLookup> =
         combine(
             accountRepository.getAccountsFlow(),
@@ -115,6 +120,7 @@ class InboxScreenViewModel(
                 history = history,
             )
         }
+            .onEach { latestLookup = it }
 
     val pendingItemList: StateFlow<List<ViewInboxTabPending>> =
         combine(
@@ -242,7 +248,13 @@ class InboxScreenViewModel(
                 item = item,
                 categoryId = suggestion.key.categoryId,
                 subcategoryId = suggestion.key.subcategoryId,
-                remember = pending.isRememberOn,
+                remember =
+                    if (pending.isRememberOn)
+                        latestLookup
+                            ?.defaultRememberSelection(item, suggestion.key.categoryId)
+                            ?.toChoice()
+                    else
+                        null,
             )
 
             // Once the item leaves the pending list, the in-flight mark is no longer needed.

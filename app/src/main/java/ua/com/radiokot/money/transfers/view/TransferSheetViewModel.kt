@@ -51,6 +51,7 @@ import ua.com.radiokot.money.coroutineScopeThatCancelsWith
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.eventSharedFlow
 import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
+import ua.com.radiokot.money.inbox.logic.PayeeWordSelection
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.map
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
@@ -516,8 +517,11 @@ class TransferSheetViewModel(
         val dateTime = dateTime.value
         val transferId = UUID.randomUUID().toString()
         val inboxItemId = parameters.inboxItemId
-        val rememberPayeePattern = rememberPayee
+        // Temporary: the whole payee, exactly. The range editor comes next.
+        val rememberChoice = rememberPayee
             ?.takeIf { _isRememberPayeeEnabled.value }
+            ?.let(PayeeWordSelection::whole)
+            ?.toChoice()
 
         transferJob?.cancel()
         transferJob = viewModelScope.launch {
@@ -560,7 +564,7 @@ class TransferSheetViewModel(
                         completeInboxItemUseCase(
                             itemId = inboxItemId,
                             transferId = transferId,
-                            rememberPayeePattern = rememberPayeePattern,
+                            remember = rememberChoice,
                             sourceId = sourceCounterparty.id,
                             destinationId = destinationCounterparty.id,
                         ).onFailure { error ->

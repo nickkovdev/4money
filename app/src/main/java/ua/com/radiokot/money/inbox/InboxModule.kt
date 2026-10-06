@@ -44,6 +44,7 @@ import ua.com.radiokot.money.inbox.logic.AcceptInboxSuggestionUseCase
 import ua.com.radiokot.money.inbox.logic.CardAccountResolver
 import ua.com.radiokot.money.inbox.logic.CompleteInboxItemUseCase
 import ua.com.radiokot.money.inbox.logic.DefaultCardAccountResolver
+import ua.com.radiokot.money.inbox.logic.GetKnownPayeesUseCase
 import ua.com.radiokot.money.inbox.logic.ProcessBankNotificationUseCase
 import ua.com.radiokot.money.inbox.logic.UndoInboxItemUseCase
 import ua.com.radiokot.money.inbox.ask.PaymentQuestionNotifier
@@ -215,6 +216,13 @@ val inboxModule = module {
                 payeeRuleRepository = get(),
             )
         } bind CompleteInboxItemUseCase::class
+
+        factory {
+            GetKnownPayeesUseCase(
+                payeeRuleRepository = get(),
+                transferHistoryRepository = get(),
+            )
+        } bind GetKnownPayeesUseCase::class
 
         factory {
             AcceptInboxSuggestionUseCase(

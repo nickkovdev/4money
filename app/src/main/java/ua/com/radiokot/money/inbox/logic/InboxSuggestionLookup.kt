@@ -45,6 +45,36 @@ class InboxSuggestionLookup(
         historyEntries(history, isIncoming = true)
     }
 
+    /**
+     * Rules and recent history of both directions, as payee-to-category pairs.
+     */
+    val knownPayees: List<PayeeRulePatternSuggester.KnownPayee> by lazy {
+        PayeeRulePatternSuggester.knownPayees(
+            rules = rules,
+            history = outgoingHistory + incomingHistory,
+        )
+    }
+
+    /**
+     * @return the words of the payee of [item] to remember by default when sorting it
+     * into [categoryId], null if the item has no payee.
+     */
+    fun defaultRememberSelection(
+        item: InboxItem,
+        categoryId: String,
+    ): PayeeWordSelection? {
+        val normalizedPayee = item.payee
+            ?.let(PayeeNormalizer::normalize)
+            ?.takeIf(String::isNotEmpty)
+            ?: return null
+
+        return PayeeRulePatternSuggester.defaultSelection(
+            normalizedPayee = normalizedPayee,
+            categoryId = categoryId,
+            known = knownPayees,
+        )
+    }
+
     fun suggest(
         item: InboxItem,
         useHistory: Boolean,
