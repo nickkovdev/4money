@@ -20,6 +20,9 @@ class CompleteInboxItemUseCaseTest {
     private val account = TransferCounterpartyId.Account("acc")
     private val category = TransferCounterpartyId.Category("cat", "sub")
 
+    private fun exact(pattern: String) =
+        PayeeRememberChoice(pattern, PayeeRule.MatchType.Exact)
+
     private fun addPendingItem() = runBlocking {
         inbox.addItem(
             InboxItem(
@@ -43,7 +46,7 @@ class CompleteInboxItemUseCaseTest {
     fun marksDoneAndLearnsRule() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr", "deepseerwea", account, category).getOrThrow()
+        useCase("item", "tr", exact("deepseerwea"), account, category).getOrThrow()
 
         val item = inbox.items.value.single()
         assertEquals(InboxItem.Status.Done, item.status)
@@ -60,8 +63,8 @@ class CompleteInboxItemUseCaseTest {
     fun relearningUpdatesTheSameRule() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr1", "deepseerwea", account, category).getOrThrow()
-        useCase("item", "tr2", "deepseerwea", account, TransferCounterpartyId.Category("cat2", null)).getOrThrow()
+        useCase("item", "tr1", exact("example shop"), account, category).getOrThrow()
+        useCase("item", "tr2", exact("example shop"), account, TransferCounterpartyId.Category("cat2", null)).getOrThrow()
 
         assertEquals("cat2", rules.rules.value.single().categoryId)
     }
@@ -71,7 +74,7 @@ class CompleteInboxItemUseCaseTest {
         addPendingItem()
 
         useCase("item", "tr", null, account, category).getOrThrow()
-        useCase("item", "tr", "deepseerwea", account, TransferCounterpartyId.Account("acc2")).getOrThrow()
+        useCase("item", "tr", exact("example shop"), account, TransferCounterpartyId.Account("acc2")).getOrThrow()
 
         assertTrue(rules.rules.value.isEmpty())
     }
@@ -80,12 +83,27 @@ class CompleteInboxItemUseCaseTest {
     fun learnsRuleForIncome() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr", "example employer", category, account).getOrThrow()
+        useCase("item", "tr", exact("example employer"), category, account).getOrThrow()
 
         val rule = rules.rules.value.single()
         assertEquals("example employer", rule.payeePattern)
         assertEquals("cat", rule.categoryId)
         assertEquals("sub", rule.subcategoryId)
         assertEquals("acc", rule.accountId)
+    }
+
+    @Test
+    fun learnsContainsRuleFromChoice() = runBlocking {
+        addPendingItem()
+
+        useCase(
+            "item", "tr",
+            PayeeRememberChoice("mcdonalds", PayeeRule.MatchType.Contains),
+            account, category,
+        ).getOrThrow()
+
+        val rule = rules.rules.value.single()
+        assertEquals("mcdonalds", rule.payeePattern)
+        assertEquals(PayeeRule.MatchType.Contains, rule.matchType)
     }
 }

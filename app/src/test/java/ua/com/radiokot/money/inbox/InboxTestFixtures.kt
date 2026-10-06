@@ -17,7 +17,11 @@ import ua.com.radiokot.money.inbox.data.InboxRepository
 import ua.com.radiokot.money.inbox.data.SourceStats
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
+import ua.com.radiokot.money.transfers.data.Transfer
 import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
+import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
+import ua.com.radiokot.money.transfers.history.data.TransferHistoryPage
+import ua.com.radiokot.money.transfers.history.data.TransferHistoryRepository
 import ua.com.radiokot.money.transfers.logic.TransferFundsUseCase
 import java.math.BigInteger
 
@@ -237,4 +241,33 @@ class RecordingTransferFundsUseCase : TransferFundsUseCase {
         calls += Call(sourceId, sourceAmount, destinationId, destinationAmount, memo, dateTime, transferId)
         return failWith?.let(Result.Companion::failure) ?: Result.success(Unit)
     }
+}
+
+class FakeTransferHistoryRepository(
+    var transfers: List<Transfer> = emptyList(),
+    var failWith: Throwable? = null,
+) : TransferHistoryRepository {
+
+    override suspend fun getTransferHistoryPage(
+        cursor: TransferHistoryPage.Cursor?,
+        limit: Int,
+        withinPeriod: HistoryPeriod,
+        counterpartyIds: Set<String>?,
+    ): TransferHistoryPage {
+        failWith?.let { throw it }
+        return TransferHistoryPage(
+            data = transfers.take(limit),
+            nextPageCursor = null,
+            previousPageCursor = null,
+        )
+    }
+
+    override fun getTransferHistoryPagingSource(
+        withinPeriod: HistoryPeriod,
+        counterpartyIds: Set<String>?,
+    ) = error("Not used")
+
+    override suspend fun getTransfer(transferId: String) = error("Not used")
+
+    override suspend fun getTransferOrNull(transferId: String): Transfer? = error("Not used")
 }

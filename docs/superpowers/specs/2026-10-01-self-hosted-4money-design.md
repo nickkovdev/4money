@@ -327,3 +327,39 @@ launcher's night mode and explicit modes are fixed. Translucent tint tokens are 
 migration and no sync-config change.
 
 **Decisions.** Recorded in the plan's Rulings section (`docs/superpowers/plans/2026-10-05-home-widget.md`).
+
+## F6. Archived subcategories and smart payee "Remember" (designed 2026-10-06, approved by the owner)
+
+Plan: `docs/superpowers/plans/2026-10-06-archived-subcategories-smart-remember.md` (branch
+`feature/archived-subcategories-smart-remember`, rulings recorded there). No server change:
+`money.categories.is_archived` and `money.payee_rules.match_type` already exist.
+
+**1. Archived subcategories.** Subcategories imported from 1Money can be archived on the server
+(`categories.is_archived` on a row with a `parent_id`). The client reads the flag (`Subcategory.isArchived`).
+- Bug fix: saving a category in the editor must never change a subcategory's archived flag (it used to
+  rewrite every subcategory with `is_archived = 0`, un-archiving them on the server). Every subcategory
+  write binds the flag it was read with (or the one the user set in the editor).
+- Hidden from: the transfer sheet subcategory chips (also in the widget quick entry), except the
+  subcategory the transfer being edited (or the inbox prefill) already uses; inbox cards and Inbox tab
+  suggestions, the "Payments to sort" buttons and auto-booking (an archived subcategory falls back to its
+  parent category); payee rule target pickers.
+- Category sheets (Overview F2 sheet and the Categories tab sheet): archived subcategories are not listed
+  one by one; their amounts still count in the category total and are shown as one "Archived" row only
+  when their sum in the period is non-zero.
+- Category editor: archived subcategories are listed after the active ones, dimmed, with an "Archived"
+  label; the subcategory dialog has "Archive" / "Unarchive".
+- History, transaction rows and statistics keep showing archived subcategory names.
+
+**2. Smart "Remember" for payees.** Bank payee strings vary by location ("MCDONALDS AKROPOLE RIG",
+"MCDONALDS ALFA RIGA"). Wherever the user remembers a payee while sorting (transfer sheet opened from the
+Inbox, inbox cards, Inbox tab accept), the rule pattern is chosen from the normalized payee's words:
+- "Remember for:" + the words as chips; the selection is one contiguous run of at least one word; tapping
+  an end word removes it, tapping an unselected word extends the run to it.
+- Whole payee selected → an exact rule (as before); a part → a `contains` rule with the selected words.
+- Default selection (pure `PayeeRulePatternSuggester`): the longest leading word run shared with another
+  known payee (payee rule patterns and auto-booked/recorded transfer memos) of the same category, ignoring
+  short (1–2 chars), digit-only and generic company-form tokens; none → the whole payee.
+- A hint "Will match every payee with «mcdonalds …»" is shown when a `contains` rule will be created.
+- Existing exact rules are never deleted (exact wins over contains in matching). The Undo of an accept
+  removes the rule that accept created, exact or contains.
+- Strings en + ru; privacy mode unaffected (no amounts added).

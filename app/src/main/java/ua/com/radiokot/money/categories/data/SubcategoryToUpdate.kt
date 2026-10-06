@@ -30,12 +30,18 @@ data class SubcategoryToUpdate(
     val id: String,
     val title: String,
     val isNew: Boolean,
+    /**
+     * Kept as read (or as toggled in the editor) so saving a category
+     * never un-archives its subcategories.
+     */
+    val isArchived: Boolean = false,
 ) : java.io.Serializable {
 
     constructor(subcategory: Subcategory) : this(
         id = subcategory.id,
         title = subcategory.title,
-        isNew = false
+        isNew = false,
+        isArchived = subcategory.isArchived,
     )
 
     companion object {

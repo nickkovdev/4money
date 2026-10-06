@@ -38,8 +38,6 @@ import ua.com.radiokot.money.colors.data.ItemIcon
 import ua.com.radiokot.money.colors.data.ItemIconRepository
 import ua.com.radiokot.money.currency.data.Currency
 import ua.com.radiokot.money.powersync.DbSchema
-import ua.com.radiokot.money.util.SternBrocotTreeSearch
-import java.util.UUID
 
 class PowerSyncCategoryRepository(
     colorSchemeRepository: ItemColorSchemeRepository,
@@ -258,31 +256,41 @@ class PowerSyncCategoryRepository(
         subcategories: List<SubcategoryToUpdate>,
         transaction: PowerSyncTransaction,
     ) {
-        val sternBrocotTree = SternBrocotTreeSearch()
-
-        subcategories.forEach { subcategoryToUpdate ->
-
-            sternBrocotTree.goRight()
-
-            val id =
-                if (subcategoryToUpdate.isNew)
-                    UUID.randomUUID().toString()
-                else
-                    subcategoryToUpdate.id
-
-            transaction.execute(
-                sql = INSERT_OR_REPLACE_SUBCATEGORY,
-                parameters = listOf(
-                    id,
-                    subcategoryToUpdate.title,
-                    parentCategory.currency.id,
-                    parentCategory.id,
-                    parentCategory.isIncome,
-                    parentCategory.colorScheme.name,
-                    parentCategory.icon?.name,
-                    sternBrocotTree.value,
+        // A plain UPDATE for existing subcategories (a PowerSync PATCH)
+        // instead of INSERT OR REPLACE (a PUT of every column),
+        // so the archived flag is never reset by a save.
+        SubcategoryWrites.plan(subcategories).forEach { write ->
+            if (write.isInsert) {
+                transaction.execute(
+                    sql = INSERT_SUBCATEGORY,
+                    parameters = listOf(
+                        write.id,
+                        write.title,
+                        parentCategory.currency.id,
+                        parentCategory.id,
+                        parentCategory.isIncome,
+                        parentCategory.colorScheme.name,
+                        parentCategory.icon?.name,
+                        write.position,
+                        write.isArchived,
+                    )
                 )
-            )
+            } else {
+                transaction.execute(
+                    sql = UPDATE_SUBCATEGORY_BY_ID,
+                    parameters = listOf(
+                        write.title,
+                        parentCategory.currency.id,
+                        parentCategory.isIncome,
+                        parentCategory.colorScheme.name,
+                        parentCategory.icon?.name,
+                        write.position,
+                        write.isArchived,
+                        write.id,
+                        parentCategory.id,
+                    )
+                )
+            }
         }
     }
 
@@ -369,9 +377,10 @@ private const val INSERT_CATEGORY =
  * 6. Color scheme name
  * 7. Icon name or null
  * 8. Position
+ * 9. Is archived boolean
  */
-private const val INSERT_OR_REPLACE_SUBCATEGORY =
-    "INSERT OR REPLACE INTO ${DbSchema.CATEGORIES_TABLE} " +
+private const val INSERT_SUBCATEGORY =
+    "INSERT INTO ${DbSchema.CATEGORIES_TABLE} " +
             "(" +
             "${DbSchema.ID}, " +
             "${DbSchema.CATEGORY_TITLE}, " +
@@ -383,7 +392,31 @@ private const val INSERT_OR_REPLACE_SUBCATEGORY =
             "${DbSchema.CATEGORY_POSITION}, " +
             "${DbSchema.CATEGORY_IS_ARCHIVED} " +
             ") " +
-            "VALUES(?, ?, ?, ?, ?, ?, ?, ?, 0)"
+            "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
+/**
+ * Params:
+ * 1. Title
+ * 2. Currency ID
+ * 3. Is income boolean
+ * 4. Color scheme name
+ * 5. Icon name or null
+ * 6. Position
+ * 7. Is archived boolean
+ * 8. ID
+ * 9. Parent category ID
+ */
+private const val UPDATE_SUBCATEGORY_BY_ID =
+    "UPDATE ${DbSchema.CATEGORIES_TABLE} SET " +
+            "${DbSchema.CATEGORY_TITLE} = ?, " +
+            "${DbSchema.CATEGORY_CURRENCY_ID} = ?, " +
+            "${DbSchema.CATEGORY_IS_INCOME} = ?, " +
+            "${DbSchema.CATEGORY_COLOR_SCHEME} = ?, " +
+            "${DbSchema.CATEGORY_ICON} = ?, " +
+            "${DbSchema.CATEGORY_POSITION} = ?, " +
+            "${DbSchema.CATEGORY_IS_ARCHIVED} = ? " +
+            "WHERE ${DbSchema.ID} = ? " +
+            "AND ${DbSchema.CATEGORY_PARENT_ID} = ?"
 
 /**
  * Params:

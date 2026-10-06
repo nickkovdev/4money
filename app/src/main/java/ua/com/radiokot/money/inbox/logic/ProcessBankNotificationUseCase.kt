@@ -241,9 +241,12 @@ class ProcessBankNotificationUseCase(
             ?.takeUnless { it.isArchived }
             ?: return null
 
-        // A deleted subcategory falls back to the parent category.
+        // A deleted or archived subcategory falls back to the parent category.
         val subcategoryId = rule.subcategoryId
-            ?.takeIf { categoryRepository.getSubcategory(it)?.categoryId == category.id }
+            ?.takeIf {
+                categoryRepository.getSubcategory(it)
+                    ?.let { s -> s.categoryId == category.id && !s.isArchived } == true
+            }
 
         return AutoExpenseResolver.CategoryRef(
             categoryId = category.id,

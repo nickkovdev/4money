@@ -36,6 +36,7 @@ import ua.com.radiokot.money.categories.data.CategoryRepository
 import ua.com.radiokot.money.inbox.data.InboxItem
 import ua.com.radiokot.money.inbox.data.InboxRepository
 import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
+import ua.com.radiokot.money.inbox.logic.ArchivedSubcategoryFallback
 import ua.com.radiokot.money.inbox.logic.AutoExpenseResolver
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
 import ua.com.radiokot.money.inbox.logic.PayeeNormalizer
@@ -117,6 +118,14 @@ class PaymentQuestionNotifier(
                 .data
         }.getOrDefault(emptyList())
 
+        val archivedSubcategoryIds = categoryRepository
+            .getSubcategoriesByCategoriesFlow()
+            .first()
+            .values
+            .flatten()
+            .filter { it.isArchived }
+            .mapTo(HashSet()) { it.id }
+
         val suggestions = InboxCardSuggester.suggest(
             normalizedPayee = normalizedPayee,
             rules = payeeRuleRepository.getRules(),
@@ -132,6 +141,9 @@ class PaymentQuestionNotifier(
                         subcategoryId = categoryCounterparty.subcategory?.id,
                     ),
                 )
+            },
+            mapKey = { key ->
+                ArchivedSubcategoryFallback.dropArchived(key) { it in archivedSubcategoryIds }
             },
             isUsable = { key -> key.categoryId in categories },
             amount = amount,

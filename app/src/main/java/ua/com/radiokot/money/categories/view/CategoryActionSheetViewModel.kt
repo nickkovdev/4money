@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.categories.view
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -30,7 +31,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import ua.com.radiokot.money.categories.data.Category
 import ua.com.radiokot.money.categories.data.CategoryWithAmountsBySubcategory
+import ua.com.radiokot.money.categories.logic.ArchivedSubcategoryAmounts
 import ua.com.radiokot.money.categories.logic.GetCategoryAmountsBySubcategoryUseCase
+import ua.com.radiokot.money.categories.logic.SubcategoryAmountKey
 import ua.com.radiokot.money.categories.logic.UnarchiveCategoryUseCase
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
@@ -84,35 +87,49 @@ class CategoryActionSheetViewModel(
                 )
             }
 
-    val subcategoryAmounts: StateFlow<List<Pair<String?, ViewAmount>>> =
+    val subcategoryAmounts: StateFlow<List<ViewCategorySheetSubcategoryAmount>> =
         categoryWithAmounts
             .map(stateFlowScope) { (category, amounts) ->
+                val folded = ArchivedSubcategoryAmounts.fold(amounts)
+
                 // If the only subcategory amount is uncategorized,
                 // no point in showing it as it is equal to the statsAmount.
-                if (amounts.size == 1 && amounts.containsKey(null)) {
+                if (folded.size == 1 && folded.containsKey(SubcategoryAmountKey.None)) {
                     return@map emptyList()
                 }
 
-                amounts
-                    .entries
-                    .sortedWith(
-                        // List subcategories in their order,
-                        // followed by the uncategorized amount.
-                        Comparator { a, b ->
-                            compareValuesBy(
-                                a,
-                                b,
-                                { (subcategory, _) -> subcategory == null },
-                                { (subcategory, _) -> subcategory },
-                            )
-                        }
-                    )
+                // List subcategories in their order,
+                // followed by the archived amount and the uncategorized one.
+                val active = folded.entries
+                    .mapNotNull { (key, amount) ->
+                        (key as? SubcategoryAmountKey.Active)?.let { it.subcategory to amount }
+                    }
+                    .sortedBy { (subcategory, _) -> subcategory }
                     .map { (subcategory, amount) ->
-                        Pair(
-                            subcategory?.title,
-                            ViewAmount(amount, category.currency)
+                        ViewCategorySheetSubcategoryAmount(
+                            title = subcategory.title,
+                            isArchived = false,
+                            amount = ViewAmount(amount, category.currency),
                         )
                     }
+
+                val archived = folded[SubcategoryAmountKey.Archived]?.let { amount ->
+                    ViewCategorySheetSubcategoryAmount(
+                        title = null,
+                        isArchived = true,
+                        amount = ViewAmount(amount, category.currency),
+                    )
+                }
+
+                val uncategorized = folded[SubcategoryAmountKey.None]?.let { amount ->
+                    ViewCategorySheetSubcategoryAmount(
+                        title = null,
+                        isArchived = false,
+                        amount = ViewAmount(amount, category.currency),
+                    )
+                }
+
+                active + listOfNotNull(archived, uncategorized)
             }
 
     val colorScheme: StateFlow<ItemColorScheme> =
@@ -201,4 +218,18 @@ class CategoryActionSheetViewModel(
         val isIncome: Boolean,
         val statsPeriod: HistoryPeriod,
     )
+}
+
+@Immutable
+class ViewCategorySheetSubcategoryAmount(
+    /**
+     * Null for the uncategorized amount and for the archived one.
+     */
+    val title: String?,
+    val isArchived: Boolean,
+    val amount: ViewAmount,
+) {
+    operator fun component1() = title
+    operator fun component2() = isArchived
+    operator fun component3() = amount
 }

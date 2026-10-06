@@ -131,6 +131,9 @@
     <string name="categories_add_subcategory">Add subcategory</string>
     <string name="categories_new_subcategory">New subcategory</string>
     <string name="categories_edit_subcategory">Edit subcategory</string>
+    <string name="categories_subcategory_archived">Archived</string>
+    <string name="categories_subcategory_archive">Archive</string>
+    <string name="categories_subcategory_unarchive">Unarchive</string>
     <plurals name="transaction_count">
         <item quantity="one">%d transaction</item>
         <item quantity="other">%d transactions</item>
@@ -149,6 +152,7 @@
     <string name="overview_all_categories">All categories</string>
     <string name="overview_transactions">Transactions</string>
     <string name="overview_no_subcategory">No subcategory</string>
+    <string name="subcategories_archived_row">Archived</string>
 
     <!-- Transfers -->
     <string name="transfers_kind_expense">Expense</string>
@@ -162,7 +166,10 @@
     <string name="transfers_expense_category">Expense category</string>
     <string name="transfers_swap">Swap</string>
     <string name="transfers_note">Note</string>
-    <string name="transfers_remember_for">Remember for “%1$s”</string>
+    <string name="remember_payee_for">Remember for:</string>
+    <string name="remember_payee_too_broad">Too short to match other payees, only this exact payee will be remembered</string>
+    <string name="remember_payee_contains_hint">Will match every payee with «%1$s»</string>
+    <string name="remember_payee_exact_hint">Only this exact payee</string>
     <string name="transfers_empty_title">No transactions</string>
     <string name="transfers_empty_text">Nothing recorded in this period yet</string>
 
