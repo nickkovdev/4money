@@ -126,7 +126,7 @@ class TransferSheetViewModel(
     private val rememberSelection: MutableStateFlow<PayeeWordSelection?> =
         MutableStateFlow(rememberPayee?.let(PayeeWordSelection::whole))
     private var isRememberSelectionTouched = false
-    private val knownPayees: MutableStateFlow<List<PayeeRulePatternSuggester.KnownPayee>?> =
+    private val knownPayees: MutableStateFlow<GetKnownPayeesUseCase.KnownPayeeData?> =
         MutableStateFlow(null)
     val rememberWords: StateFlow<ViewRememberPayee?> =
         rememberSelection
@@ -243,7 +243,7 @@ class TransferSheetViewModel(
                             "init(): failed to load the known payees, remembering the whole payee"
                         }
                     }
-                    .getOrDefault(emptyList())
+                    .getOrDefault(GetKnownPayeesUseCase.KnownPayeeData(emptyList(), emptyList()))
             }
 
             viewModelScope.launch {
@@ -252,17 +252,18 @@ class TransferSheetViewModel(
                     combine(_sourceCounterparty, _destinationCounterparty) { source, destination ->
                         ((source as? TransferCounterparty.Category)
                             ?: (destination as? TransferCounterparty.Category))
-                            ?.category
-                            ?.id
+                            ?.let { it.category.id to it.subcategory?.id }
                     }
                         .distinctUntilChanged(),
                     transform = ::Pair,
-                ).collect { (known, categoryId) ->
-                    if (categoryId != null && !isRememberSelectionTouched) {
+                ).collect { (data, target) ->
+                    if (target != null && !isRememberSelectionTouched) {
                         rememberSelection.value = PayeeRulePatternSuggester.defaultSelection(
                             normalizedPayee = rememberPayee,
-                            categoryId = categoryId,
-                            known = known,
+                            categoryId = target.first,
+                            known = data.knownPayees,
+                            existingRules = data.rules,
+                            subcategoryId = target.second,
                         )
                     }
                 }
@@ -694,6 +695,5 @@ class TransferSheetViewModel(
         val dateTime: LocalDateTime?,
         val inboxItemId: String? = null,
         val rememberPayee: String? = null,
-        val rememberPayeeDisplayName: String? = null,
     )
 }

@@ -251,7 +251,11 @@ class InboxScreenViewModel(
                 remember =
                     if (pending.isRememberOn)
                         latestLookup
-                            ?.defaultRememberSelection(item, suggestion.key.categoryId)
+                            ?.defaultRememberSelection(
+                                item,
+                                suggestion.key.categoryId,
+                                suggestion.key.subcategoryId,
+                            )
                             ?.toChoice()
                     else
                         null,

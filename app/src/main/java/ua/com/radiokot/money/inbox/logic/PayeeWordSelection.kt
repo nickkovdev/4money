@@ -80,11 +80,20 @@ data class PayeeWordSelection(
         get() = words.subList(first, last + 1).joinToString(" ")
 
     /**
-     * «mcdonalds …» argument of the hint, null when the whole payee is selected.
+     * Whether a part of the payee is selected that has no significant token,
+     * like "rig" or "22": such a rule would match far too many payees.
+     */
+    val isTooBroad: Boolean
+        get() = !isWhole
+                && words.subList(first, last + 1).none(PayeeRulePatternSuggester::isSignificant)
+
+    /**
+     * «mcdonalds …» argument of the hint, null when the whole payee is selected
+     * or the selected part is too broad (the choice is exact then).
      */
     val hintPattern: String?
         get() =
-            if (isWhole)
+            if (isWhole || isTooBroad)
                 null
             else
                 buildString {
@@ -98,11 +107,11 @@ data class PayeeWordSelection(
                 }
 
     /**
-     * @return an exact choice for the whole payee,
+     * @return an exact choice for the whole payee (also if the selected part is too broad),
      * a contains one for a part of it.
      */
     fun toChoice(): PayeeRememberChoice =
-        if (isWhole)
+        if (isWhole || isTooBroad)
             PayeeRememberChoice(
                 pattern = words.joinToString(" "),
                 matchType = PayeeRule.MatchType.Exact,

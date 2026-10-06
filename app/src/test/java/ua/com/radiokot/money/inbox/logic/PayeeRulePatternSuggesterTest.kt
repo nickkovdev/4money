@@ -21,6 +21,7 @@ package ua.com.radiokot.money.inbox.logic
 
 import org.junit.Assert
 import org.junit.Test
+import ua.com.radiokot.money.inbox.data.AmountRange
 import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester.CategoryKey
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester.HistoryEntry
@@ -147,6 +148,89 @@ class PayeeRulePatternSuggesterTest {
             PayeeRulePatternSuggester.knownPayees(rules, history)
         )
     }
+
+    private fun rule(
+        pattern: String,
+        category: String,
+        subcategory: String? = null,
+        matchType: PayeeRule.MatchType = PayeeRule.MatchType.Contains,
+        amountRange: AmountRange? = null,
+    ) = PayeeRule(
+        payeePattern = pattern,
+        matchType = matchType,
+        categoryId = category,
+        subcategoryId = subcategory,
+        accountId = null,
+        hits = 1,
+        lastUsedAt = null,
+        amountRange = amountRange,
+    )
+
+    private val giftsKnown = listOf(KnownPayee("mcdonalds giftcard shop", "gifts"))
+
+    private fun defaultFor(vararg rules: PayeeRule, subcategoryId: String? = null) =
+        PayeeRulePatternSuggester.defaultSelection(
+            normalizedPayee = "mcdonalds akropole",
+            categoryId = "gifts",
+            known = giftsKnown,
+            existingRules = rules.toList(),
+            subcategoryId = subcategoryId,
+        )
+
+    @Test
+    fun conflictingContainsRuleOfAnotherCategoryMakesTheDefaultWhole() {
+        Assert.assertEquals(
+            PayeeWordSelection.whole("mcdonalds akropole"),
+            defaultFor(rule("mcdonalds", "food")),
+        )
+    }
+
+    @Test
+    fun conflictingContainsRuleOfAnotherSubcategoryMakesTheDefaultWhole() {
+        Assert.assertEquals(
+            PayeeWordSelection.whole("mcdonalds akropole"),
+            defaultFor(rule("mcdonalds", "gifts", "toys"), subcategoryId = "cards"),
+        )
+        Assert.assertEquals(
+            PayeeWordSelection.whole("mcdonalds akropole"),
+            defaultFor(rule("mcdonalds", "gifts", "toys"), subcategoryId = null),
+        )
+    }
+
+    @Test
+    fun sameTargetContainsRuleKeepsThePart() {
+        Assert.assertEquals(
+            PayeeWordSelection.leading("mcdonalds akropole", 1),
+            defaultFor(rule("mcdonalds", "gifts", "cards"), subcategoryId = "cards"),
+        )
+    }
+
+    @Test
+    fun exactOrRangeRulesDoNotBlock() {
+        val part = PayeeWordSelection.leading("mcdonalds akropole", 1)
+        Assert.assertEquals(
+            part,
+            defaultFor(rule("mcdonalds", "food", matchType = PayeeRule.MatchType.Exact)),
+        )
+        Assert.assertEquals(
+            part,
+            defaultFor(
+                rule(
+                    "mcdonalds", "food",
+                    amountRange = AmountRange(
+                        min = java.math.BigDecimal.TEN,
+                        max = null,
+                    ),
+                )
+            ),
+        )
+    }
+
+    @Test
+    fun unrelatedPatternDoesNotBlock() = Assert.assertEquals(
+        PayeeWordSelection.leading("mcdonalds akropole", 1),
+        defaultFor(rule("burger", "food")),
+    )
 
     @Test
     fun defaultSelectionIsTheSuggestedLeadingRun() {

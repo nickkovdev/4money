@@ -57,11 +57,12 @@ class InboxSuggestionLookup(
 
     /**
      * @return the words of the payee of [item] to remember by default when sorting it
-     * into [categoryId], null if the item has no payee.
+     * into [categoryId] and [subcategoryId], null if the item has no payee.
      */
     fun defaultRememberSelection(
         item: InboxItem,
         categoryId: String,
+        subcategoryId: String? = null,
     ): PayeeWordSelection? {
         val normalizedPayee = item.payee
             ?.let(PayeeNormalizer::normalize)
@@ -72,6 +73,8 @@ class InboxSuggestionLookup(
             normalizedPayee = normalizedPayee,
             categoryId = categoryId,
             known = knownPayees,
+            existingRules = rules,
+            subcategoryId = subcategoryId,
         )
     }
 

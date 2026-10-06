@@ -40,7 +40,7 @@ object PayeeRulePatternSuggester {
         "sia", "uab", "ltd", "llc", "inc", "gmbh", "plc", "ooo", "the", "www", "com",
     )
 
-    private fun isSignificant(token: String): Boolean =
+    internal fun isSignificant(token: String): Boolean =
         token.length > 2
                 && !token.all(Char::isDigit)
                 && token !in genericTokens
@@ -120,14 +120,38 @@ object PayeeRulePatternSuggester {
     /**
      * @return the default selection for remembering [normalizedPayee] into [categoryId],
      * null for an empty payee.
+     * A part of the payee is never the default if it equals the pattern of a plain
+     * Record "contains" rule with another target: saving would re-point that rule
+     * for every payee it matches, so the whole payee is used instead.
      */
     fun defaultSelection(
         normalizedPayee: String,
         categoryId: String,
         known: Collection<KnownPayee>,
-    ): PayeeWordSelection? =
-        PayeeWordSelection.leading(
+        existingRules: List<PayeeRule> = emptyList(),
+        subcategoryId: String? = null,
+    ): PayeeWordSelection? {
+        val selection = PayeeWordSelection.leading(
             normalizedPayee = normalizedPayee,
             leadingWordCount = suggestWordCount(normalizedPayee, categoryId, known),
-        )
+        ) ?: return null
+
+        if (selection.isWhole) {
+            return selection
+        }
+
+        val pattern = selection.toChoice().pattern
+        val isConflicting = existingRules.any { rule ->
+            rule.action == PayeeRule.Action.Record
+                    && rule.matchType == PayeeRule.MatchType.Contains
+                    && rule.amountRange == null
+                    && rule.payeePattern == pattern
+                    && (rule.categoryId != categoryId || rule.subcategoryId != subcategoryId)
+        }
+
+        return if (isConflicting)
+            PayeeWordSelection.whole(normalizedPayee)
+        else
+            selection
+    }
 }

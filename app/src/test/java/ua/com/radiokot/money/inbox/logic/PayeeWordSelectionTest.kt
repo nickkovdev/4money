@@ -67,6 +67,30 @@ class PayeeWordSelectionTest {
     }
 
     @Test
+    fun partWithoutSignificantTokenIsTooBroadAndExact() {
+        val rig = PayeeWordSelection(listOf("mcdonalds", "akropole", "ab"), 2, 2)
+        Assert.assertTrue(rig.isTooBroad)
+        Assert.assertNull(rig.hintPattern)
+        Assert.assertEquals(
+            PayeeRememberChoice("mcdonalds akropole ab", PayeeRule.MatchType.Exact),
+            rig.toChoice()
+        )
+
+        val digitsAndGeneric = PayeeWordSelection(listOf("shop", "22", "sia"), 1, 2)
+        Assert.assertTrue(digitsAndGeneric.isTooBroad)
+        Assert.assertEquals(PayeeRule.MatchType.Exact, digitsAndGeneric.toChoice().matchType)
+    }
+
+    @Test
+    fun partWithSignificantTokenOrWholeIsNotTooBroad() {
+        Assert.assertFalse(sel(1, 2).isTooBroad)
+        Assert.assertFalse(sel(0, 0).isTooBroad)
+        Assert.assertFalse(sel(0, 2).isTooBroad)
+        // Whole payee is never "too broad", even if it is all short tokens.
+        Assert.assertFalse(PayeeWordSelection(listOf("ab", "22"), 0, 1).isTooBroad)
+    }
+
+    @Test
     fun leadingClampsAndHandlesEmpty() {
         Assert.assertNull(PayeeWordSelection.leading("", 1))
         Assert.assertEquals(sel(0, 2), PayeeWordSelection.leading("mcdonalds akropole rig", 9))

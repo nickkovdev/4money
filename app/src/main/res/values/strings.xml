@@ -167,6 +167,7 @@
     <string name="transfers_swap">Swap</string>
     <string name="transfers_note">Note</string>
     <string name="remember_payee_for">Remember for:</string>
+    <string name="remember_payee_too_broad">Too short to match other payees, only this exact payee will be remembered</string>
     <string name="remember_payee_contains_hint">Will match every payee with «%1$s»</string>
     <string name="remember_payee_exact_hint">Only this exact payee</string>
     <string name="transfers_empty_title">No transactions</string>

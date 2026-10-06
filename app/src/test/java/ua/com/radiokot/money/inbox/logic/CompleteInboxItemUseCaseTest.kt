@@ -63,8 +63,8 @@ class CompleteInboxItemUseCaseTest {
     fun relearningUpdatesTheSameRule() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr1", exact("deepseerwea"), account, category).getOrThrow()
-        useCase("item", "tr2", exact("deepseerwea"), account, TransferCounterpartyId.Category("cat2", null)).getOrThrow()
+        useCase("item", "tr1", exact("example shop"), account, category).getOrThrow()
+        useCase("item", "tr2", exact("example shop"), account, TransferCounterpartyId.Category("cat2", null)).getOrThrow()
 
         assertEquals("cat2", rules.rules.value.single().categoryId)
     }
@@ -74,7 +74,7 @@ class CompleteInboxItemUseCaseTest {
         addPendingItem()
 
         useCase("item", "tr", null, account, category).getOrThrow()
-        useCase("item", "tr", exact("deepseerwea"), account, TransferCounterpartyId.Account("acc2")).getOrThrow()
+        useCase("item", "tr", exact("example shop"), account, TransferCounterpartyId.Account("acc2")).getOrThrow()
 
         assertTrue(rules.rules.value.isEmpty())
     }

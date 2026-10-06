@@ -43,12 +43,17 @@ data class ViewRememberPayee(
      * «mcdonalds …»; null when the whole payee is selected.
      */
     val hintPattern: String?,
+    /**
+     * The selected part has no significant token, so only the exact payee is remembered.
+     */
+    val isTooBroad: Boolean = false,
 ) {
     constructor(selection: PayeeWordSelection) : this(
         words = selection.words,
         first = selection.first,
         last = selection.last,
         hintPattern = selection.hintPattern,
+        isTooBroad = selection.isTooBroad,
     )
 }
 
@@ -84,11 +89,16 @@ fun RememberPayeeWords(
     }
 
     Text(
-        text =
-            if (remember.hintPattern != null)
+        text = when {
+            remember.isTooBroad ->
+                stringResource(R.string.remember_payee_too_broad)
+
+            remember.hintPattern != null ->
                 stringResource(R.string.remember_payee_contains_hint, remember.hintPattern)
-            else
-                stringResource(R.string.remember_payee_exact_hint),
+
+            else ->
+                stringResource(R.string.remember_payee_exact_hint)
+        },
         style = MoneyTheme.typography.small,
         color = MoneyTheme.colors.ink3,
     )

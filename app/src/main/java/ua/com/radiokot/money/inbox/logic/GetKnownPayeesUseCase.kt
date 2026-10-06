@@ -20,6 +20,7 @@
 package ua.com.radiokot.money.inbox.logic
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import ua.com.radiokot.money.inbox.data.PayeeRule
 import ua.com.radiokot.money.inbox.data.PayeeRuleRepository
 import ua.com.radiokot.money.transfers.data.TransferCounterparty
 import ua.com.radiokot.money.transfers.history.data.HistoryPeriod
@@ -35,7 +36,16 @@ class GetKnownPayeesUseCase(
 ) {
     private val log = KotlinLogging.logger("GetKnownPayees")
 
-    suspend operator fun invoke(): List<PayeeRulePatternSuggester.KnownPayee> {
+    /**
+     * @param knownPayees payee-to-category pairs
+     * @param rules all the payee rules, to avoid re-pointing one by a default selection
+     */
+    data class KnownPayeeData(
+        val knownPayees: List<PayeeRulePatternSuggester.KnownPayee>,
+        val rules: List<PayeeRule>,
+    )
+
+    suspend operator fun invoke(): KnownPayeeData {
         val rules = payeeRuleRepository.getRules()
 
         val history = runCatching {
@@ -69,9 +79,12 @@ class GetKnownPayeesUseCase(
                 }
             }
 
-        return PayeeRulePatternSuggester.knownPayees(
+        return KnownPayeeData(
+            knownPayees = PayeeRulePatternSuggester.knownPayees(
+                rules = rules,
+                history = history,
+            ),
             rules = rules,
-            history = history,
         )
     }
 

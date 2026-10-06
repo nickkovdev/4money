@@ -188,8 +188,8 @@ class InboxCardSuggesterTest {
         }
 
         val withRule = InboxCardSuggester.suggest(
-            normalizedPayee = "fuelstop",
-            rules = listOf(rule("fuelstop", bakery)),
+            normalizedPayee = "example fuel",
+            rules = listOf(rule("example fuel", bakery)),
             history = emptyList(),
             mapKey = dropBakery,
         )
@@ -197,12 +197,12 @@ class InboxCardSuggesterTest {
         Assert.assertTrue(withRule.suggestion?.reason is InboxCardSuggester.Reason.Rule)
 
         val fromHistory = InboxCardSuggester.suggest(
-            normalizedPayee = "fuelstop",
+            normalizedPayee = "example fuel",
             rules = emptyList(),
             history = listOf(
-                HistoryEntry("fuelstop", bakery),
-                HistoryEntry("fuelstop", food),
-                HistoryEntry("fuelstop", car),
+                HistoryEntry("example fuel", bakery),
+                HistoryEntry("example fuel", food),
+                HistoryEntry("example fuel", car),
             ),
             mapKey = dropBakery,
         )

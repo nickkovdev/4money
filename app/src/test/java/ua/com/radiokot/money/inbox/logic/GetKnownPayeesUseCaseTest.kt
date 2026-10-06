@@ -76,7 +76,8 @@ class GetKnownPayeesUseCaseTest {
             ),
         )
 
-        val known = runBlocking { useCase() }
+        val data = runBlocking { useCase() }
+        val known = data.knownPayees
 
         Assert.assertEquals(
             setOf(
@@ -97,8 +98,10 @@ class GetKnownPayeesUseCaseTest {
             ),
         )
 
-        val known = runBlocking { useCase() }
+        val data = runBlocking { useCase() }
+        val known = data.knownPayees
 
         Assert.assertEquals(listOf(KnownPayee("example cafe", "cafe")), known)
+        Assert.assertEquals(listOf(rule), data.rules)
     }
 }

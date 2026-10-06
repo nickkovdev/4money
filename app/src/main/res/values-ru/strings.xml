@@ -165,6 +165,7 @@
     <string name="transfers_swap">Поменять местами</string>
     <string name="transfers_note">Заметка</string>
     <string name="remember_payee_for">Запомнить для:</string>
+    <string name="remember_payee_too_broad">Слишком коротко для других получателей, будет запомнен только этот получатель</string>
     <string name="remember_payee_contains_hint">Будет срабатывать для всех «%1$s»</string>
     <string name="remember_payee_exact_hint">Только этот получатель</string>
     <string name="transfers_empty_title">Нет операций</string>

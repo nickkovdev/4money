@@ -217,8 +217,10 @@ class InboxCardsViewModel(
         val rememberSelection =
             if (isRememberOn == true)
                 rememberSelectionOverride
-                    ?: result.suggestion?.category?.categoryId
-                        ?.let { categoryId -> lookup.defaultRememberSelection(item, categoryId) }
+                    ?: result.suggestion?.category
+                        ?.let { key ->
+                            lookup.defaultRememberSelection(item, key.categoryId, key.subcategoryId)
+                        }
                     ?: PayeeWordSelection.whole(normalizedPayee)
             else
                 null
@@ -431,7 +433,11 @@ class InboxCardsViewModel(
             if (isRememberOn)
                 (rememberSelectionOverrides.value[item.id]
                     ?: latestLookup
-                        ?.defaultRememberSelection(item, categoryKey.categoryId))
+                        ?.defaultRememberSelection(
+                            item,
+                            categoryKey.categoryId,
+                            categoryKey.subcategoryId,
+                        ))
                     ?.toChoice()
             else
                 null
