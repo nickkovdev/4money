@@ -64,6 +64,11 @@ class InboxSuggestionLookup(
             history = if (isIncoming) incomingHistory else outgoingHistory,
             amount = item.amount,
             useHistory = useHistory,
+            mapKey = { key ->
+                ArchivedSubcategoryFallback.dropArchived(key) { id ->
+                    subcategoriesById[id]?.isArchived == true
+                }
+            },
             isUsable = { key ->
                 val category = categoriesById[key.categoryId]
                 category != null
