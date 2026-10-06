@@ -43,6 +43,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import ua.com.radiokot.money.accounts.data.AccountRepository
 import ua.com.radiokot.money.categories.data.CategoryRepository
+import ua.com.radiokot.money.categories.logic.VisibleSubcategories
 import ua.com.radiokot.money.categories.view.ViewSelectableSubcategoryListItem
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemIcon
@@ -84,6 +85,15 @@ class TransferSheetViewModel(
         MutableStateFlow(runBlocking {
             parameters.destinationId.toCounterparty()
         })
+
+    /**
+     * The subcategory the sheet was opened with. Its chip stays visible
+     * even if it is archived, so it can be re-selected after unselecting.
+     */
+    private val initialSubcategoryId: String? =
+        ((_sourceCounterparty.value as? TransferCounterparty.Category)
+            ?: (_destinationCounterparty.value as? TransferCounterparty.Category))
+            ?.subcategory?.id
     private val _sourceAmountValue: MutableStateFlow<BigInteger> =
         MutableStateFlow(parameters.sourceAmount ?: BigInteger.ZERO)
     val sourceAmountValue = _sourceAmountValue.asStateFlow()
@@ -142,8 +152,8 @@ class TransferSheetViewModel(
                 categoryRepository
                     .getSubcategoriesFlow(categoryCounterparty.category.id)
                     .map { subcategories ->
-                        subcategories
-                            .sorted()
+                        VisibleSubcategories
+                            .forPicker(subcategories.sorted(), initialSubcategoryId)
                             .map { subcategory ->
                                 ViewSelectableSubcategoryListItem(
                                     subcategory = subcategory,

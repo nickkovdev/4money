@@ -21,6 +21,7 @@ package ua.com.radiokot.money.categories.logic
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import ua.com.radiokot.money.categories.data.Subcategory
 import ua.com.radiokot.money.categories.data.SubcategoryToUpdate
 
 class VisibleSubcategoriesTest {
@@ -42,5 +43,47 @@ class VisibleSubcategoriesTest {
         val input = listOf(sub("a"), sub("b"), sub("c"))
 
         assertEquals(input, VisibleSubcategories.activeFirst(input))
+    }
+
+    private fun pickerSub(id: String, isArchived: Boolean = false) =
+        Subcategory(
+            title = id,
+            position = 0.0,
+            categoryId = "category",
+            id = id,
+            isArchived = isArchived,
+        )
+
+    @Test
+    fun forPickerHidesArchived() {
+        val result = VisibleSubcategories.forPicker(
+            listOf(pickerSub("a"), pickerSub("b", true), pickerSub("c")),
+            keepSubcategoryId = null,
+        )
+
+        assertEquals(listOf("a", "c"), result.map(Subcategory::id))
+    }
+
+    @Test
+    fun forPickerKeepsTheInitialArchivedOne() {
+        val result = VisibleSubcategories.forPicker(
+            listOf(pickerSub("a"), pickerSub("b", true), pickerSub("c", true)),
+            keepSubcategoryId = "b",
+        )
+
+        assertEquals(listOf("a", "b"), result.map(Subcategory::id))
+    }
+
+    // The view model passes the subcategory the sheet was opened with,
+    // not the current selection, so the chip stays after the user unselects it.
+    @Test
+    fun keepsTheInitialArchivedOneAfterUnselect() {
+        val list = listOf(pickerSub("a"), pickerSub("b", true))
+        val initialId = "b"
+
+        // The current selection is null (unselected), the initial id is still passed.
+        val result = VisibleSubcategories.forPicker(list, keepSubcategoryId = initialId)
+
+        assertEquals(listOf("a", "b"), result.map(Subcategory::id))
     }
 }

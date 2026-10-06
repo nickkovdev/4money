@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.categories.logic
 
+import ua.com.radiokot.money.categories.data.Subcategory
 import ua.com.radiokot.money.categories.data.SubcategoryToUpdate
 
 object VisibleSubcategories {
@@ -32,4 +33,14 @@ object VisibleSubcategories {
     ): List<SubcategoryToUpdate> =
         subcategories.filterNot(SubcategoryToUpdate::isArchived) +
                 subcategories.filter(SubcategoryToUpdate::isArchived)
+
+    /**
+     * Subcategories to offer in a picker: non-archived ones
+     * and the one with [keepSubcategoryId], if any. The order is unchanged.
+     */
+    fun forPicker(
+        subcategories: List<Subcategory>,
+        keepSubcategoryId: String?,
+    ): List<Subcategory> =
+        subcategories.filter { !it.isArchived || it.id == keepSubcategoryId }
 }
