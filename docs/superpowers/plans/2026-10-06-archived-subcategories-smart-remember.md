@@ -444,8 +444,8 @@ fun RememberPayeeWords(remember: ViewRememberPayee, onWordClicked: (index: Int) 
 
 ### Task 9: Docs and the Rules screen check (model: haiku for transcription; controller verifies)
 
-**Files:** `docs/redesign/PROGRESS.md` (F6 row, F6 device checklist), `docs/HANDOFF.md` (F6 row in "What exists").
+**Files:** `docs/redesign/PROGRESS.md` (F6 row, F6 device checklist), the personal handoff (since moved out of the tree) (F6 row in "What exists").
 
 - [ ] Verify the Rules screen shows `contains` rules (read `RulesScreenViewModel` grouping by pattern + match type and the "contains" label at line ~147); note the result in the PR body. No code change expected.
-- [ ] Add the F6 row and checklist (from the PR body device checklist) to `PROGRESS.md`, and an F6 line to the HANDOFF table. No personal data.
+- [ ] Add the F6 row and checklist (from the PR body device checklist) to `PROGRESS.md`, and an F6 line to the personal handoff notes. No personal data.
 - [ ] Commit `Document F6`.

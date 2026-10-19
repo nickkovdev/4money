@@ -8,9 +8,9 @@ dark-first, soft surfaces, clear hierarchy, big confident amounts) without chang
 
 ## Inputs
 - Screenshots of every screen (before the redesign) and an `INDEX.md` with the problems per screen
-  exist only on the owner's laptop (`dev/4money-ui-screens/`): they contain real financial data and
+  are kept privately, they contain real financial data and
   never go into the repo or any public place. The top problems are summarised below.
-- This repo is a PUBLIC GitHub fork (GPLv3). Read `CLAUDE.md` and `docs/HANDOFF.md` first;
+- This repo is a PUBLIC GitHub fork (GPLv3). Read `CLAUDE.md` and `docs/DEVELOPMENT.md` first;
   progress so far: [PROGRESS.md](PROGRESS.md).
 
 ## Stack (what draws the UI)
@@ -51,7 +51,7 @@ Recommend one with trade-offs before writing code.
    amounts ("18,90 EUR" → app amount format).
 
 ## Theme mockups (approved direction to pick from)
-Canvas: https://claude.ai/artifact/KEA2TwZvtvC6U6qHwGgCzo — ONE component system, four palettes
+Canvas: a private mockup canvas — ONE component system, four palettes
 (Midnight, Ember, Paper, Aurora), each showing Accounts, Categories, the expense sheet, the new
 Inbox cards and the amount-rules screen. The owner picks a palette (or a mix); the components
 stay identical across themes, so a theme is only a `MoneyColors` token set. Implement the chosen
@@ -101,7 +101,7 @@ ones as selectable themes in Settings → Appearance (light = Paper-style, dark 
 - Show the owner a mockup/plan for phase 1–2 and get approval before restyling screens.
 
 ## Build and check on the phone
-Build setup per machine: [../HANDOFF.md](../HANDOFF.md), "Build setup".
+Build setup per machine: [../DEVELOPMENT.md](../DEVELOPMENT.md).
 ```bash
 export JAVA_HOME=<jdk 17+> ANDROID_HOME=<android sdk>
 ./gradlew.bat testDebugUnitTest   # only SternBrocotTreeSearchTest > extensiveTest fails (pre-existing)

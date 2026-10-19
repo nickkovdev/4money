@@ -26,3 +26,6 @@ app/debug*/
 
 # Supabase
 supabase/.temp
+
+# Private notes
+/docs/local/

@@ -560,5 +560,5 @@ Notifications for steps 2/3/5 = `RecentNotificationBuffer.getAll()` + `ActiveNot
 **Model:** controller (no subagent)
 
 - `docs/redesign/PROGRESS.md`: F4 row, install order (migration + sync-config before installing), F4 device checklist.
-- `docs/HANDOFF.md`: migrations list, decision "only SEB" superseded, sources/wizard pointers.
+- the personal handoff (since moved out of the tree): migrations list, decision "only SEB" superseded, sources/wizard pointers.
 - Commit `Document F4`.
