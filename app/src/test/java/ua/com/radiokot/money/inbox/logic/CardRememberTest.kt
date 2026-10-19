@@ -33,6 +33,7 @@ class CardRememberTest {
     private val food = CategoryKey("food", null)
     private val car = CategoryKey("car", null)
     private val moto = CategoryKey("moto", null)
+    private val exampleChoice = PayeeRememberChoice("example sia", PayeeRule.MatchType.Exact)
 
     @Test
     fun singleCategoryHistory_RememberOnByDefault() {
@@ -105,7 +106,7 @@ class CardRememberTest {
             accountId = null,
         )
 
-        val createdId = LearnedRule.createdRuleId(before, repository.getRules(), "example sia")
+        val createdId = LearnedRule.createdRuleId(before, repository.getRules(), exampleChoice)
         Assert.assertNotNull(createdId)
         Assert.assertEquals("home", repository.getRules().single { it.id == createdId }.categoryId)
     }
@@ -134,6 +135,58 @@ class CardRememberTest {
             accountId = null,
         )
 
-        Assert.assertNull(LearnedRule.createdRuleId(before, repository.getRules(), "example sia"))
+        Assert.assertNull(LearnedRule.createdRuleId(before, repository.getRules(), exampleChoice))
+    }
+
+    private fun exactRule(id: String, pattern: String) = PayeeRule(
+        payeePattern = pattern,
+        matchType = PayeeRule.MatchType.Exact,
+        categoryId = "food",
+        subcategoryId = null,
+        accountId = null,
+        hits = 0,
+        lastUsedAt = null,
+        id = id,
+    )
+
+    @Test
+    fun containsChoice_CreatesRuleAndUndoRemovesOnlyIt() = runBlocking {
+        val older = exactRule("older", "mcdonalds akropole")
+        val repository = FakePayeeRuleRepository(listOf(older))
+        val before = repository.getRules()
+        val choice = PayeeRememberChoice("mcdonalds", PayeeRule.MatchType.Contains)
+
+        repository.saveRuleForPayee(
+            payeePattern = choice.pattern,
+            matchType = choice.matchType,
+            categoryId = "food",
+            subcategoryId = null,
+            accountId = null,
+        )
+
+        val createdId = LearnedRule.createdRuleId(before, repository.getRules(), choice)
+        Assert.assertNotNull(createdId)
+        repository.deleteRule(createdId!!)
+        Assert.assertEquals(listOf("older"), repository.getRules().map { it.id })
+    }
+
+    @Test
+    fun containsChoice_ExistingContainsRuleSurvivesUndo() = runBlocking {
+        val existing = exactRule("existing", "mcdonalds")
+            .copy(matchType = PayeeRule.MatchType.Contains)
+        val repository = FakePayeeRuleRepository(listOf(existing))
+        val before = repository.getRules()
+        val choice = PayeeRememberChoice("mcdonalds", PayeeRule.MatchType.Contains)
+
+        repository.saveRuleForPayee(
+            payeePattern = choice.pattern,
+            matchType = choice.matchType,
+            categoryId = "cafe",
+            subcategoryId = null,
+            accountId = null,
+        )
+
+        Assert.assertNull(LearnedRule.createdRuleId(before, repository.getRules(), choice))
+        Assert.assertEquals(listOf("existing"), repository.getRules().map { it.id })
     }
 }

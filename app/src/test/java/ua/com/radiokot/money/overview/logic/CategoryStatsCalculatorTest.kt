@@ -22,6 +22,7 @@ package ua.com.radiokot.money.overview.logic
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import ua.com.radiokot.money.categories.data.Subcategory
+import ua.com.radiokot.money.categories.logic.SubcategoryAmountKey
 import java.math.BigInteger
 
 class CategoryStatsCalculatorTest {
@@ -39,7 +40,14 @@ class CategoryStatsCalculatorTest {
                 null to BigInteger.valueOf(25),
             )
         )
-        assertEquals(listOf(fuel, food, null), rows.map { it.subcategory })
+        assertEquals(
+            listOf(
+                SubcategoryAmountKey.Active(fuel),
+                SubcategoryAmountKey.Active(food),
+                SubcategoryAmountKey.None,
+            ),
+            rows.map { it.key }
+        )
         assertEquals(listOf(0.5f, 0.25f, 0.25f), rows.map { it.fraction })
     }
 
@@ -48,6 +56,67 @@ class CategoryStatsCalculatorTest {
         val rows = CategoryStatsCalculator.subcategoryRows(mapOf(null to BigInteger.TEN))
         assertEquals(1, rows.size)
         assertEquals(1f, rows.single().fraction)
+    }
+
+    @Test
+    fun `archived row with the right fraction`() {
+        val food = Subcategory(title = "Food", position = 1.0, categoryId = "c", id = "s1")
+        val oldA = Subcategory(
+            title = "Old A", position = 2.0, categoryId = "c", id = "s2", isArchived = true,
+        )
+        val oldB = Subcategory(
+            title = "Old B", position = 3.0, categoryId = "c", id = "s3", isArchived = true,
+        )
+        val rows = CategoryStatsCalculator.subcategoryRows(
+            mapOf(
+                food to BigInteger.valueOf(50),
+                oldA to BigInteger.valueOf(20),
+                oldB to BigInteger.valueOf(30),
+            )
+        )
+        assertEquals(
+            listOf(SubcategoryAmountKey.Active(food), SubcategoryAmountKey.Archived),
+            rows.map { it.key }
+        )
+        assertEquals(BigInteger.valueOf(50), rows[1].amount)
+        assertEquals(listOf(0.5f, 0.5f), rows.map { it.fraction })
+    }
+
+    @Test
+    fun `ties ordered active then none then archived`() {
+        val food = Subcategory(title = "Food", position = 1.0, categoryId = "c", id = "s1")
+        val old = Subcategory(
+            title = "Old", position = 2.0, categoryId = "c", id = "s2", isArchived = true,
+        )
+        val rows = CategoryStatsCalculator.subcategoryRows(
+            mapOf(
+                old to BigInteger.TEN,
+                null to BigInteger.TEN,
+                food to BigInteger.TEN,
+            )
+        )
+        assertEquals(
+            listOf(
+                SubcategoryAmountKey.Active(food),
+                SubcategoryAmountKey.None,
+                SubcategoryAmountKey.Archived,
+            ),
+            rows.map { it.key }
+        )
+    }
+
+    @Test
+    fun `archived summing to zero produces no row`() {
+        val old = Subcategory(
+            title = "Old", position = 2.0, categoryId = "c", id = "s2", isArchived = true,
+        )
+        val older = Subcategory(
+            title = "Older", position = 3.0, categoryId = "c", id = "s3", isArchived = true,
+        )
+        val rows = CategoryStatsCalculator.subcategoryRows(
+            mapOf(old to BigInteger.valueOf(5), older to BigInteger.valueOf(-5))
+        )
+        assertEquals(emptyList<CategoryStatsCalculator.SubcategoryRow>(), rows)
     }
 
     @Test

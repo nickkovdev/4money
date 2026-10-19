@@ -26,6 +26,7 @@ class Subcategory(
     val position: Double,
     val categoryId: String,
     val id: String = UUID.randomUUID().toString(),
+    val isArchived: Boolean = false,
 ) : Comparable<Subcategory> {
 
     override fun compareTo(other: Subcategory): Int =
@@ -45,6 +46,6 @@ class Subcategory(
     }
 
     override fun toString(): String {
-        return "Subcategory(title='$title', id='$id')"
+        return "Subcategory(title='$title', id='$id', isArchived=$isArchived)"
     }
 }

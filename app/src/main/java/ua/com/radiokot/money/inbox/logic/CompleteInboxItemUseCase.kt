@@ -33,14 +33,14 @@ class CompleteInboxItemUseCase(
 ) {
 
     /**
-     * @param rememberPayeePattern normalized payee to learn an exact rule for, null to not learn.
+     * @param remember the rule to learn (normalized pattern and match type), null to not learn.
      * A rule is learned only for an account to category expense
      * or a category to account income.
      */
     suspend operator fun invoke(
         itemId: String,
         transferId: String,
-        rememberPayeePattern: String?,
+        remember: PayeeRememberChoice?,
         sourceId: TransferCounterpartyId,
         destinationId: TransferCounterpartyId,
     ): Result<Unit> = runCatching {
@@ -50,7 +50,7 @@ class CompleteInboxItemUseCase(
             transferId = transferId,
         )
 
-        if (rememberPayeePattern.isNullOrEmpty()) {
+        if (remember == null || remember.pattern.isEmpty()) {
             return@runCatching
         }
 
@@ -68,8 +68,8 @@ class CompleteInboxItemUseCase(
         }
 
         payeeRuleRepository.saveRuleForPayee(
-            payeePattern = rememberPayeePattern,
-            matchType = PayeeRule.MatchType.Exact,
+            payeePattern = remember.pattern,
+            matchType = remember.matchType,
             categoryId = categoryId.categoryId,
             subcategoryId = categoryId.subcategoryId,
             accountId = accountId.accountId,

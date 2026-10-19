@@ -93,6 +93,7 @@ import ua.com.radiokot.money.currency.view.ViewAmount
 import ua.com.radiokot.money.currency.view.ViewCurrency
 import ua.com.radiokot.money.currency.view.rememberViewAmountFormat
 import ua.com.radiokot.money.inbox.logic.InboxCardSuggester
+import ua.com.radiokot.money.inbox.logic.PayeeWordSelection
 import ua.com.radiokot.money.transfers.view.ViewDateFormats
 import ua.com.radiokot.money.transfers.view.rememberAppLocale
 import ua.com.radiokot.money.uikit.EmptyState
@@ -131,6 +132,7 @@ private fun InboxCardsScreen(
     onPickClicked: (ViewInboxCard) -> Unit,
     onAlternativeClicked: (ViewInboxCard, ViewInboxCardCategory) -> Unit,
     onRememberToggled: (ViewInboxCard, Boolean) -> Unit = { _, _ -> },
+    onRememberWordClicked: (ViewInboxCard, Int) -> Unit = { _, _ -> },
     onAmountRulesClicked: (ViewInboxCard) -> Unit = {},
     onUndoClicked: () -> Unit,
     onUndoTimedOut: (ViewInboxCardUndo) -> Unit,
@@ -274,6 +276,7 @@ private fun InboxCardsScreen(
                     onAlternativeClicked(topCard, category)
                 },
                 onRememberToggled = { isOn -> onRememberToggled(topCard, isOn) },
+                onRememberWordClicked = { index -> onRememberWordClicked(topCard, index) },
                 onAmountRulesClicked = { onAmountRulesClicked(topCard) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -467,6 +470,7 @@ private fun CardStack(
     onCommit: (SwipeAction) -> Unit,
     onAlternativeClicked: (ViewInboxCardCategory) -> Unit,
     onRememberToggled: (Boolean) -> Unit,
+    onRememberWordClicked: (Int) -> Unit,
     onAmountRulesClicked: () -> Unit,
 ) = Box(
     modifier = modifier,
@@ -564,6 +568,7 @@ private fun CardStack(
             card = card,
             onAlternativeClicked = onAlternativeClicked,
             onRememberToggled = onRememberToggled,
+            onRememberWordClicked = onRememberWordClicked,
             onAmountRulesClicked = onAmountRulesClicked,
         )
 
@@ -638,6 +643,7 @@ private fun CardContent(
     card: ViewInboxCard,
     onAlternativeClicked: (ViewInboxCardCategory) -> Unit,
     onRememberToggled: (Boolean) -> Unit,
+    onRememberWordClicked: (Int) -> Unit,
     onAmountRulesClicked: () -> Unit,
 ) = Column(
     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -755,6 +761,16 @@ private fun CardContent(
                 onToggled = null,
             )
         }
+
+        if (isRememberOn && card.rememberWords != null) {
+            RememberPayeeWords(
+                remember = card.rememberWords,
+                onWordClicked = onRememberWordClicked,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp)
+            )
+        }
     }
 
     if (card.isAmountRulesHinted) {
@@ -858,6 +874,7 @@ fun InboxCardsScreen(
     onPickClicked = remember { viewModel::onPickClicked },
     onAlternativeClicked = remember { viewModel::onAlternativeClicked },
     onRememberToggled = remember { viewModel::onRememberToggled },
+    onRememberWordClicked = remember { viewModel::onRememberWordClicked },
     onAmountRulesClicked = remember { viewModel::onAmountRulesClicked },
     onUndoClicked = remember { viewModel::onUndoClicked },
     onUndoTimedOut = remember { viewModel::onUndoTimedOut },
@@ -894,7 +911,11 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
             cards = listOf(
                 ViewInboxCard(
                     key = "1",
-                    title = "Fuelstop",
+                    title = "MCDONALDS AKROPOLE RIG",
+                    isRememberOn = true,
+                    rememberWords = ViewRememberPayee(
+                        PayeeWordSelection.leading("mcdonalds akropole rig", 1)!!
+                    ),
                     amount = ViewAmount(
                         value = BigInteger("-702"),
                         currency = ViewCurrency(symbol = "€", precision = 2),

@@ -100,6 +100,9 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import ua.com.radiokot.money.inbox.logic.PayeeWordSelection
+import ua.com.radiokot.money.inbox.view.RememberPayeeWords
+import ua.com.radiokot.money.inbox.view.ViewRememberPayee
 import ua.com.radiokot.money.uikit.MoneyIconButton
 import ua.com.radiokot.money.uikit.MoneyTextField
 import ua.com.radiokot.money.uikit.SheetHandle
@@ -134,7 +137,8 @@ fun TransferSheetRoot(
         onSourceClicked = remember { viewModel::onSourceClicked },
         onDestinationClicked = remember { viewModel::onDestinationClicked },
         onSwapCounterpartiesClicked = remember { viewModel::onSwapCounterpartiesClicked },
-        rememberPayeeDisplayName = viewModel.rememberPayeeDisplayName,
+        rememberWords = viewModel.rememberWords.collectAsState(),
+        onRememberWordClicked = remember { viewModel::onRememberWordClicked },
         isRememberPayeeEnabled = viewModel.isRememberPayeeEnabled.collectAsState(),
         onRememberPayeeToggled = remember { viewModel::onRememberPayeeToggled },
     )
@@ -163,7 +167,8 @@ private fun TransferSheet(
     onSourceClicked: () -> Unit,
     onDestinationClicked: () -> Unit,
     onSwapCounterpartiesClicked: () -> Unit,
-    rememberPayeeDisplayName: String? = null,
+    rememberWords: State<ViewRememberPayee?> = remember { mutableStateOf(null) },
+    onRememberWordClicked: (Int) -> Unit = {},
     isRememberPayeeEnabled: State<Boolean> = remember { mutableStateOf(false) },
     onRememberPayeeToggled: (Boolean) -> Unit = {},
 ) = BoxWithConstraints(
@@ -419,7 +424,8 @@ private fun TransferSheet(
                 .fillMaxWidth()
         )
 
-        if (rememberPayeeDisplayName != null) {
+        val rememberWordsValue = rememberWords.value
+        if (rememberWordsValue != null) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -438,7 +444,7 @@ private fun TransferSheet(
                     )
             ) {
                 Text(
-                    text = stringResource(R.string.transfers_remember_for, rememberPayeeDisplayName),
+                    text = stringResource(R.string.inbox_cards_remember),
                     style = MoneyTheme.typography.labelRegular,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -449,6 +455,16 @@ private fun TransferSheet(
                 MoneySwitch(
                     isOn = isRememberPayeeEnabled.value,
                     onToggled = null,
+                )
+            }
+
+            if (isRememberPayeeEnabled.value) {
+                RememberPayeeWords(
+                    remember = rememberWordsValue,
+                    onWordClicked = onRememberWordClicked,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth()
                 )
             }
         }
@@ -556,7 +572,10 @@ private fun TransferSheetPreview(
             onSourceClicked = { },
             onDestinationClicked = { },
             onSwapCounterpartiesClicked = { },
-            rememberPayeeDisplayName = "DEEPSEERWEA",
+            rememberWords = ViewRememberPayee(
+                PayeeWordSelection.leading("mcdonalds akropole rig", 1)!!
+            ).let(::mutableStateOf),
+            isRememberPayeeEnabled = true.let(::mutableStateOf),
             modifier = Modifier
                 .heightIn(
                     max = 600.dp,

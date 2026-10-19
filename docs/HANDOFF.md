@@ -25,6 +25,7 @@ personal category names or other personal data. `app/local.properties`, `local.p
 | F | Full redesign (themes Midnight/Paper/Ember/Aurora, new components), Inbox swipe cards, payee rules by amount, "ask in the notification" | branch `feature/redesign`, **not verified on device, needs a migration first**: see `docs/redesign/PROGRESS.md` |
 | F4 | Inbox centre tab and user-configured notification sources (Settings → Auto-booking: sources, teach-by-example wizard, templates, cards and accounts) | branch `feature/autobook-sources-inbox-tab`, **not verified on device, needs a migration and a sync-config update first**: see `docs/redesign/PROGRESS.md` (F4 install order) |
 | F5 | Home screen widget "Quick entry" (↑ income, logo with Inbox badge, ↓ expense) and the translucent quick-entry flow over the launcher | branch `feature/home-widget`, **not verified on device**; no migration or sync-config change needed, checklist in `docs/redesign/PROGRESS.md` (F5) |
+| F6 | Archived subcategories respected (editor no longer un-archives them; hidden from pickers/suggestions; "Archived" row in category sheets; archive/unarchive in the editor) and smart payee "Remember" (word chips → exact or `contains` rule, default from same-category payee history) | branch `feature/archived-subcategories-smart-remember`, **not verified on device**; no migration or sync-config change needed, checklist in `docs/redesign/PROGRESS.md` (F6) |
 
 Key places:
 - Server schema/RPCs: `supabase/migrations/` (applied in order: `20261001000000_money_schema.sql`,

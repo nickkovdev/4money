@@ -93,6 +93,10 @@ data class ViewInboxCard(
      */
     val isRememberOn: Boolean? = null,
     /**
+     * The words of the payee to remember, set when [isRememberOn] is true.
+     */
+    val rememberWords: ViewRememberPayee? = null,
+    /**
      * The payee went to several categories: offer amount rules instead of remembering.
      */
     val isAmountRulesHinted: Boolean = false,

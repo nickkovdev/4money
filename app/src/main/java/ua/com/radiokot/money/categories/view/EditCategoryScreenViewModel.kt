@@ -38,6 +38,7 @@ import ua.com.radiokot.money.categories.logic.AddCategoryUseCase
 import ua.com.radiokot.money.categories.logic.ArchiveCategoryUseCase
 import ua.com.radiokot.money.categories.logic.EditCategoryUseCase
 import ua.com.radiokot.money.categories.logic.UnarchiveCategoryUseCase
+import ua.com.radiokot.money.categories.logic.VisibleSubcategories
 import ua.com.radiokot.money.colors.data.ItemColorScheme
 import ua.com.radiokot.money.colors.data.ItemColorSchemeRepository
 import ua.com.radiokot.money.colors.data.ItemIcon
@@ -109,6 +110,7 @@ class EditCategoryScreenViewModel(
                     .first()
                     .sorted()
                     .map(::SubcategoryToUpdate)
+                    .let(VisibleSubcategories::activeFirst)
             else
                 emptyList()
         })
@@ -233,6 +235,7 @@ class EditCategoryScreenViewModel(
                         removeAt(fromIndex)
                     )
                 }
+                .let(VisibleSubcategories::activeFirst)
         )
     }
 
@@ -280,6 +283,7 @@ class EditCategoryScreenViewModel(
                         add(subcategoryToUpdate)
                     }
                 }
+                .let(VisibleSubcategories::activeFirst)
         }
     }
 

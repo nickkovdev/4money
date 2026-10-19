@@ -72,13 +72,13 @@ class AcceptInboxSuggestionUseCase(
     }
 
     /**
-     * @param remember whether to learn an exact rule for the payee of the item
+     * @param remember the rule to learn for the payee of the item, null to not learn
      */
     suspend operator fun invoke(
         item: InboxItem,
         categoryId: String,
         subcategoryId: String?,
-        remember: Boolean,
+        remember: PayeeRememberChoice?,
     ): Result {
         val account = resolveAccount(item)
         val category = categoryRepository.getCategory(categoryId)
@@ -95,14 +95,12 @@ class AcceptInboxSuggestionUseCase(
         decision as InboxCardAcceptance.Decision.Record
 
         val transferId = UUID.randomUUID().toString()
-        val rememberPattern = item.payee
-            ?.let(PayeeNormalizer::normalize)
-            ?.takeIf(String::isNotEmpty)
-            ?.takeIf { remember }
+        val rememberChoice = remember
+            ?.takeIf { it.pattern.isNotEmpty() }
         val rulesBefore = payeeRuleRepository.getRules()
         var learnedRuleId: String? = null
 
-        log.debug { "invoke(): recording the item, remember=${rememberPattern != null}" }
+        log.debug { "invoke(): recording the item, remember=${rememberChoice != null}" }
 
         return transferFundsUseCase(
             sourceId = decision.sourceId,
@@ -117,22 +115,22 @@ class AcceptInboxSuggestionUseCase(
                 completeInboxItemUseCase(
                     itemId = item.id,
                     transferId = transferId,
-                    rememberPayeePattern = rememberPattern,
+                    remember = rememberChoice,
                     sourceId = decision.sourceId,
                     destinationId = decision.destinationId,
                 ).onFailure { error ->
                     log.error(error) { "invoke(): failed to complete the item" }
                 }
 
-                if (rememberPattern != null) {
+                if (rememberChoice != null) {
                     // The rule cache is refreshed by the database watch, wait for it a bit.
                     val rulesAfter = withTimeoutOrNull(RULES_REFRESH_TIMEOUT_MS) {
                         payeeRuleRepository
                             .getRulesFlow()
                             .first { rules ->
                                 rules.any { rule ->
-                                    rule.payeePattern == rememberPattern
-                                            && rule.matchType == PayeeRule.MatchType.Exact
+                                    rule.payeePattern == rememberChoice.pattern
+                                            && rule.matchType == rememberChoice.matchType
                                             && rule.amountRange == null
                                 }
                             }
@@ -140,7 +138,7 @@ class AcceptInboxSuggestionUseCase(
                     learnedRuleId = LearnedRule.createdRuleId(
                         rulesBefore = rulesBefore,
                         rulesAfter = rulesAfter,
-                        payeePattern = rememberPattern,
+                        choice = rememberChoice,
                     )
                 }
 

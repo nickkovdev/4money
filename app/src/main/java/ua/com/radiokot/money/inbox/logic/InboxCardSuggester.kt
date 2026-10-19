@@ -98,6 +98,8 @@ object InboxCardSuggester {
      * @param isUsable whether a category still exists and is not archived
      * @param amount the payment amount for amount range rules, null if unknown
      * @param useHistory whether [history] may suggest a category; false leaves only rules
+     * @param mapKey applied to every history key and to the rule key before [isUsable],
+     * e.g. to drop archived subcategories
      */
     fun suggest(
         normalizedPayee: String,
@@ -109,17 +111,18 @@ object InboxCardSuggester {
         ruleMatcher: (normalizedPayee: String, rules: List<PayeeRule>, amount: java.math.BigDecimal?) -> PayeeRule? =
             PayeeRuleMatcher::match,
         useHistory: Boolean = true,
+        mapKey: (CategoryKey) -> CategoryKey = { it },
     ): Result {
         val usedHistory = if (useHistory) history else emptyList()
         val payeeRanking = rank(
             usedHistory
                 .filter { normalizedPayee.isNotEmpty() && it.normalizedMemo == normalizedPayee }
-                .map(HistoryEntry::category)
+                .map { mapKey(it.category) }
                 .filter(isUsable)
         )
         val overallRanking = rank(
             usedHistory
-                .map(HistoryEntry::category)
+                .map { mapKey(it.category) }
                 .filter(isUsable)
         )
 
@@ -128,7 +131,7 @@ object InboxCardSuggester {
             ?.takeIf { it.action == PayeeRule.Action.Record }
         val ruleCategory = rule
             ?.categoryId
-            ?.let { CategoryKey(it, rule.subcategoryId) }
+            ?.let { mapKey(CategoryKey(it, rule.subcategoryId)) }
             ?.takeIf(isUsable)
 
         val suggestion: Suggestion? = when {

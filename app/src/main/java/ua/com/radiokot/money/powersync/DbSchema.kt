@@ -222,6 +222,7 @@ object DbSchema {
             "$CATEGORIES_TABLE.$ID as $CATEGORY_SELECTED_ID, " +
             "$CATEGORIES_TABLE.$CATEGORY_TITLE as $CATEGORY_SELECTED_TITLE, " +
             "$CATEGORIES_TABLE.$CATEGORY_PARENT_ID as $CATEGORY_SELECTED_PARENT_ID, " +
+            "$CATEGORIES_TABLE.$CATEGORY_IS_ARCHIVED as $CATEGORY_SELECTED_IS_ARCHIVED, " +
             "$CATEGORIES_TABLE.$CATEGORY_POSITION as $CATEGORY_SELECTED_POSITION "
 
     private fun getPowerSyncCategoriesTable() = Table(
@@ -280,6 +281,7 @@ object DbSchema {
             title = getString(CATEGORY_SELECTED_TITLE).trim(),
             position = getDouble(CATEGORY_SELECTED_POSITION),
             categoryId = getString(CATEGORY_SELECTED_PARENT_ID),
+            isArchived = getBooleanOptional(CATEGORY_SELECTED_IS_ARCHIVED) == true,
         )
     }
 

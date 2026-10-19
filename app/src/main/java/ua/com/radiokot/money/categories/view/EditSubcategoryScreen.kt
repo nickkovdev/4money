@@ -72,6 +72,9 @@ import ua.com.radiokot.money.uikit.theme.MoneyTheme
 @Composable
 private fun EditSubcategoryScreen(
     isNewSubcategory: Boolean,
+    isArchiveVisible: Boolean,
+    isArchived: Boolean,
+    onArchiveClicked: () -> Unit,
     isSaveEnabled: State<Boolean>,
     onSaveClicked: () -> Unit,
     title: State<String>,
@@ -123,6 +126,22 @@ private fun EditSubcategoryScreen(
             .focusRequester(focusRequester)
     )
 
+    if (isArchiveVisible) {
+        MoneyButton(
+            text = stringResource(
+                if (isArchived)
+                    R.string.categories_subcategory_unarchive
+                else
+                    R.string.categories_subcategory_archive
+            ),
+            style = MoneyButtonStyle.Tonal,
+            icon = R.drawable.ic_tabler_archive,
+            onClick = onArchiveClicked,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+    }
+
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
@@ -155,6 +174,9 @@ fun EditSubcategoryScreenRoot(
 ) {
     EditSubcategoryScreen(
         isNewSubcategory = viewModel.isNewSubcategory,
+        isArchiveVisible = viewModel.isArchiveVisible,
+        isArchived = viewModel.isArchived,
+        onArchiveClicked = remember { viewModel::onArchiveClicked },
         isSaveEnabled = viewModel.isSaveEnabled.collectAsState(),
         onSaveClicked = remember { viewModel::onSaveClicked },
         title = viewModel.title.collectAsState(),
@@ -171,7 +193,10 @@ private fun EditAccountScreenPreview(
 
 ) {
     EditSubcategoryScreen(
-        isNewSubcategory = true,
+        isNewSubcategory = false,
+        isArchiveVisible = true,
+        isArchived = false,
+        onArchiveClicked = {},
         isSaveEnabled = false.let(::mutableStateOf),
         onSaveClicked = {},
         title = "Radio".let(::mutableStateOf),

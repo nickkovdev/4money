@@ -27,12 +27,14 @@ import kotlin.random.Random
 class ViewSubcategoryToUpdateListItem(
     val title: String,
     val source: SubcategoryToUpdate?,
+    val isArchived: Boolean = false,
     val key: Any = source?.id ?: Random.nextInt(),
 ) {
 
     constructor(subcategoryToUpdate: SubcategoryToUpdate) : this(
         title = subcategoryToUpdate.title,
         source = subcategoryToUpdate,
+        isArchived = subcategoryToUpdate.isArchived,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -40,6 +42,7 @@ class ViewSubcategoryToUpdateListItem(
         if (other !is ViewSubcategoryToUpdateListItem) return false
 
         if (title != other.title) return false
+        if (isArchived != other.isArchived) return false
         if (key != other.key) return false
 
         return true
@@ -47,6 +50,7 @@ class ViewSubcategoryToUpdateListItem(
 
     override fun hashCode(): Int {
         var result = title.hashCode()
+        result = 31 * result + isArchived.hashCode()
         result = 31 * result + key.hashCode()
         return result
     }
