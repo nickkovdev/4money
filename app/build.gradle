@@ -21,14 +21,14 @@ android {
     compileSdkVersion 37
 
     defaultConfig {
-        applicationId "ua.com.radiokot.money"
+        applicationId "io.github.nickkovdev.money"
 
         //noinspection OldTargetApi
         targetSdk 36
         minSdk 26
 
-        versionCode 51
-        versionName "0.32.0"
+        versionCode 52
+        versionName "0.33.0"
 
         resConfigs "en", "ru"
 
@@ -44,7 +44,7 @@ android {
         buildConfigField 'String', 'POWERSYNC_URL', "\"${localProperties.getProperty('powerSyncUrl')}\""
         buildConfigField 'String', 'AUTH_TEMP_CREDENTIAL', "\"${localProperties.getProperty('authTempCredential')}\""
 
-        resValue 'string', 'uri_scheme', 'money21m'
+        resValue 'string', 'uri_scheme', 'io.github.nickkovdev.money'
         resValue 'string', 'auth_uri_host', 'auth'
     }
 
@@ -83,7 +83,7 @@ android {
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
 
-            resValue 'string', 'uri_scheme', 'money21m-debug'
+            resValue 'string', 'uri_scheme', 'io.github.nickkovdev.money.debug'
         }
 
         release {
