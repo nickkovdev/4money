@@ -1,0 +1,5 @@
+0.33.0: first open-source release of the self-hosted fork.
+- New application id (io.github.nickkovdev.money): installs as a separate app next to older builds and upstream 4Money. Sign in again and grant notification access once more.
+- Cleartext HTTP hosts are now configured at build time (cleartextHosts); HTTPS only by default.
+- CI build and tests on GitHub.
+- Self-hosting, development and 1Money import guides.

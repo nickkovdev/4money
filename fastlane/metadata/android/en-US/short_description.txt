@@ -1,0 +1,1 @@
+Self-hosted expense tracker that books bank notifications automatically

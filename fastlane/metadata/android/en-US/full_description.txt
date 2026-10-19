@@ -1,0 +1,21 @@
+4Money, self-hosted fork. A personal expense tracker with local-first sync that runs on your own server. It is a fork of 4Money by Oleg Koretsky (github.com/Radiokot/4money) and keeps its accounts, categories and transfers model.
+
+This is not a hosted service: you run the backend yourself (Supabase with a dedicated "money" schema, plus PowerSync) and point the app at it at build time. See docs/self-hosting.md in the repository.
+
+What the fork adds:
+- Auto-booking from bank notifications. A notification listener reads payment notifications of the bank apps you choose and turns them into expenses or incomes. The text is processed on the device only and is never sent to a third party. You teach the app a new bank or wallet in a wizard by tapping words in a sample notification.
+- Inbox. Payments that need a category wait in an Inbox tab with a pending badge, or are sorted as swipe cards. Auto-booked items can be undone.
+- Payee rules. Exact or "contains" match, amount ranges, and an "Ask me" action that asks in a notification and records the payment without opening the app. "Remember" suggests which words of the payee to match.
+- Home screen widget with quick expense and income entry and the Inbox badge.
+- Privacy mode that hides amounts or shows shares, so you can share screenshots.
+- Themes (Paper, Midnight, Ember, Aurora), a redesigned interface, an Overview tab with charts, category sheets, archived subcategories.
+- English and Russian, with a language setting.
+- Import of the transaction history from a 1Money backup (tools/onemoney-import).
+
+Everything from upstream stays: local-first storage, background sync with PowerSync, currencies and exchange rates, high-precision amounts, passcode lock.
+
+Not available yet: recurring transactions, budgets, search, iOS.
+
+Requirements: Android and a backend you control. The app has no built-in server and cannot be used without one.
+
+License: GPL-3.0. Source: github.com/nickkovdev/4money
