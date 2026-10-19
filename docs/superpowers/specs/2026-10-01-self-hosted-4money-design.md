@@ -9,7 +9,7 @@ Replace 1Money with a personal fork of 4Money backed by my own server, keep the 
 should become an expense in the right category automatically, or land in an inbox
 to be categorized manually, teaching the app a rule on the way.
 
-Single user. Phone: Samsung S25+ (Android, no root). Battery efficiency is a hard requirement.
+Single user. Phone: an Android phone (no root). Battery efficiency is a hard requirement.
 
 ## Sub-projects
 
@@ -108,7 +108,7 @@ and can be undone from the inbox.
 - Sample card payment (title / text), card digits masked:
   ```
   Jauna rezervācija
-  Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .
+  Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 ACME CLOUD .
   ```
   - Amount uses a decimal comma; currency is an ISO code; payee is the merchant name truncated by the bank.
   - The date/time in the text is not local time (merchant/UTC); the notification post time is used instead.
@@ -350,8 +350,8 @@ Plan: `docs/superpowers/plans/2026-10-06-archived-subcategories-smart-remember.m
   label; the subcategory dialog has "Archive" / "Unarchive".
 - History, transaction rows and statistics keep showing archived subcategory names.
 
-**2. Smart "Remember" for payees.** Bank payee strings vary by location ("MCDONALDS AKROPOLE RIG",
-"MCDONALDS ALFA RIGA"). Wherever the user remembers a payee while sorting (transfer sheet opened from the
+**2. Smart "Remember" for payees.** Bank payee strings vary by location ("COFFEEHOUSE CENTRE RIG",
+"COFFEEHOUSE RIVERSIDE RIGA"). Wherever the user remembers a payee while sorting (transfer sheet opened from the
 Inbox, inbox cards, Inbox tab accept), the rule pattern is chosen from the normalized payee's words:
 - "Remember for:" + the words as chips; the selection is one contiguous run of at least one word; tapping
   an end word removes it, tapping an unselected word extends the run to it.
@@ -359,7 +359,7 @@ Inbox, inbox cards, Inbox tab accept), the rule pattern is chosen from the norma
 - Default selection (pure `PayeeRulePatternSuggester`): the longest leading word run shared with another
   known payee (payee rule patterns and auto-booked/recorded transfer memos) of the same category, ignoring
   short (1–2 chars), digit-only and generic company-form tokens; none → the whole payee.
-- A hint "Will match every payee with «mcdonalds …»" is shown when a `contains` rule will be created.
+- A hint "Will match every payee with «coffeehouse …»" is shown when a `contains` rule will be created.
 - Existing exact rules are never deleted (exact wins over contains in matching). The Undo of an accept
   removes the rule that accept created, exact or contains.
 - Strings en + ru; privacy mode unaffected (no amounts added).

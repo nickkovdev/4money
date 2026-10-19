@@ -68,7 +68,7 @@ class GetKnownPayeesUseCaseTest {
             payeeRuleRepository = FakePayeeRuleRepository(listOf(rule)),
             transferHistoryRepository = FakeTransferHistoryRepository(
                 transfers = listOf(
-                    transfer(account, food, "MCDONALDS AKROPOLE RIG"),
+                    transfer(account, food, "COFFEEHOUSE CENTRE RIG"),
                     transfer(salary, account, "EXAMPLE EMPLOYER SIA"),
                     transfer(account, food, null),
                     transfer(account, account, "TO MY OTHER CARD"),
@@ -82,7 +82,7 @@ class GetKnownPayeesUseCaseTest {
         Assert.assertEquals(
             setOf(
                 KnownPayee("example cafe", "cafe"),
-                KnownPayee(PayeeNormalizer.normalize("MCDONALDS AKROPOLE RIG"), "food"),
+                KnownPayee(PayeeNormalizer.normalize("COFFEEHOUSE CENTRE RIG"), "food"),
                 KnownPayee(PayeeNormalizer.normalize("EXAMPLE EMPLOYER SIA"), "salary"),
             ),
             known.toSet(),

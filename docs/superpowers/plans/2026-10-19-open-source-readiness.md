@@ -20,7 +20,7 @@ cheap.
 ## Global Constraints
 
 - The repo is PUBLIC: nothing committed may contain the owner's IPs, hostnames, machine paths,
-  usernames, private URLs (claude.ai artifacts, private Gitea), device model, card digits, real
+  usernames, private URLs (private mockup links, private Git hosts), device model, card digits, real
   merchant/payee names from his notifications, his personal category/person names, keys or credentials.
 - Never commit `local.properties`, `app/local.properties`, `docs/local/`.
 - applicationId `io.github.nickkovdev.money`; debug keeps `applicationIdSuffix ".debug"`.
@@ -30,12 +30,12 @@ cheap.
   https://github.com/Radiokot/4money.
 - Header for files added by the fork: `Copyright 2026 Nikita Kovalovs`, same GPL text.
 - Build/test command (Git Bash on the dev machine):
-  `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest lintDebug assembleDebug`
+  `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest lintDebug assembleDebug`
   Never print the contents of either `local.properties`.
 - Commit messages end with:
   ```
   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_01PnZC8W3VU3YDKW6kKJsF7t
+  Claude-Session: <session link>
   ```
 
 ## Rulings

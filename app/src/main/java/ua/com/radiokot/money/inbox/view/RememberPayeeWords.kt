@@ -40,7 +40,7 @@ data class ViewRememberPayee(
     val first: Int,
     val last: Int,
     /**
-     * «mcdonalds …»; null when the whole payee is selected.
+     * «coffeehouse …»; null when the whole payee is selected.
      */
     val hintPattern: String?,
     /**
@@ -109,7 +109,7 @@ fun RememberPayeeWords(
 private fun RememberPayeeWordsPreview() = MoneyTheme {
     RememberPayeeWords(
         remember = ViewRememberPayee(
-            PayeeWordSelection.leading("mcdonalds akropole rig", 1)!!
+            PayeeWordSelection.leading("coffeehouse centre rig", 1)!!
         ),
         onWordClicked = {},
     )

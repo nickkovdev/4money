@@ -29,7 +29,7 @@ app `Locale`), amounts through the existing `ViewAmountFormat` (already locale-d
 - Theme names Paper / Midnight / Ember / Aurora are proper names: same in both languages; their subtitles are translated.
 - Privacy texts `•••`, `—`, `<1%`, `N%` are language-neutral and stay as they are.
 - GPL header on new files (copy from an existing file). Keep code style around.
-- Build/test (Git Bash): `export JAVA_HOME='E:\dev\jdk-21.0.12.1+1' ANDROID_HOME='E:\dev\android-sdk'`, then
+- Build/test (Git Bash): `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>`, then
   `./gradlew.bat testDebugUnitTest` (only pre-existing `SternBrocotTreeSearchTest > extensiveTest` may fail),
   `./gradlew.bat assembleDebug`, `./gradlew.bat lintDebug`.
 

@@ -32,7 +32,7 @@ class CompleteInboxItemUseCaseTest {
                 rawText = "x",
                 amount = BigDecimal("2.12"),
                 currencyCode = "EUR",
-                payee = "DEEPSEERWEA",
+                payee = "ACME CLOUD",
                 cardLast4 = "0000",
                 accountId = "acc",
                 status = InboxItem.Status.Pending,
@@ -46,13 +46,13 @@ class CompleteInboxItemUseCaseTest {
     fun marksDoneAndLearnsRule() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr", exact("deepseerwea"), account, category).getOrThrow()
+        useCase("item", "tr", exact("acme cloud"), account, category).getOrThrow()
 
         val item = inbox.items.value.single()
         assertEquals(InboxItem.Status.Done, item.status)
         assertEquals("tr", item.transferId)
         val rule = rules.rules.value.single()
-        assertEquals("deepseerwea", rule.payeePattern)
+        assertEquals("acme cloud", rule.payeePattern)
         assertEquals(PayeeRule.MatchType.Exact, rule.matchType)
         assertEquals("cat", rule.categoryId)
         assertEquals("sub", rule.subcategoryId)
@@ -98,12 +98,12 @@ class CompleteInboxItemUseCaseTest {
 
         useCase(
             "item", "tr",
-            PayeeRememberChoice("mcdonalds", PayeeRule.MatchType.Contains),
+            PayeeRememberChoice("coffeehouse", PayeeRule.MatchType.Contains),
             account, category,
         ).getOrThrow()
 
         val rule = rules.rules.value.single()
-        assertEquals("mcdonalds", rule.payeePattern)
+        assertEquals("coffeehouse", rule.payeePattern)
         assertEquals(PayeeRule.MatchType.Contains, rule.matchType)
     }
 }

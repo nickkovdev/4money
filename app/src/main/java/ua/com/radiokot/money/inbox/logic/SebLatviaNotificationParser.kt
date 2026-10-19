@@ -30,7 +30,7 @@ import java.util.Locale
  * Sampled card payment (title / text):
  * ```
  * Jauna rezervācija
- * Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .
+ * Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 ACME CLOUD .
  * ```
  * The date/time in the text is not local time and is ignored.
  *

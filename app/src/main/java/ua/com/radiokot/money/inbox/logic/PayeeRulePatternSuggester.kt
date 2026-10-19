@@ -23,8 +23,8 @@ import ua.com.radiokot.money.inbox.data.PayeeRule
 
 /**
  * Suggests which words of a payee to remember: the leading words it shares
- * with other known payees of the same category ("mcdonalds" for
- * "mcdonalds akropole" when "mcdonalds alfa" is also food), or the whole payee.
+ * with other known payees of the same category ("coffeehouse" for
+ * "coffeehouse centre" when "coffeehouse riverside" is also food), or the whole payee.
  */
 object PayeeRulePatternSuggester {
 

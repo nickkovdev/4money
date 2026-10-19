@@ -12,20 +12,20 @@
 
 ## Global Constraints
 
-- PUBLIC repo: no personal data (no real merchant names from the owner's notifications, card digits, the owner's category/account/subcategory names) in code, tests, docs or commits. Use invented payees like "MCDONALDS AKROPOLE RIG", "MCDONALDS ALFA RIGA", "EXAMPLE CAFE OLD TOWN", and generic categories like "Food", "Cafe", "Transport". Never commit `local.properties` / `app/local.properties`.
+- PUBLIC repo: no personal data (no real merchant names from the owner's notifications, card digits, the owner's category/account/subcategory names) in code, tests, docs or commits. Use invented payees like "COFFEEHOUSE CENTRE RIG", "COFFEEHOUSE RIVERSIDE RIGA", "EXAMPLE CAFE OLD TOWN", and generic categories like "Food", "Cafe", "Transport". Never commit `local.properties` / `app/local.properties`.
 - Every new Kotlin file starts with the GPL header copied from a neighbouring file (same copyright line).
 - Every new string exists in `app/src/main/res/values/strings.xml` AND `app/src/main/res/values-ru/strings.xml` (lint `MissingTranslation` is an error). Remove strings that become unused in both files.
 - UI uses the redesign components only (`uikit/`: `MoneyChip`, `MoneyButton`, `MoneySwitch`, `ListRow`, …) and `MoneyTheme.colors/typography` tokens, `com.composeunstyled.Text`; no Material components.
 - Privacy mode: add no amounts anywhere new except the existing category sheet amount formatting (the "Archived" row uses the same `formatOrPrivate` path as other subcategory rows).
 - No server changes (no migrations, no sync-config changes). If one seems needed, stop and report.
 - Build/test from Git Bash in the worktree root:
-  `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'`
+  `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>`
   then `./gradlew.bat testDebugUnitTest` (only `SternBrocotTreeSearchTest > extensiveTest` may fail), `./gradlew.bat assembleDebug`, `./gradlew.bat lintDebug`.
   A single test class: `./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.inbox.logic.PayeeWordSelectionTest'`.
 - Commit messages end with:
   ```
   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_01PnZC8W3VU3YDKW6kKJsF7t
+  Claude-Session: <session link>
   ```
 
 ## Rulings (controller, owner not available mid-run)
@@ -44,7 +44,7 @@
 12. **Insignificant tokens:** length ≤ 2, digit-only, or one of `sia, uab, ltd, llc, inc, gmbh, plc, ooo, the, www, com`. The shared run is trimmed of trailing insignificant tokens and must keep at least one significant token; otherwise no suggestion (whole payee).
 13. **Inbox tab one-tap accept** has no chips (it is a one-tap row): with remember on, it uses the default selection for the suggested category. "Other" opens the transfer sheet where the chips are.
 14. **Existing rules:** never deleted. A `contains` rule with the same pattern is re-pointed by `saveRuleForPayee` (existing behaviour), exact rules for covered payees stay. `LearnedRule.createdRuleId` finds a new plain rule with the same pattern AND match type; a re-pointed one is not "created" and survives the undo.
-15. **Hint text:** EN "Will match every payee with «%1$s»", RU "Будет срабатывать для всех «%1$s»", where the argument is the selected words with "… " in front when words before are unselected and " …" after when words after are unselected (e.g. «mcdonalds …»).
+15. **Hint text:** EN "Will match every payee with «%1$s»", RU "Будет срабатывать для всех «%1$s»", where the argument is the selected words with "… " in front when words before are unselected and " …" after when words after are unselected (e.g. «coffeehouse …»).
 
 Rulings made during execution:
 
@@ -293,7 +293,7 @@ data class PayeeWordSelection(val words: List<String>, val first: Int, val last:
     val isWhole: Boolean
     fun isSelected(index: Int): Boolean
     fun toggle(index: Int): PayeeWordSelection   // ruling 10
-    /** «mcdonalds …» argument of the hint, null when the whole payee is selected. */
+    /** «coffeehouse …» argument of the hint, null when the whole payee is selected. */
     val hintPattern: String?
     fun toChoice(): PayeeRememberChoice  // whole → Exact(words.joinToString(" ")); else Contains(normalizePattern(selected))
     companion object {
@@ -316,12 +316,12 @@ object PayeeRulePatternSuggester {
 
 - [ ] **Step 1: Failing tests** (`PayeeWordSelectionTest`):
 ```kotlin
-private fun sel(first: Int, last: Int) = PayeeWordSelection(listOf("mcdonalds", "akropole", "rig"), first, last)
+private fun sel(first: Int, last: Int) = PayeeWordSelection(listOf("coffeehouse", "centre", "rig"), first, last)
 
 @Test fun wholeIsExact() = Assert.assertEquals(
-    PayeeRememberChoice("mcdonalds akropole rig", PayeeRule.MatchType.Exact), sel(0, 2).toChoice())
+    PayeeRememberChoice("coffeehouse centre rig", PayeeRule.MatchType.Exact), sel(0, 2).toChoice())
 @Test fun partIsContains() = Assert.assertEquals(
-    PayeeRememberChoice("mcdonalds", PayeeRule.MatchType.Contains), sel(0, 0).toChoice())
+    PayeeRememberChoice("coffeehouse", PayeeRule.MatchType.Contains), sel(0, 0).toChoice())
 @Test fun tapLastSelectedRemovesIt() = Assert.assertEquals(sel(0, 1), sel(0, 2).toggle(2))
 @Test fun tapFirstSelectedRemovesIt() = Assert.assertEquals(sel(1, 2), sel(0, 2).toggle(0))
 @Test fun cannotRemoveTheOnlyWord() = Assert.assertEquals(sel(1, 1), sel(1, 1).toggle(1))
@@ -330,28 +330,28 @@ private fun sel(first: Int, last: Int) = PayeeWordSelection(listOf("mcdonalds", 
 @Test fun outOfRangeTapDoesNothing() = Assert.assertEquals(sel(0, 0), sel(0, 0).toggle(7))
 @Test fun hintPatterns() {
     Assert.assertNull(sel(0, 2).hintPattern)
-    Assert.assertEquals("mcdonalds …", sel(0, 0).hintPattern)
-    Assert.assertEquals("… akropole …", sel(1, 1).hintPattern)
-    Assert.assertEquals("… akropole rig", sel(1, 2).hintPattern)
+    Assert.assertEquals("coffeehouse …", sel(0, 0).hintPattern)
+    Assert.assertEquals("… centre …", sel(1, 1).hintPattern)
+    Assert.assertEquals("… centre rig", sel(1, 2).hintPattern)
 }
 @Test fun leadingClampsAndHandlesEmpty() {
     Assert.assertNull(PayeeWordSelection.leading("", 1))
-    Assert.assertEquals(sel(0, 2), PayeeWordSelection.leading("mcdonalds akropole rig", 9))
-    Assert.assertEquals(sel(0, 0), PayeeWordSelection.leading("mcdonalds akropole rig", 0))
+    Assert.assertEquals(sel(0, 2), PayeeWordSelection.leading("coffeehouse centre rig", 9))
+    Assert.assertEquals(sel(0, 0), PayeeWordSelection.leading("coffeehouse centre rig", 0))
 }
 ```
   `PayeeRulePatternSuggesterTest`:
 ```kotlin
 private val known = listOf(
-    KnownPayee("mcdonalds alfa", "food"),
-    KnownPayee("mcdonalds giftcard shop", "gifts"),
+    KnownPayee("coffeehouse riverside", "food"),
+    KnownPayee("coffeehouse giftcard shop", "gifts"),
     KnownPayee("sia example cafe", "food"),
     KnownPayee("example cafe old town", "cafe"),
 )
 @Test fun sharedLeadingWordInTheSameCategory() =
-    Assert.assertEquals(1, PayeeRulePatternSuggester.suggestWordCount("mcdonalds akropole", "food", known))
+    Assert.assertEquals(1, PayeeRulePatternSuggester.suggestWordCount("coffeehouse centre", "food", known))
 @Test fun otherCategoryDoesNotCount() =
-    Assert.assertEquals(2, PayeeRulePatternSuggester.suggestWordCount("mcdonalds akropole", "transport", known))
+    Assert.assertEquals(2, PayeeRulePatternSuggester.suggestWordCount("coffeehouse centre", "transport", known))
 @Test fun longestSharedRunWins() = Assert.assertEquals(2, PayeeRulePatternSuggester.suggestWordCount(
     "example cafe new town", "cafe", known + KnownPayee("example bar", "cafe")))
 @Test fun genericLeadingTokenAloneIsIgnored() = Assert.assertEquals(3, PayeeRulePatternSuggester.suggestWordCount(
@@ -359,12 +359,12 @@ private val known = listOf(
 @Test fun genericTokenFollowedBySignificantOneIsKept() = Assert.assertEquals(2,
     PayeeRulePatternSuggester.suggestWordCount("sia example bakery", "food", known)) // "sia example"
 @Test fun shortAndDigitTokensAreTrimmedFromTheEnd() = Assert.assertEquals(1,
-    PayeeRulePatternSuggester.suggestWordCount("bolt ab 22 x", "transport",
-        listOf(KnownPayee("bolt ab 22 y", "transport"))))   // "bolt ab 22" → "bolt"
+    PayeeRulePatternSuggester.suggestWordCount("ridego ab 22 x", "transport",
+        listOf(KnownPayee("ridego ab 22 y", "transport"))))   // "ridego ab 22" → "ridego"
 @Test fun samePayeeIsNotEvidence() = Assert.assertEquals(2,
-    PayeeRulePatternSuggester.suggestWordCount("mcdonalds alfa", "food", known))
+    PayeeRulePatternSuggester.suggestWordCount("coffeehouse riverside", "food", known))
 @Test fun singleWordPayeeIsWhole() = Assert.assertEquals(1,
-    PayeeRulePatternSuggester.suggestWordCount("mcdonalds", "food", known))
+    PayeeRulePatternSuggester.suggestWordCount("coffeehouse", "food", known))
 @Test fun emptyPayee() = Assert.assertEquals(0, PayeeRulePatternSuggester.suggestWordCount("", "food", known))
 @Test fun containsRulePatternIsEvidence() = Assert.assertEquals(1,
     PayeeRulePatternSuggester.suggestWordCount("taxi example 12", "transport",
@@ -399,7 +399,7 @@ private val known = listOf(
 
 - [ ] **Step 1: Failing tests:**
   - `LearnedRuleTest`: created contains rule found; an exact rule with the same pattern is not mistaken for the contains one; a re-pointed (pre-existing id) contains rule → null.
-  - `CardRememberTest`: accept with `PayeeRememberChoice("mcdonalds", Contains)` creates a contains rule, its id is returned, `forgetLearnedRule` removes it and an older exact rule `"mcdonalds akropole"` survives; accept when a contains rule `"mcdonalds"` already existed → `learnedRuleId == null` and the rule survives undo. Follow the existing test file's fakes.
+  - `CardRememberTest`: accept with `PayeeRememberChoice("coffeehouse", Contains)` creates a contains rule, its id is returned, `forgetLearnedRule` removes it and an older exact rule `"coffeehouse centre"` survives; accept when a contains rule `"coffeehouse"` already existed → `learnedRuleId == null` and the rule survives undo. Follow the existing test file's fakes.
   - `CompleteInboxItemUseCaseTest`: contains choice saved with `MatchType.Contains`.
 - [ ] **Step 2: Run, FAIL.**
 - [ ] **Step 3: Implement** and update every caller:

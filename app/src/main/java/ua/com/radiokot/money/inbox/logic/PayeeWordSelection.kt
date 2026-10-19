@@ -88,7 +88,7 @@ data class PayeeWordSelection(
                 && words.subList(first, last + 1).none(PayeeRulePatternSuggester::isSignificant)
 
     /**
-     * «mcdonalds …» argument of the hint, null when the whole payee is selected
+     * «coffeehouse …» argument of the hint, null when the whole payee is selected
      * or the selected part is too broad (the choice is exact then).
      */
     val hintPattern: String?

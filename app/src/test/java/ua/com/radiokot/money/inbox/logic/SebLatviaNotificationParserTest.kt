@@ -12,7 +12,7 @@ class SebLatviaNotificationParserTest {
 
     private val parser = SebLatviaNotificationParser()
     private val title = "Jauna rezervācija"
-    private val sample = "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA ."
+    private val sample = "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 ACME CLOUD ."
 
     private fun parsePayment(text: String) =
         parser.parse(title, text) as ParsedBankNotification.Payment
@@ -24,7 +24,7 @@ class SebLatviaNotificationParserTest {
                 amount = BigDecimal("2.12"),
                 currencyCode = "USD",
                 cardLast4 = "0000",
-                payee = "DEEPSEERWEA",
+                payee = "ACME CLOUD",
             ),
             parser.parse(title, sample),
         )
@@ -58,14 +58,14 @@ class SebLatviaNotificationParserTest {
     @Test
     fun decomposedUnicodeIsParsed() {
         val decomposed = Normalizer.normalize(sample, Normalizer.Form.NFD)
-        assertEquals("DEEPSEERWEA", parsePayment(decomposed).payee)
+        assertEquals("ACME CLOUD", parsePayment(decomposed).payee)
     }
 
     @Test
     fun ellipsisCharacterAndNoTrailingDot() {
-        val payment = parsePayment("Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte\u20260000 DEEPSEERWEA")
+        val payment = parsePayment("Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte\u20260000 ACME CLOUD")
         assertEquals("0000", payment.cardLast4)
-        assertEquals("DEEPSEERWEA", payment.payee)
+        assertEquals("ACME CLOUD", payment.payee)
     }
 
     @Test

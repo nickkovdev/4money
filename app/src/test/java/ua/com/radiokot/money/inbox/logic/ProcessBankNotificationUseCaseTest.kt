@@ -55,10 +55,10 @@ class ProcessBankNotificationUseCaseTest {
         packageName = "se.seb.latvia",
         postTimeMillis = postTime,
         title = "Jauna rezervācija",
-        text = "Jūs samaksājāt 2,12 EUR par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .",
+        text = "Jūs samaksājāt 2,12 EUR par 02/10/2026 05:06 karte...0000 ACME CLOUD .",
     )
     private val rule = PayeeRule(
-        payeePattern = "deepseerwea",
+        payeePattern = "acme cloud",
         matchType = PayeeRule.MatchType.Exact,
         categoryId = "cat-food",
         subcategoryId = null,
@@ -116,7 +116,7 @@ class ProcessBankNotificationUseCaseTest {
         assertEquals(TransferCounterpartyId.Category("cat-food", null), call.destinationId)
         assertEquals(BigInteger("212"), call.sourceAmount)
         assertEquals(BigInteger("212"), call.destinationAmount)
-        assertEquals("DEEPSEERWEA", call.memo)
+        assertEquals("ACME CLOUD", call.memo)
         // Post time, not the time in the text.
         assertEquals(LocalDateTime(2026, 10, 2, 8, 6), call.dateTime)
 
@@ -147,7 +147,7 @@ class ProcessBankNotificationUseCaseTest {
         assertEquals(InboxItem.Status.Pending, item.status)
         assertEquals(BigDecimal("2.12"), item.amount)
         assertEquals("EUR", item.currencyCode)
-        assertEquals("DEEPSEERWEA", item.payee)
+        assertEquals("ACME CLOUD", item.payee)
         assertEquals("0000", item.cardLast4)
         assertEquals("acc-main", item.accountId)
         assertNull(item.transferId)

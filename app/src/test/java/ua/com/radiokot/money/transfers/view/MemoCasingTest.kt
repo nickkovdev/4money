@@ -35,8 +35,8 @@ class MemoCasingTest {
             softenAllCaps("FUELSTOP RIGA"),
         )
         Assert.assertEquals(
-            "Rimi-Mols",
-            softenAllCaps("RIMI-MOLS"),
+            "Greenmart-Mols",
+            softenAllCaps("GREENMART-MOLS"),
         )
         Assert.assertEquals(
             "Продукты Магазин",

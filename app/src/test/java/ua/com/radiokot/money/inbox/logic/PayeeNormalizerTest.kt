@@ -7,8 +7,8 @@ class PayeeNormalizerTest {
 
     @Test
     fun sebSampleTrailingDotIsRemoved() {
-        assertEquals("deepseerwea", PayeeNormalizer.normalize("DEEPSEERWEA ."))
-        assertEquals("DEEPSEERWEA", PayeeNormalizer.displayName("DEEPSEERWEA ."))
+        assertEquals("acme cloud", PayeeNormalizer.normalize("ACME CLOUD ."))
+        assertEquals("ACME CLOUD", PayeeNormalizer.displayName("ACME CLOUD ."))
     }
 
     @Test

@@ -27,7 +27,7 @@ import ua.com.radiokot.money.inbox.data.PayeeRule
 class LearnedRuleTest {
 
     private val containsChoice =
-        PayeeRememberChoice("mcdonalds", PayeeRule.MatchType.Contains)
+        PayeeRememberChoice("coffeehouse", PayeeRule.MatchType.Contains)
 
     private fun rule(id: String, pattern: String, matchType: PayeeRule.MatchType) = PayeeRule(
         payeePattern = pattern,
@@ -42,21 +42,21 @@ class LearnedRuleTest {
 
     @Test
     fun createdContainsRule_IsFound() {
-        val after = listOf(rule("new", "mcdonalds", PayeeRule.MatchType.Contains))
+        val after = listOf(rule("new", "coffeehouse", PayeeRule.MatchType.Contains))
 
         assertEquals("new", LearnedRule.createdRuleId(emptyList(), after, containsChoice))
     }
 
     @Test
     fun exactRuleWithSamePattern_IsNotMistakenForContains() {
-        val after = listOf(rule("exact", "mcdonalds", PayeeRule.MatchType.Exact))
+        val after = listOf(rule("exact", "coffeehouse", PayeeRule.MatchType.Exact))
 
         assertNull(LearnedRule.createdRuleId(emptyList(), after, containsChoice))
     }
 
     @Test
     fun repointedContainsRule_IsNotCreated() {
-        val existing = rule("old", "mcdonalds", PayeeRule.MatchType.Contains)
+        val existing = rule("old", "coffeehouse", PayeeRule.MatchType.Contains)
 
         assertNull(
             LearnedRule.createdRuleId(

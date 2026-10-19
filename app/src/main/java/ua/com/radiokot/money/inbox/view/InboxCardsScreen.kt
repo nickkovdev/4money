@@ -911,10 +911,10 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
             cards = listOf(
                 ViewInboxCard(
                     key = "1",
-                    title = "MCDONALDS AKROPOLE RIG",
+                    title = "COFFEEHOUSE CENTRE RIG",
                     isRememberOn = true,
                     rememberWords = ViewRememberPayee(
-                        PayeeWordSelection.leading("mcdonalds akropole rig", 1)!!
+                        PayeeWordSelection.leading("coffeehouse centre rig", 1)!!
                     ),
                     amount = ViewAmount(
                         value = BigInteger("-702"),
@@ -930,7 +930,7 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
                 ),
                 ViewInboxCard(
                     key = "2",
-                    title = "Rimi",
+                    title = "Greenmart",
                     amount = null,
                     isIncoming = false,
                     isForeignCurrency = false,

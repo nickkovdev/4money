@@ -69,7 +69,7 @@ class InboxCardSuggesterTest {
                 HistoryEntry("fuelstop", moto),
                 HistoryEntry("fuelstop", car),
                 HistoryEntry("fuelstop", car),
-                HistoryEntry("rimi", home),
+                HistoryEntry("greenmart", home),
             ),
         )
 

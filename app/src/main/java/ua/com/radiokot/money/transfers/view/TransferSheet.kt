@@ -574,7 +574,7 @@ private fun TransferSheetPreview(
             onDestinationClicked = { },
             onSwapCounterpartiesClicked = { },
             rememberWords = ViewRememberPayee(
-                PayeeWordSelection.leading("mcdonalds akropole rig", 1)!!
+                PayeeWordSelection.leading("coffeehouse centre rig", 1)!!
             ).let(::mutableStateOf),
             isRememberPayeeEnabled = true.let(::mutableStateOf),
             modifier = Modifier

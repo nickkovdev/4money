@@ -20,12 +20,12 @@
 - Foreign currency (payment currency ≠ resolved account currency) is never auto-created; it is always a pending inbox item showing the original amount.
 - An SEB notification matching no template becomes a pending inbox item with the raw text; the parser never throws.
 - Auto-created expenses carry the payee as memo and can be undone from the inbox.
-- Public repository: no real card digits, names, IBANs or other personal data in fixtures or code. Card digits in tests are `0000`/`1111`; merchant names are the spec sample (`DEEPSEERWEA`) or invented ones.
+- Public repository: no real card digits, names, IBANs or other personal data in fixtures or code. Card digits in tests are `0000`/`1111`; merchant names are the spec sample (`ACME CLOUD`) or invented ones.
 - New main-source Kotlin files start with the project's GPL-3 license header (copy lines 1–18 of any existing `.kt` file, e.g. `powersync/DbSchema.kt`). Code blocks in this plan omit the header for brevity; test files in `app/src/test` have no header, matching the existing tests.
 - Package for all new client code: `ua.com.radiokot.money.inbox` (subpackages `data`, `logic`, `listener`, `view`).
 - Build/test on this Windows machine, from Git Bash in `E:\projects\4money`:
   ```bash
-  export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'
+  export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>
   ./gradlew.bat testDebugUnitTest
   ./gradlew.bat assembleDebug
   ```
@@ -592,8 +592,8 @@ class PayeeNormalizerTest {
 
     @Test
     fun sebSampleTrailingDotIsRemoved() {
-        assertEquals("deepseerwea", PayeeNormalizer.normalize("DEEPSEERWEA ."))
-        assertEquals("DEEPSEERWEA", PayeeNormalizer.displayName("DEEPSEERWEA ."))
+        assertEquals("acme cloud", PayeeNormalizer.normalize("ACME CLOUD ."))
+        assertEquals("ACME CLOUD", PayeeNormalizer.displayName("ACME CLOUD ."))
     }
 
     @Test
@@ -603,8 +603,8 @@ class PayeeNormalizerTest {
 
     @Test
     fun trailingTerminalIdsAndCityAreRemoved() {
-        assertEquals("rimi hyper", PayeeNormalizer.normalize("RIMI HYPER 0123 RIGA"))
-        assertEquals("narvesen", PayeeNormalizer.normalize("NARVESEN 45 LV"))
+        assertEquals("greenmart hyper", PayeeNormalizer.normalize("GREENMART HYPER 0123 RIGA"))
+        assertEquals("kiosk24", PayeeNormalizer.normalize("KIOSK24 45 LV"))
     }
 
     @Test
@@ -731,7 +731,7 @@ class SebLatviaNotificationParserTest {
 
     private val parser = SebLatviaNotificationParser()
     private val title = "Jauna rezervācija"
-    private val sample = "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA ."
+    private val sample = "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 ACME CLOUD ."
 
     private fun parsePayment(text: String) =
         parser.parse(title, text) as ParsedBankNotification.CardPayment
@@ -743,7 +743,7 @@ class SebLatviaNotificationParserTest {
                 amount = BigDecimal("2.12"),
                 currencyCode = "USD",
                 cardLast4 = "0000",
-                payee = "DEEPSEERWEA",
+                payee = "ACME CLOUD",
             ),
             parser.parse(title, sample),
         )
@@ -773,14 +773,14 @@ class SebLatviaNotificationParserTest {
     @Test
     fun decomposedUnicodeIsParsed() {
         val decomposed = Normalizer.normalize(sample, Normalizer.Form.NFD)
-        assertEquals("DEEPSEERWEA", parsePayment(decomposed).payee)
+        assertEquals("ACME CLOUD", parsePayment(decomposed).payee)
     }
 
     @Test
     fun ellipsisCharacterAndNoTrailingDot() {
-        val payment = parsePayment("Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte…0000 DEEPSEERWEA")
+        val payment = parsePayment("Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte…0000 ACME CLOUD")
         assertEquals("0000", payment.cardLast4)
-        assertEquals("DEEPSEERWEA", payment.payee)
+        assertEquals("ACME CLOUD", payment.payee)
     }
 
     @Test
@@ -860,7 +860,7 @@ import java.util.Locale
  * Sampled card payment (title / text):
  * ```
  * Jauna rezervācija
- * Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .
+ * Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 ACME CLOUD .
  * ```
  * The date/time in the text is not local time and is ignored.
  */
@@ -952,7 +952,7 @@ class BankNotificationDedupHashTest {
         packageName = "se.seb.latvia",
         postTimeMillis = 1_790_000_000_000,
         title = "Jauna rezervācija",
-        text = "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .",
+        text = "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 ACME CLOUD .",
     )
 
     @Test
@@ -1106,17 +1106,17 @@ class PayeeRuleMatcherTest {
 
     @Test
     fun exactBeatsContains() {
-        val exact = rule("rimi hyper", PayeeRule.MatchType.Exact)
-        val contains = rule("rimi", PayeeRule.MatchType.Contains, hits = 100)
-        assertEquals(exact, PayeeRuleMatcher.match("rimi hyper", listOf(contains, exact)))
+        val exact = rule("greenmart hyper", PayeeRule.MatchType.Exact)
+        val contains = rule("greenmart", PayeeRule.MatchType.Contains, hits = 100)
+        assertEquals(exact, PayeeRuleMatcher.match("greenmart hyper", listOf(contains, exact)))
     }
 
     @Test
     fun longestContainsWins() {
-        val short = rule("wolt", PayeeRule.MatchType.Contains, hits = 50)
-        val long = rule("wolt market", PayeeRule.MatchType.Contains)
-        assertEquals(long, PayeeRuleMatcher.match("wolt market riga centrs", listOf(short, long)))
-        assertEquals(short, PayeeRuleMatcher.match("wolt food", listOf(short, long)))
+        val short = rule("fooddrop", PayeeRule.MatchType.Contains, hits = 50)
+        val long = rule("fooddrop market", PayeeRule.MatchType.Contains)
+        assertEquals(long, PayeeRuleMatcher.match("fooddrop market riga centrs", listOf(short, long)))
+        assertEquals(short, PayeeRuleMatcher.match("fooddrop food", listOf(short, long)))
     }
 
     @Test
@@ -1129,10 +1129,10 @@ class PayeeRuleMatcherTest {
     @Test
     fun noMatch() {
         val rules = listOf(
-            rule("rimi", PayeeRule.MatchType.Exact),
-            rule("maxima", PayeeRule.MatchType.Contains),
+            rule("greenmart", PayeeRule.MatchType.Exact),
+            rule("bigmart", PayeeRule.MatchType.Contains),
         )
-        assertNull(PayeeRuleMatcher.match("rimi hyper", rules))
+        assertNull(PayeeRuleMatcher.match("greenmart hyper", rules))
         assertNull(PayeeRuleMatcher.match("", rules))
         assertNull(PayeeRuleMatcher.match("anything", emptyList()))
     }
@@ -1162,10 +1162,10 @@ class AutoExpenseResolverTest {
         amount = BigDecimal("2.12"),
         currencyCode = "EUR",
         cardLast4 = "0000",
-        payee = "DEEPSEERWEA",
+        payee = "ACME CLOUD",
     )
     private val rule = PayeeRule(
-        payeePattern = "deepseerwea",
+        payeePattern = "acme cloud",
         matchType = PayeeRule.MatchType.Exact,
         categoryId = "cat",
         subcategoryId = "sub",
@@ -1860,10 +1860,10 @@ class ProcessBankNotificationUseCaseTest {
         packageName = "se.seb.latvia",
         postTimeMillis = postTime,
         title = "Jauna rezervācija",
-        text = "Jūs samaksājāt 2,12 EUR par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .",
+        text = "Jūs samaksājāt 2,12 EUR par 02/10/2026 05:06 karte...0000 ACME CLOUD .",
     )
     private val rule = PayeeRule(
-        payeePattern = "deepseerwea",
+        payeePattern = "acme cloud",
         matchType = PayeeRule.MatchType.Exact,
         categoryId = "cat-food",
         subcategoryId = null,
@@ -1908,7 +1908,7 @@ class ProcessBankNotificationUseCaseTest {
         assertEquals(TransferCounterpartyId.Category("cat-food", null), call.destinationId)
         assertEquals(BigInteger("212"), call.sourceAmount)
         assertEquals(BigInteger("212"), call.destinationAmount)
-        assertEquals("DEEPSEERWEA", call.memo)
+        assertEquals("ACME CLOUD", call.memo)
         // Post time, not the time in the text.
         assertEquals(LocalDateTime(2026, 10, 2, 8, 6), call.dateTime)
 
@@ -1928,7 +1928,7 @@ class ProcessBankNotificationUseCaseTest {
         assertEquals(InboxItem.Status.Pending, item.status)
         assertEquals(BigDecimal("2.12"), item.amount)
         assertEquals("EUR", item.currencyCode)
-        assertEquals("DEEPSEERWEA", item.payee)
+        assertEquals("ACME CLOUD", item.payee)
         assertEquals("0000", item.cardLast4)
         assertEquals("acc-main", item.accountId)
         assertNull(item.transferId)
@@ -3417,7 +3417,7 @@ class CompleteInboxItemUseCaseTest {
                 rawText = "x",
                 amount = BigDecimal("2.12"),
                 currencyCode = "EUR",
-                payee = "DEEPSEERWEA",
+                payee = "ACME CLOUD",
                 cardLast4 = "0000",
                 accountId = "acc",
                 status = InboxItem.Status.Pending,
@@ -3431,13 +3431,13 @@ class CompleteInboxItemUseCaseTest {
     fun marksDoneAndLearnsRule() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr", "deepseerwea", account, category).getOrThrow()
+        useCase("item", "tr", "acme cloud", account, category).getOrThrow()
 
         val item = inbox.items.value.single()
         assertEquals(InboxItem.Status.Done, item.status)
         assertEquals("tr", item.transferId)
         val rule = rules.rules.value.single()
-        assertEquals("deepseerwea", rule.payeePattern)
+        assertEquals("acme cloud", rule.payeePattern)
         assertEquals(PayeeRule.MatchType.Exact, rule.matchType)
         assertEquals("cat", rule.categoryId)
         assertEquals("sub", rule.subcategoryId)
@@ -3448,8 +3448,8 @@ class CompleteInboxItemUseCaseTest {
     fun relearningUpdatesTheSameRule() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr1", "deepseerwea", account, category).getOrThrow()
-        useCase("item", "tr2", "deepseerwea", account, TransferCounterpartyId.Category("cat2", null)).getOrThrow()
+        useCase("item", "tr1", "acme cloud", account, category).getOrThrow()
+        useCase("item", "tr2", "acme cloud", account, TransferCounterpartyId.Category("cat2", null)).getOrThrow()
 
         assertEquals("cat2", rules.rules.value.single().categoryId)
     }
@@ -3459,7 +3459,7 @@ class CompleteInboxItemUseCaseTest {
         addPendingItem()
 
         useCase("item", "tr", null, account, category).getOrThrow()
-        useCase("item", "tr", "deepseerwea", account, TransferCounterpartyId.Account("acc2")).getOrThrow()
+        useCase("item", "tr", "acme cloud", account, TransferCounterpartyId.Account("acc2")).getOrThrow()
 
         assertTrue(rules.rules.value.isEmpty())
     }
@@ -3493,7 +3493,7 @@ class InboxTransferPrefillTest {
         rawText = "x",
         amount = BigDecimal("2.12"),
         currencyCode = "EUR",
-        payee = "DEEPSEERWEA ",
+        payee = "ACME CLOUD ",
         cardLast4 = "0000",
         accountId = "acc",
         status = InboxItem.Status.Pending,
@@ -3509,10 +3509,10 @@ class InboxTransferPrefillTest {
         assertEquals(TransferCounterpartyId.Category("cat", null), route.destinationId)
         assertEquals(BigInteger("212"), route.sourceAmount)
         assertEquals(BigInteger("212"), route.destinationAmount)
-        assertEquals("DEEPSEERWEA", route.memo)
+        assertEquals("ACME CLOUD", route.memo)
         assertEquals(LocalDateTime(2026, 10, 2, 8, 6), route.dateTime)
         assertEquals("item", route.inboxItemId)
-        assertEquals("deepseerwea", route.rememberPayee)
+        assertEquals("acme cloud", route.rememberPayee)
     }
 
     @Test
@@ -3525,7 +3525,7 @@ class InboxTransferPrefillTest {
 
         assertNull(route.sourceAmount)
         assertNull(route.destinationAmount)
-        assertEquals("DEEPSEERWEA · 2,12 USD", route.memo)
+        assertEquals("ACME CLOUD · 2,12 USD", route.memo)
     }
 
     @Test
@@ -3859,7 +3859,7 @@ Insert immediately before the `        AmountKeyboard(` call (after the memo `Bo
         }
 ```
 
-The preview keeps compiling thanks to the defaults; add `rememberPayee = "deepseerwea",` to the preview call to see the row.
+The preview keeps compiling thanks to the defaults; add `rememberPayee = "acme cloud",` to the preview call to see the row.
 
 - [ ] **Step 8: Build and run tests**
 
@@ -4193,14 +4193,14 @@ private fun RulesScreenPreview(
 ) = RulesScreen(
     ruleItemList = listOf(
         ViewPayeeRuleItem(
-            pattern = "deepseerwea",
+            pattern = "acme cloud",
             matchTypeText = "is",
-            categoryTitle = "Services / AI",
+            categoryTitle = "Services / Software",
             hits = 4,
             key = "1",
         ),
         ViewPayeeRuleItem(
-            pattern = "wolt",
+            pattern = "fooddrop",
             matchTypeText = "contains",
             categoryTitle = "Food",
             hits = 12,
@@ -5013,7 +5013,7 @@ private fun InboxScreenPreview(
 ) = InboxScreen(
     pendingItemList = listOf(
         ViewInboxItem(
-            title = "DEEPSEERWEA",
+            title = "ACME CLOUD",
             amountText = "2,12 USD",
             dateText = "2026-10-02 08:06",
             isForeignCurrency = true,

@@ -23,7 +23,7 @@ class InboxTransferPrefillTest {
         rawText = "x",
         amount = BigDecimal("2.12"),
         currencyCode = "EUR",
-        payee = "DEEPSEERWEA ",
+        payee = "ACME CLOUD ",
         cardLast4 = "0000",
         accountId = "acc",
         status = InboxItem.Status.Pending,
@@ -39,10 +39,10 @@ class InboxTransferPrefillTest {
         assertEquals(TransferCounterpartyId.Category("cat", null), route.destinationId)
         assertEquals(BigInteger("212"), route.sourceAmount)
         assertEquals(BigInteger("212"), route.destinationAmount)
-        assertEquals("DEEPSEERWEA", route.memo)
+        assertEquals("ACME CLOUD", route.memo)
         assertEquals(LocalDateTime(2026, 10, 2, 8, 6), route.dateTime)
         assertEquals("item", route.inboxItemId)
-        assertEquals("deepseerwea", route.rememberPayee)
+        assertEquals("acme cloud", route.rememberPayee)
     }
 
     @Test
@@ -55,7 +55,7 @@ class InboxTransferPrefillTest {
 
         assertNull(route.sourceAmount)
         assertNull(route.destinationAmount)
-        assertEquals("DEEPSEERWEA · 2,12 USD", route.memo)
+        assertEquals("ACME CLOUD · 2,12 USD", route.memo)
     }
 
     @Test
@@ -99,7 +99,7 @@ class InboxTransferPrefillTest {
         assertEquals(TransferCounterpartyId.Account("acc"), route.destinationId)
         assertEquals(BigInteger("212"), route.sourceAmount)
         assertEquals(BigInteger("212"), route.destinationAmount)
-        assertEquals("deepseerwea", route.rememberPayee)
+        assertEquals("acme cloud", route.rememberPayee)
     }
 
     @Test

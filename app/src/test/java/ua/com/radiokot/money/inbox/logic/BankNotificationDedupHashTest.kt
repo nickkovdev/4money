@@ -12,7 +12,7 @@ class BankNotificationDedupHashTest {
         packageName = "se.seb.latvia",
         postTimeMillis = 1_790_000_000_000,
         title = "Jauna rezervācija",
-        text = "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 DEEPSEERWEA .",
+        text = "Jūs samaksājāt 2,12 USD par 02/10/2026 05:06 karte...0000 ACME CLOUD .",
     )
 
     @Test

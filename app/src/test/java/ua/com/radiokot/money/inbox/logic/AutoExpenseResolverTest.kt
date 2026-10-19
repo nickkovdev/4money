@@ -19,10 +19,10 @@ class AutoExpenseResolverTest {
         amount = BigDecimal("2.12"),
         currencyCode = "EUR",
         cardLast4 = "0000",
-        payee = "DEEPSEERWEA",
+        payee = "ACME CLOUD",
     )
     private val rule = PayeeRule(
-        payeePattern = "deepseerwea",
+        payeePattern = "acme cloud",
         matchType = PayeeRule.MatchType.Exact,
         categoryId = "cat",
         subcategoryId = "sub",

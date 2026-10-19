@@ -20,12 +20,12 @@
 - Battery: no periodic work, no services, no polling; `updatePeriodMillis="0"`.
 - No server changes (no migrations, no sync-config changes).
 - Build/test from Git Bash in the worktree root:
-  `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'`
+  `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>`
   then `./gradlew.bat testDebugUnitTest` (only `SternBrocotTreeSearchTest > extensiveTest` may fail), `./gradlew.bat assembleDebug`, `./gradlew.bat lintDebug`.
 - Commit messages end with:
   ```
   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_01PnZC8W3VU3YDKW6kKJsF7t
+  Claude-Session: <session link>
   ```
 
 ## Rulings (controller, owner not available mid-run)
