@@ -116,7 +116,7 @@ set by the `supabaseSchema` key of `app/local.properties` (see
 [4. Build the app](#4-build-the-app)). Note that when the key is absent, the build defaults to
 `public`, not `money`.
 
-The server side, however, does hardcode `money`: the migrations reference it on about 170 lines
+The server side, however, does hardcode `money`: the migrations reference it throughout
 (`money.<table>`, `create schema if not exists money`, `grant ... on schema money`,
 `set search_path = money` in every function, `in schema money` grants), and so does
 `deploy/powersync/sync-config.yaml` (`FROM money.<table>`). To use a different schema you must
@@ -327,7 +327,9 @@ adb install -r app/build/outputs/apk/release/<apk file>
 ```
 
 The debug build has the application id `io.github.nickkovdev.money.debug` and the release build
-`io.github.nickkovdev.money`; they install side by side. The release build is signed with your
+`io.github.nickkovdev.money`; they install side by side.
+Do not enable auto-booking (notification access and sources) in two installs signed in to the same
+account: each would book the same payment, because notification de-duplication is local to the device. The release build is signed with your
 local debug key unless a CI keystore is present. Details about the toolchain are in
 [DEVELOPMENT.md](DEVELOPMENT.md).
 

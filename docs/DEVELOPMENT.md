@@ -29,7 +29,7 @@ The build needs two `local.properties` files. Both are git-ignored; never commit
 sdk.dir=/path/to/android-sdk
 ```
 
-On Windows escape backslashes (`C\:\\dev\\android-sdk`) or use forward slashes.
+On Windows escape backslashes (`C\:\\Android\\Sdk`) or use forward slashes.
 
 **`app/local.properties`**, the backend the app talks to:
 
@@ -95,11 +95,13 @@ adb shell am start -n io.github.nickkovdev.money.debug/ua.com.radiokot.money.hom
 
 | Variant | applicationId | Notes |
 |---|---|---|
-| debug | `io.github.nickkovdev.money.debug` | Installs next to a release build. |
+| debug | `io.github.nickkovdev.money.debug` | Installs next to a release build (see the warning below). |
 | release | `io.github.nickkovdev.money` | Signed with the debug key unless `app/ci-signing.jks` exists. |
 
 The application id differs from upstream 4Money, so the fork is a separate app and never replaces
-upstream's. The Kotlin namespace stays `ua.com.radiokot.money`, see [Upstream](#upstream-and-the-namespace).
+upstream's. Do not enable auto-booking (notification access and sources) in two installs, such as
+debug next to release, that are signed in to the same account: each would book the same payment,
+because notification de-duplication is local to the device. The Kotlin namespace stays `ua.com.radiokot.money`, see [Upstream](#upstream-and-the-namespace).
 
 ### Signing and INSTALL_FAILED_UPDATE_INCOMPATIBLE
 

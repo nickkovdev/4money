@@ -23,7 +23,7 @@
 - Public repository: no real card digits, names, IBANs or other personal data in fixtures or code. Card digits in tests are `0000`/`1111`; merchant names are the spec sample (`ACME CLOUD`) or invented ones.
 - New main-source Kotlin files start with the project's GPL-3 license header (copy lines 1–18 of any existing `.kt` file, e.g. `powersync/DbSchema.kt`). Code blocks in this plan omit the header for brevity; test files in `app/src/test` have no header, matching the existing tests.
 - Package for all new client code: `ua.com.radiokot.money.inbox` (subpackages `data`, `logic`, `listener`, `view`).
-- Build/test on this Windows machine, from Git Bash in `E:\projects\4money`:
+- Build/test on this Windows machine, from Git Bash in `<repo checkout>`:
   ```bash
   export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>
   ./gradlew.bat testDebugUnitTest
@@ -282,7 +282,7 @@ In `deploy/powersync/sync-config.yaml`, append two entries to `bucket_definition
         WHERE user_id = bucket.user_id
 ```
 
-- [ ] **Step 3: Apply on the VM and verify**
+- [ ] **Step 3: Apply on the server and verify**
 
 Apply the migration the same way as `20261001000000_money_schema.sql` (as `postgres` into the shared Supabase DB; with the default self-hosting compose the container is `supabase-db`):
 
@@ -309,7 +309,7 @@ Expected: the publication lists `accounts, categories, currencies, inbox_items, 
 
 - [ ] **Step 4: Reload PowerSync**
 
-Copy the updated `sync-config.yaml` to the VM's PowerSync folder and restart: `docker compose -f deploy/powersync/docker-compose.yml restart`. Expected in `docker logs 4money-powersync`: the new sync rules are deployed and replication of `money.payee_rules`/`money.inbox_items` starts, no errors.
+Copy the updated `sync-config.yaml` to the server's PowerSync folder and restart: `docker compose -f deploy/powersync/docker-compose.yml restart`. Expected in `docker logs 4money-powersync`: the new sync rules are deployed and replication of `money.payee_rules`/`money.inbox_items` starts, no errors.
 
 - [ ] **Step 5: Commit**
 

@@ -14,7 +14,7 @@ What the fork adds:
 
 Everything from upstream stays: local-first storage, background sync with PowerSync, currencies and exchange rates, high-precision amounts, passcode lock.
 
-Not available yet: recurring transactions, budgets, search, iOS.
+Not available yet: recurring transactions, budgets, search, projected balance, iOS.
 
 Requirements: Android and a backend you control. The app has no built-in server and cannot be used without one.
 

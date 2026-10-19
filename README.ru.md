@@ -117,6 +117,7 @@ PowerSync и сетевой доступ к обоим с телефона.
 Android Studio или Gradle wrapper, JDK 21 и Android SDK; приложение работает на Android 8.0
 (API 26) и новее. Сборка, тесты, lint и устройство проекта: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 Как прислать изменения: [CONTRIBUTING.md](CONTRIBUTING.md).
+Application id этого форка — `io.github.nickkovdev.money`, поэтому он ставится как отдельное приложение, а не поверх оригинального 4Money.
 
 ## Модель приватности и безопасности
 

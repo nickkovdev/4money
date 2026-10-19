@@ -24,7 +24,7 @@
 - Horizontal swipe on content switches the period on Categories, Transactions, Overview; tabs switch only by tapping the bottom bar; vertical scrolling must not be hijacked.
 - Existing transfer behaviour must keep working: editing a transfer, income direction, account→account transfers, different-currency source/destination amounts.
 - Every task leaves the app building (`assembleDebug`) and unit tests green (`testDebugUnitTest`).
-- Commands run in Git Bash from `E:\projects\4money`:
+- Commands run in Git Bash from `<repo checkout>`:
   - `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest`
   - `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat assembleDebug`
   - A single test class: append `--tests 'ua.com.radiokot.money.<package>.<ClassName>'` to `testDebugUnitTest`.

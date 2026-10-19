@@ -8,7 +8,7 @@
 
 **Tech Stack:** Kotlin, Jetpack Compose (foundation + Compose Unstyled + the repo `uikit/` components and `MoneyTheme` tokens), Koin, PowerSync, kotlinx.serialization, JUnit4. Supabase Postgres schema `money`.
 
-**Spec:** `docs/superpowers/specs/2026-10-01-self-hosted-4money-design.md`, sections C, D, C/D decisions, F2 (privacy), F3 (localization), **F4** (this feature). Mockups (Russian copy, layout): `C:\Users\PC\AppData\Local\Temp\claude\E--projects-4money\a31bb744-57a1-4c06-b137-f69a7c31767b\scratchpad\artifact-files\gen\gen.py`, artboards `Inbox-Tab`, `Setup-1-Intro` … `Setup-6-Account`, `Sources` (ignore `Inbox-Banner`).
+**Spec:** `docs/superpowers/specs/2026-10-01-self-hosted-4money-design.md`, sections C, D, C/D decisions, F2 (privacy), F3 (localization), **F4** (this feature). Mockups (Russian copy, layout): `<private mockup file>`, artboards `Inbox-Tab`, `Setup-1-Intro` … `Setup-6-Account`, `Sources` (ignore `Inbox-Banner`).
 
 ## Global Constraints
 
@@ -28,7 +28,7 @@
   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
   Claude-Session: <session link>
   ```
-- Never apply migrations to any server; never touch `E:\projects\4money` (main checkout); never use adb.
+- Never apply migrations to any server; never touch `<repo checkout>` (main checkout); never use adb.
 
 ## Rulings (owner unavailable; decided by the controller)
 

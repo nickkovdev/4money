@@ -113,6 +113,7 @@ Moving from 1Money: [docs/importing-from-1money.md](docs/importing-from-1money.m
 Android Studio or the Gradle wrapper with JDK 21 and the Android SDK; the app targets Android 8.0
 (API 26) and later. Build, tests, lint and the project layout:
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Contributions: [CONTRIBUTING.md](CONTRIBUTING.md).
+This fork's application id is `io.github.nickkovdev.money`, so it installs as a separate app from upstream 4Money.
 
 ## Privacy and security model
 

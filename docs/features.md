@@ -12,7 +12,10 @@ build that needs them (see [self-hosting.md](self-hosting.md)).
 - New application id `io.github.nickkovdev.money` (debug: `io.github.nickkovdev.money.debug`). It installs
   as a separate app: sign in again, grant notification access again, add the widget again; device-only
   settings (theme, language, privacy, passcode, auto-booking behaviour) do not carry over. The data is on
-  your server, so nothing is lost.
+  your server, but changes not yet synced are lost with the old install. Before switching, open the old
+  app and let it sync, then uninstall it (or at least revoke its notification access) before enabling
+  sources in the new one: notification de-duplication is local to the device, so two installs signed in to
+  the same account would both book the same payment.
 - Cleartext HTTP hosts are no longer hardcoded: list them in `cleartextHosts` in `app/local.properties`
   (comma-separated); empty means HTTPS only.
 - CI builds and tests the project on GitHub.
