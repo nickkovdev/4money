@@ -21,11 +21,11 @@
 - Battery: no infinite animations.
 - Repo is public: no personal data in code, tests or docs.
 - Build/test (Git Bash, from the worktree root):
-  `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest` (only `SternBrocotTreeSearchTest > extensiveTest` may fail) and `./gradlew.bat assembleDebug`.
+  `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest` (only `SternBrocotTreeSearchTest > extensiveTest` may fail) and `./gradlew.bat assembleDebug`.
 - Commit messages end with:
   ```
   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_01PnZC8W3VU3YDKW6kKJsF7t
+  Claude-Session: <session link>
   ```
 
 ## Rulings (made by the controller, the owner was not available mid-run)

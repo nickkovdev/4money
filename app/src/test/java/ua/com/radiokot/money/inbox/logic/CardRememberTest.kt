@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+/* Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -43,7 +43,7 @@ class CardRememberTest {
             history = listOf(
                 HistoryEntry("example sia", home),
                 HistoryEntry("example sia", home),
-                HistoryEntry("rimi", food),
+                HistoryEntry("greenmart", food),
             ),
         )
 
@@ -86,7 +86,7 @@ class CardRememberTest {
         val unknownPayee = InboxCardSuggester.suggest(
             normalizedPayee = "new shop",
             rules = emptyList(),
-            history = listOf(HistoryEntry("rimi", food)),
+            history = listOf(HistoryEntry("greenmart", food)),
         )
 
         Assert.assertNull(fromRule.rememberDefault)
@@ -151,10 +151,10 @@ class CardRememberTest {
 
     @Test
     fun containsChoice_CreatesRuleAndUndoRemovesOnlyIt() = runBlocking {
-        val older = exactRule("older", "COFFEEHOUSE akropole")
+        val older = exactRule("older", "coffeehouse centre")
         val repository = FakePayeeRuleRepository(listOf(older))
         val before = repository.getRules()
-        val choice = PayeeRememberChoice("COFFEEHOUSE", PayeeRule.MatchType.Contains)
+        val choice = PayeeRememberChoice("coffeehouse", PayeeRule.MatchType.Contains)
 
         repository.saveRuleForPayee(
             payeePattern = choice.pattern,
@@ -172,11 +172,11 @@ class CardRememberTest {
 
     @Test
     fun containsChoice_ExistingContainsRuleSurvivesUndo() = runBlocking {
-        val existing = exactRule("existing", "COFFEEHOUSE")
+        val existing = exactRule("existing", "coffeehouse")
             .copy(matchType = PayeeRule.MatchType.Contains)
         val repository = FakePayeeRuleRepository(listOf(existing))
         val before = repository.getRules()
-        val choice = PayeeRememberChoice("COFFEEHOUSE", PayeeRule.MatchType.Contains)
+        val choice = PayeeRememberChoice("coffeehouse", PayeeRule.MatchType.Contains)
 
         repository.saveRuleForPayee(
             payeePattern = choice.pattern,

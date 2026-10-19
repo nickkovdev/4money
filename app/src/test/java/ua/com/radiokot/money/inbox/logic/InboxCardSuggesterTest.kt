@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+/* Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -69,7 +69,7 @@ class InboxCardSuggesterTest {
                 HistoryEntry("fuelstop", moto),
                 HistoryEntry("fuelstop", car),
                 HistoryEntry("fuelstop", car),
-                HistoryEntry("rimi", home),
+                HistoryEntry("greenmart", home),
             ),
         )
 

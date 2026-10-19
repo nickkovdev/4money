@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+/* Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -88,7 +88,7 @@ data class PayeeWordSelection(
                 && words.subList(first, last + 1).none(PayeeRulePatternSuggester::isSignificant)
 
     /**
-     * «COFFEEHOUSE …» argument of the hint, null when the whole payee is selected
+     * «coffeehouse …» argument of the hint, null when the whole payee is selected
      * or the selected part is too broad (the choice is exact then).
      */
     val hintPattern: String?

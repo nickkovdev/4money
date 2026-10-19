@@ -1,4 +1,5 @@
 /* Copyright 2025 Oleg Koretsky
+   Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -573,7 +574,7 @@ private fun TransferSheetPreview(
             onDestinationClicked = { },
             onSwapCounterpartiesClicked = { },
             rememberWords = ViewRememberPayee(
-                PayeeWordSelection.leading("COFFEEHOUSE CENTRE RIG", 1)!!
+                PayeeWordSelection.leading("coffeehouse centre rig", 1)!!
             ).let(::mutableStateOf),
             isRememberPayeeEnabled = true.let(::mutableStateOf),
             modifier = Modifier

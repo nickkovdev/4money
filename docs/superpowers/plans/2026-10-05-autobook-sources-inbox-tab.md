@@ -8,7 +8,7 @@
 
 **Tech Stack:** Kotlin, Jetpack Compose (foundation + Compose Unstyled + the repo `uikit/` components and `MoneyTheme` tokens), Koin, PowerSync, kotlinx.serialization, JUnit4. Supabase Postgres schema `money`.
 
-**Spec:** `docs/superpowers/specs/2026-10-01-self-hosted-4money-design.md`, sections C, D, C/D decisions, F2 (privacy), F3 (localization), **F4** (this feature). Mockups (Russian copy, layout): `<pc-home>\AppData\Local\Temp\claude\E--projects-4money\a31bb744-57a1-4c06-b137-f69a7c31767b\scratchpad\artifact-files\gen\gen.py`, artboards `Inbox-Tab`, `Setup-1-Intro` … `Setup-6-Account`, `Sources` (ignore `Inbox-Banner`).
+**Spec:** `docs/superpowers/specs/2026-10-01-self-hosted-4money-design.md`, sections C, D, C/D decisions, F2 (privacy), F3 (localization), **F4** (this feature). Mockups (Russian copy, layout): `<private mockup file>`, artboards `Inbox-Tab`, `Setup-1-Intro` … `Setup-6-Account`, `Sources` (ignore `Inbox-Banner`).
 
 ## Global Constraints
 
@@ -21,14 +21,14 @@
 - Notification texts, payees, amounts and card digits are never logged.
 - The SEB parser `inbox/logic/SebLatviaNotificationParser.kt` keeps its behaviour; `SebLatviaNotificationParserTest` must pass unchanged.
 - Build/test (Git Bash, from the worktree root):
-  `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'`
+  `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>`
   then `./gradlew.bat testDebugUnitTest` (only `SternBrocotTreeSearchTest > extensiveTest` may fail), `./gradlew.bat assembleDebug`, `./gradlew.bat lintDebug`.
 - Commit messages end with:
   ```
   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_01PnZC8W3VU3YDKW6kKJsF7t
+  Claude-Session: <session link>
   ```
-- Never apply migrations to any server; never touch `E:\projects\4money` (main checkout); never use adb.
+- Never apply migrations to any server; never touch `<repo checkout>` (main checkout); never use adb.
 
 ## Rulings (owner unavailable; decided by the controller)
 
@@ -155,7 +155,7 @@ interface NotificationTemplateRepository {
   Then `create or replace function money.atomic_crud` with the body copied **verbatim** from `20261004000000_money_upstream_parity.sql` (lines 73–186: inner block, dead-letter logging into `money.sync_errors`, `raise warning`) and only the whitelist line changed to
   `if table_name not in ('accounts', 'categories', 'transfers', 'payee_rules', 'inbox_items', 'notification_templates') then`.
   Header comment: purpose, "apply before installing a build of this branch", and that `CREATE OR REPLACE` keeps grants.
-- [ ] **Step 2: Optional local validation** (throwaway only, never the existing `satchel-wiki-postgres` container): `docker run -d --name money-mig-test -e POSTGRES_PASSWORD=x -p 127.0.0.1:55432:5432 postgres:16`, create stubs (`create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql as 'select null::uuid'; create role authenticated; create role anon; create role service_role; create role powersync_role;`), apply all migrations in order with `psql -v ON_ERROR_STOP=1 -1 -f`, then `docker rm -f money-mig-test`. If a pre-existing migration needs more stubs, add them; if it cannot be made to run in 15 minutes, skip and say so in the report.
+- [ ] **Step 2: Optional local validation** (throwaway only, never an existing production Postgres container (`<another project's container>`)): `docker run -d --name money-mig-test -e POSTGRES_PASSWORD=x -p 127.0.0.1:55432:5432 postgres:16`, create stubs (`create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql as 'select null::uuid'; create role authenticated; create role anon; create role service_role; create role powersync_role;`), apply all migrations in order with `psql -v ON_ERROR_STOP=1 -1 -f`, then `docker rm -f money-mig-test`. If a pre-existing migration needs more stubs, add them; if it cannot be made to run in 15 minutes, skip and say so in the report.
 - [ ] **Step 3: sync-config.** Append to `user_data.data`:
   ```yaml
       - >-
@@ -560,5 +560,5 @@ Notifications for steps 2/3/5 = `RecentNotificationBuffer.getAll()` + `ActiveNot
 **Model:** controller (no subagent)
 
 - `docs/redesign/PROGRESS.md`: F4 row, install order (migration + sync-config before installing), F4 device checklist.
-- `docs/HANDOFF.md`: migrations list, decision "only SEB" superseded, sources/wizard pointers.
+- the personal handoff (since moved out of the tree): migrations list, decision "only SEB" superseded, sources/wizard pointers.
 - Commit `Document F4`.

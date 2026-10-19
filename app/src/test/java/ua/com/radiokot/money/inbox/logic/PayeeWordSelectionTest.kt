@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+/* Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -26,17 +26,17 @@ import ua.com.radiokot.money.inbox.data.PayeeRule
 class PayeeWordSelectionTest {
 
     private fun sel(first: Int, last: Int) =
-        PayeeWordSelection(listOf("COFFEEHOUSE", "akropole", "rig"), first, last)
+        PayeeWordSelection(listOf("coffeehouse", "centre", "rig"), first, last)
 
     @Test
     fun wholeIsExact() = Assert.assertEquals(
-        PayeeRememberChoice("COFFEEHOUSE CENTRE RIG", PayeeRule.MatchType.Exact),
+        PayeeRememberChoice("coffeehouse centre rig", PayeeRule.MatchType.Exact),
         sel(0, 2).toChoice()
     )
 
     @Test
     fun partIsContains() = Assert.assertEquals(
-        PayeeRememberChoice("COFFEEHOUSE", PayeeRule.MatchType.Contains),
+        PayeeRememberChoice("coffeehouse", PayeeRule.MatchType.Contains),
         sel(0, 0).toChoice()
     )
 
@@ -61,18 +61,18 @@ class PayeeWordSelectionTest {
     @Test
     fun hintPatterns() {
         Assert.assertNull(sel(0, 2).hintPattern)
-        Assert.assertEquals("COFFEEHOUSE …", sel(0, 0).hintPattern)
-        Assert.assertEquals("… akropole …", sel(1, 1).hintPattern)
-        Assert.assertEquals("… akropole rig", sel(1, 2).hintPattern)
+        Assert.assertEquals("coffeehouse …", sel(0, 0).hintPattern)
+        Assert.assertEquals("… centre …", sel(1, 1).hintPattern)
+        Assert.assertEquals("… centre rig", sel(1, 2).hintPattern)
     }
 
     @Test
     fun partWithoutSignificantTokenIsTooBroadAndExact() {
-        val rig = PayeeWordSelection(listOf("COFFEEHOUSE", "akropole", "ab"), 2, 2)
+        val rig = PayeeWordSelection(listOf("coffeehouse", "centre", "ab"), 2, 2)
         Assert.assertTrue(rig.isTooBroad)
         Assert.assertNull(rig.hintPattern)
         Assert.assertEquals(
-            PayeeRememberChoice("COFFEEHOUSE akropole ab", PayeeRule.MatchType.Exact),
+            PayeeRememberChoice("coffeehouse centre ab", PayeeRule.MatchType.Exact),
             rig.toChoice()
         )
 
@@ -93,14 +93,14 @@ class PayeeWordSelectionTest {
     @Test
     fun leadingClampsAndHandlesEmpty() {
         Assert.assertNull(PayeeWordSelection.leading("", 1))
-        Assert.assertEquals(sel(0, 2), PayeeWordSelection.leading("COFFEEHOUSE CENTRE RIG", 9))
-        Assert.assertEquals(sel(0, 0), PayeeWordSelection.leading("COFFEEHOUSE CENTRE RIG", 0))
+        Assert.assertEquals(sel(0, 2), PayeeWordSelection.leading("coffeehouse centre rig", 9))
+        Assert.assertEquals(sel(0, 0), PayeeWordSelection.leading("coffeehouse centre rig", 0))
     }
 
     @Test
     fun wholeSelectsEveryWord() {
         Assert.assertNull(PayeeWordSelection.whole(""))
-        Assert.assertEquals(sel(0, 2), PayeeWordSelection.whole("COFFEEHOUSE CENTRE RIG"))
+        Assert.assertEquals(sel(0, 2), PayeeWordSelection.whole("coffeehouse centre rig"))
         Assert.assertTrue(sel(0, 2).isWhole)
         Assert.assertFalse(sel(0, 1).isWhole)
     }

@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+/* Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -35,8 +35,8 @@ class MemoCasingTest {
             softenAllCaps("FUELSTOP RIGA"),
         )
         Assert.assertEquals(
-            "Rimi-Mols",
-            softenAllCaps("RIMI-MOLS"),
+            "Greenmart-Mols",
+            softenAllCaps("GREENMART-MOLS"),
         )
         Assert.assertEquals(
             "Продукты Магазин",

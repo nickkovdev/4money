@@ -1,7 +1,8 @@
-# Personal 4Money fork
+# 4Money self-hosted fork
 
-Start with `docs/HANDOFF.md`: current state, build setup, server access and next steps.
+Start with `docs/DEVELOPMENT.md`: build setup, structure and process.
 The binding spec is `docs/superpowers/specs/2026-10-01-self-hosted-4money-design.md`.
+Contribution rules: `CONTRIBUTING.md`. Private notes may exist in `docs/local/` (git-ignored).
 
 - This repo is PUBLIC. Never commit secrets, `local.properties`, card digits or personal data.
 - The backend is a shared production Supabase: 4Money uses only the `money` schema. Ask the owner

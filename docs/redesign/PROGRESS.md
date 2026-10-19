@@ -38,10 +38,10 @@ Brief: [BRIEF.md](BRIEF.md).
 Builds from **1cbf772 on** write the new `payee_rules` columns. Installing one before the server has
 them makes rule uploads fail into `money.sync_errors`. Order:
 
-1. Owner OK, then apply `supabase/migrations/20261005000000_money_payee_rule_ranges.sql` (command in
-   [../HANDOFF.md](../HANDOFF.md), Infrastructure).
-2. Copy `deploy/powersync/sync-config.yaml` to `~/4money-powersync/`, `docker restart 4money-powersync`,
-   check `pg_replication_slots` has exactly one active `powersync_*` slot.
+1. Owner OK, then apply `supabase/migrations/20261005000000_money_payee_rule_ranges.sql` (see
+   [../self-hosting.md](../self-hosting.md), migrations/upgrading).
+2. Copy `deploy/powersync/sync-config.yaml` to the PowerSync deployment directory and restart the
+   PowerSync container, check `pg_replication_slots` has exactly one active `powersync_*` slot.
 3. Only then install a build of `feature/redesign`.
 
 To check phases 1–4 on the phone before the migration, build commit **5b60431** (e.g. `git worktree add
@@ -56,11 +56,11 @@ and the next sync checkpoint then removes those locally taught templates from th
 has no such rows), so the wizard's work is lost. The owner applies both steps; nothing here is run
 automatically. Order:
 
-1. Owner OK, then apply `supabase/migrations/20261006000000_money_notification_templates.sql` (command in
-   [../HANDOFF.md](../HANDOFF.md), Infrastructure). It creates the table and adds it to the `atomic_crud`
+1. Owner OK, then apply `supabase/migrations/20261006000000_money_notification_templates.sql` (see
+   [../self-hosting.md](../self-hosting.md), migrations/upgrading). It creates the table and adds it to the `atomic_crud`
    whitelist. The earlier `20261005000000_money_payee_rule_ranges.sql` must already be applied.
 2. Copy `deploy/powersync/sync-config.yaml` (new `notification_templates` query in the user bucket) to
-   `~/4money-powersync/`, `docker restart 4money-powersync`, check `pg_replication_slots` has exactly one
+   the PowerSync deployment directory and restart the PowerSync container, check `pg_replication_slots` has exactly one
    active `powersync_*` slot.
 3. Only then install the new APK. After the first sync the Sources screen shows the SEB Latvia preset
    (it works without any template rows).

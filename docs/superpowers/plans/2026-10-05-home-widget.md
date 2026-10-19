@@ -20,12 +20,12 @@
 - Battery: no periodic work, no services, no polling; `updatePeriodMillis="0"`.
 - No server changes (no migrations, no sync-config changes).
 - Build/test from Git Bash in the worktree root:
-  `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'`
+  `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>`
   then `./gradlew.bat testDebugUnitTest` (only `SternBrocotTreeSearchTest > extensiveTest` may fail), `./gradlew.bat assembleDebug`, `./gradlew.bat lintDebug`.
 - Commit messages end with:
   ```
   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_01PnZC8W3VU3YDKW6kKJsF7t
+  Claude-Session: <session link>
   ```
 
 ## Rulings (controller, owner not available mid-run)
@@ -551,7 +551,7 @@ Note Koin `bind UserSessionScopeListener::class` on two singles: `getAll<UserSes
 **Files:**
 - Modify: `docs/superpowers/specs/2026-10-01-self-hosted-4money-design.md` (append "## F5. Home screen widget (designed 2026-10-05, approved by the owner)")
 - Modify: `docs/redesign/PROGRESS.md` (Done row F5, remove the Backlog item text and replace with "Home screen widget: done in F5 (see above)", add "## F5 device checklist")
-- Modify: `docs/HANDOFF.md` (row F5 in "What exists": branch `feature/home-widget`, not verified on device, no migration needed; key places `widget/`, `transfers/view/QuickTransferActivity.kt`)
+- Modify: the personal handoff (since moved out of the tree) (row F5 in "What exists": branch `feature/home-widget`, not verified on device, no migration needed; key places `widget/`, `transfers/view/QuickTransferActivity.kt`)
 
 - [ ] **Step 1: Spec section** — summarise: widget (3×1, resizable horizontally, three circles, Glance, `updatePeriodMillis = 0`), badge (pending count, hidden at 0, 99+, no session → none, tap → Inbox tab via `EXTRA_OPEN_INBOX`), updates (count flow in session scope, listener pending, theme change, sign-out; debounced 500 ms; no polling, no services), quick entry (`QuickTransferActivity`, own task, translucent, category grid → transfer sheet, account last used → most used → selection, ✓ saves and finishes, back/outside finishes, lock + auth like other entry points, privacy like the normal sheet), theme (exact palette, System follows launcher night mode), strings EN + RU, preview. "Decisions: plan's Rulings section" with the plan path.
 - [ ] **Step 2: F5 device checklist:**

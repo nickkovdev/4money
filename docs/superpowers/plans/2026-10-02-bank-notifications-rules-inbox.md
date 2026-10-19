@@ -23,9 +23,9 @@
 - Public repository: no real card digits, names, IBANs or other personal data in fixtures or code. Card digits in tests are `0000`/`1111`; merchant names are the spec sample (`ACME CLOUD`) or invented ones.
 - New main-source Kotlin files start with the project's GPL-3 license header (copy lines 1–18 of any existing `.kt` file, e.g. `powersync/DbSchema.kt`). Code blocks in this plan omit the header for brevity; test files in `app/src/test` have no header, matching the existing tests.
 - Package for all new client code: `ua.com.radiokot.money.inbox` (subpackages `data`, `logic`, `listener`, `view`).
-- Build/test on this Windows machine, from Git Bash in `E:\projects\4money`:
+- Build/test on this Windows machine, from Git Bash in `<repo checkout>`:
   ```bash
-  export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'
+  export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>
   ./gradlew.bat testDebugUnitTest
   ./gradlew.bat assembleDebug
   ```
@@ -282,7 +282,7 @@ In `deploy/powersync/sync-config.yaml`, append two entries to `bucket_definition
         WHERE user_id = bucket.user_id
 ```
 
-- [ ] **Step 3: Apply on the VM and verify**
+- [ ] **Step 3: Apply on the server and verify**
 
 Apply the migration the same way as `20261001000000_money_schema.sql` (as `postgres` into the shared Supabase DB; with the default self-hosting compose the container is `supabase-db`):
 
@@ -309,7 +309,7 @@ Expected: the publication lists `accounts, categories, currencies, inbox_items, 
 
 - [ ] **Step 4: Reload PowerSync**
 
-Copy the updated `sync-config.yaml` to the VM's PowerSync folder and restart: `docker compose -f deploy/powersync/docker-compose.yml restart`. Expected in `docker logs 4money-powersync`: the new sync rules are deployed and replication of `money.payee_rules`/`money.inbox_items` starts, no errors.
+Copy the updated `sync-config.yaml` to the server's PowerSync folder and restart: `docker compose -f deploy/powersync/docker-compose.yml restart`. Expected in `docker logs 4money-powersync`: the new sync rules are deployed and replication of `money.payee_rules`/`money.inbox_items` starts, no errors.
 
 - [ ] **Step 5: Commit**
 
@@ -592,7 +592,7 @@ class PayeeNormalizerTest {
 
     @Test
     fun sebSampleTrailingDotIsRemoved() {
-        assertEquals("ACME CLOUD", PayeeNormalizer.normalize("ACME CLOUD ."))
+        assertEquals("acme cloud", PayeeNormalizer.normalize("ACME CLOUD ."))
         assertEquals("ACME CLOUD", PayeeNormalizer.displayName("ACME CLOUD ."))
     }
 
@@ -603,8 +603,8 @@ class PayeeNormalizerTest {
 
     @Test
     fun trailingTerminalIdsAndCityAreRemoved() {
-        assertEquals("rimi hyper", PayeeNormalizer.normalize("RIMI HYPER 0123 RIGA"))
-        assertEquals("narvesen", PayeeNormalizer.normalize("NARVESEN 45 LV"))
+        assertEquals("greenmart hyper", PayeeNormalizer.normalize("GREENMART HYPER 0123 RIGA"))
+        assertEquals("kiosk24", PayeeNormalizer.normalize("KIOSK24 45 LV"))
     }
 
     @Test
@@ -1106,17 +1106,17 @@ class PayeeRuleMatcherTest {
 
     @Test
     fun exactBeatsContains() {
-        val exact = rule("rimi hyper", PayeeRule.MatchType.Exact)
-        val contains = rule("rimi", PayeeRule.MatchType.Contains, hits = 100)
-        assertEquals(exact, PayeeRuleMatcher.match("rimi hyper", listOf(contains, exact)))
+        val exact = rule("greenmart hyper", PayeeRule.MatchType.Exact)
+        val contains = rule("greenmart", PayeeRule.MatchType.Contains, hits = 100)
+        assertEquals(exact, PayeeRuleMatcher.match("greenmart hyper", listOf(contains, exact)))
     }
 
     @Test
     fun longestContainsWins() {
-        val short = rule("wolt", PayeeRule.MatchType.Contains, hits = 50)
-        val long = rule("wolt market", PayeeRule.MatchType.Contains)
-        assertEquals(long, PayeeRuleMatcher.match("wolt market riga centrs", listOf(short, long)))
-        assertEquals(short, PayeeRuleMatcher.match("wolt food", listOf(short, long)))
+        val short = rule("fooddrop", PayeeRule.MatchType.Contains, hits = 50)
+        val long = rule("fooddrop market", PayeeRule.MatchType.Contains)
+        assertEquals(long, PayeeRuleMatcher.match("fooddrop market riga centrs", listOf(short, long)))
+        assertEquals(short, PayeeRuleMatcher.match("fooddrop food", listOf(short, long)))
     }
 
     @Test
@@ -1129,10 +1129,10 @@ class PayeeRuleMatcherTest {
     @Test
     fun noMatch() {
         val rules = listOf(
-            rule("rimi", PayeeRule.MatchType.Exact),
-            rule("maxima", PayeeRule.MatchType.Contains),
+            rule("greenmart", PayeeRule.MatchType.Exact),
+            rule("bigmart", PayeeRule.MatchType.Contains),
         )
-        assertNull(PayeeRuleMatcher.match("rimi hyper", rules))
+        assertNull(PayeeRuleMatcher.match("greenmart hyper", rules))
         assertNull(PayeeRuleMatcher.match("", rules))
         assertNull(PayeeRuleMatcher.match("anything", emptyList()))
     }
@@ -1165,7 +1165,7 @@ class AutoExpenseResolverTest {
         payee = "ACME CLOUD",
     )
     private val rule = PayeeRule(
-        payeePattern = "ACME CLOUD",
+        payeePattern = "acme cloud",
         matchType = PayeeRule.MatchType.Exact,
         categoryId = "cat",
         subcategoryId = "sub",
@@ -1863,7 +1863,7 @@ class ProcessBankNotificationUseCaseTest {
         text = "Jūs samaksājāt 2,12 EUR par 02/10/2026 05:06 karte...0000 ACME CLOUD .",
     )
     private val rule = PayeeRule(
-        payeePattern = "ACME CLOUD",
+        payeePattern = "acme cloud",
         matchType = PayeeRule.MatchType.Exact,
         categoryId = "cat-food",
         subcategoryId = null,
@@ -3431,13 +3431,13 @@ class CompleteInboxItemUseCaseTest {
     fun marksDoneAndLearnsRule() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr", "ACME CLOUD", account, category).getOrThrow()
+        useCase("item", "tr", "acme cloud", account, category).getOrThrow()
 
         val item = inbox.items.value.single()
         assertEquals(InboxItem.Status.Done, item.status)
         assertEquals("tr", item.transferId)
         val rule = rules.rules.value.single()
-        assertEquals("ACME CLOUD", rule.payeePattern)
+        assertEquals("acme cloud", rule.payeePattern)
         assertEquals(PayeeRule.MatchType.Exact, rule.matchType)
         assertEquals("cat", rule.categoryId)
         assertEquals("sub", rule.subcategoryId)
@@ -3448,8 +3448,8 @@ class CompleteInboxItemUseCaseTest {
     fun relearningUpdatesTheSameRule() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr1", "ACME CLOUD", account, category).getOrThrow()
-        useCase("item", "tr2", "ACME CLOUD", account, TransferCounterpartyId.Category("cat2", null)).getOrThrow()
+        useCase("item", "tr1", "acme cloud", account, category).getOrThrow()
+        useCase("item", "tr2", "acme cloud", account, TransferCounterpartyId.Category("cat2", null)).getOrThrow()
 
         assertEquals("cat2", rules.rules.value.single().categoryId)
     }
@@ -3459,7 +3459,7 @@ class CompleteInboxItemUseCaseTest {
         addPendingItem()
 
         useCase("item", "tr", null, account, category).getOrThrow()
-        useCase("item", "tr", "ACME CLOUD", account, TransferCounterpartyId.Account("acc2")).getOrThrow()
+        useCase("item", "tr", "acme cloud", account, TransferCounterpartyId.Account("acc2")).getOrThrow()
 
         assertTrue(rules.rules.value.isEmpty())
     }
@@ -3512,7 +3512,7 @@ class InboxTransferPrefillTest {
         assertEquals("ACME CLOUD", route.memo)
         assertEquals(LocalDateTime(2026, 10, 2, 8, 6), route.dateTime)
         assertEquals("item", route.inboxItemId)
-        assertEquals("ACME CLOUD", route.rememberPayee)
+        assertEquals("acme cloud", route.rememberPayee)
     }
 
     @Test
@@ -3859,7 +3859,7 @@ Insert immediately before the `        AmountKeyboard(` call (after the memo `Bo
         }
 ```
 
-The preview keeps compiling thanks to the defaults; add `rememberPayee = "ACME CLOUD",` to the preview call to see the row.
+The preview keeps compiling thanks to the defaults; add `rememberPayee = "acme cloud",` to the preview call to see the row.
 
 - [ ] **Step 8: Build and run tests**
 
@@ -4193,14 +4193,14 @@ private fun RulesScreenPreview(
 ) = RulesScreen(
     ruleItemList = listOf(
         ViewPayeeRuleItem(
-            pattern = "ACME CLOUD",
+            pattern = "acme cloud",
             matchTypeText = "is",
-            categoryTitle = "Services / AI",
+            categoryTitle = "Services / Software",
             hits = 4,
             key = "1",
         ),
         ViewPayeeRuleItem(
-            pattern = "wolt",
+            pattern = "fooddrop",
             matchTypeText = "contains",
             categoryTitle = "Food",
             hits = 12,

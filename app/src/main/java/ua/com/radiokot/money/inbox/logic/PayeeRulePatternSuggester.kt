@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+/* Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -23,8 +23,8 @@ import ua.com.radiokot.money.inbox.data.PayeeRule
 
 /**
  * Suggests which words of a payee to remember: the leading words it shares
- * with other known payees of the same category ("COFFEEHOUSE" for
- * "COFFEEHOUSE akropole" when "COFFEEHOUSE alfa" is also food), or the whole payee.
+ * with other known payees of the same category ("coffeehouse" for
+ * "coffeehouse centre" when "coffeehouse riverside" is also food), or the whole payee.
  */
 object PayeeRulePatternSuggester {
 

@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+/* Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -30,19 +30,19 @@ import ua.com.radiokot.money.inbox.logic.PayeeRulePatternSuggester.KnownPayee
 class PayeeRulePatternSuggesterTest {
 
     private val known = listOf(
-        KnownPayee("COFFEEHOUSE alfa", "food"),
-        KnownPayee("COFFEEHOUSE giftcard shop", "gifts"),
+        KnownPayee("coffeehouse riverside", "food"),
+        KnownPayee("coffeehouse giftcard shop", "gifts"),
         KnownPayee("sia example cafe", "food"),
         KnownPayee("example cafe old town", "cafe"),
     )
 
     @Test
     fun sharedLeadingWordInTheSameCategory() =
-        Assert.assertEquals(1, PayeeRulePatternSuggester.suggestWordCount("COFFEEHOUSE akropole", "food", known))
+        Assert.assertEquals(1, PayeeRulePatternSuggester.suggestWordCount("coffeehouse centre", "food", known))
 
     @Test
     fun otherCategoryDoesNotCount() =
-        Assert.assertEquals(2, PayeeRulePatternSuggester.suggestWordCount("COFFEEHOUSE akropole", "transport", known))
+        Assert.assertEquals(2, PayeeRulePatternSuggester.suggestWordCount("coffeehouse centre", "transport", known))
 
     @Test
     fun longestSharedRunWins() = Assert.assertEquals(
@@ -68,21 +68,21 @@ class PayeeRulePatternSuggesterTest {
     fun shortAndDigitTokensAreTrimmedFromTheEnd() = Assert.assertEquals(
         1,
         PayeeRulePatternSuggester.suggestWordCount(
-            "bolt ab 22 x", "transport",
-            listOf(KnownPayee("bolt ab 22 y", "transport"))
+            "ridego ab 22 x", "transport",
+            listOf(KnownPayee("ridego ab 22 y", "transport"))
         )
-    ) // "bolt ab 22" → "bolt"
+    ) // "ridego ab 22" → "ridego"
 
     @Test
     fun samePayeeIsNotEvidence() = Assert.assertEquals(
         2,
-        PayeeRulePatternSuggester.suggestWordCount("COFFEEHOUSE alfa", "food", known)
+        PayeeRulePatternSuggester.suggestWordCount("coffeehouse riverside", "food", known)
     )
 
     @Test
     fun singleWordPayeeIsWhole() = Assert.assertEquals(
         1,
-        PayeeRulePatternSuggester.suggestWordCount("COFFEEHOUSE", "food", known)
+        PayeeRulePatternSuggester.suggestWordCount("coffeehouse", "food", known)
     )
 
     @Test
@@ -102,7 +102,7 @@ class PayeeRulePatternSuggesterTest {
     fun knownPayeesFromRulesAndHistory() {
         val rules = listOf(
             PayeeRule(
-                payeePattern = "COFFEEHOUSE alfa",
+                payeePattern = "coffeehouse riverside",
                 matchType = PayeeRule.MatchType.Exact,
                 categoryId = "food",
                 subcategoryId = null,
@@ -131,18 +131,18 @@ class PayeeRulePatternSuggesterTest {
             ),
         )
         val history = listOf(
-            HistoryEntry("COFFEEHOUSE alfa", CategoryKey("food", null)),
-            HistoryEntry("COFFEEHOUSE akropole", CategoryKey("food", "burgers")),
-            HistoryEntry("COFFEEHOUSE akropole", CategoryKey("food", null)),
+            HistoryEntry("coffeehouse riverside", CategoryKey("food", null)),
+            HistoryEntry("coffeehouse centre", CategoryKey("food", "burgers")),
+            HistoryEntry("coffeehouse centre", CategoryKey("food", null)),
             HistoryEntry("", CategoryKey("transport", null)),
             HistoryEntry("example cafe old town", CategoryKey("cafe", null)),
         )
 
         Assert.assertEquals(
             listOf(
-                KnownPayee("COFFEEHOUSE alfa", "food"),
+                KnownPayee("coffeehouse riverside", "food"),
                 KnownPayee("example cafe", "cafe"),
-                KnownPayee("COFFEEHOUSE akropole", "food"),
+                KnownPayee("coffeehouse centre", "food"),
                 KnownPayee("example cafe old town", "cafe"),
             ),
             PayeeRulePatternSuggester.knownPayees(rules, history)
@@ -166,11 +166,11 @@ class PayeeRulePatternSuggesterTest {
         amountRange = amountRange,
     )
 
-    private val giftsKnown = listOf(KnownPayee("COFFEEHOUSE giftcard shop", "gifts"))
+    private val giftsKnown = listOf(KnownPayee("coffeehouse giftcard shop", "gifts"))
 
     private fun defaultFor(vararg rules: PayeeRule, subcategoryId: String? = null) =
         PayeeRulePatternSuggester.defaultSelection(
-            normalizedPayee = "COFFEEHOUSE akropole",
+            normalizedPayee = "coffeehouse centre",
             categoryId = "gifts",
             known = giftsKnown,
             existingRules = rules.toList(),
@@ -180,43 +180,43 @@ class PayeeRulePatternSuggesterTest {
     @Test
     fun conflictingContainsRuleOfAnotherCategoryMakesTheDefaultWhole() {
         Assert.assertEquals(
-            PayeeWordSelection.whole("COFFEEHOUSE akropole"),
-            defaultFor(rule("COFFEEHOUSE", "food")),
+            PayeeWordSelection.whole("coffeehouse centre"),
+            defaultFor(rule("coffeehouse", "food")),
         )
     }
 
     @Test
     fun conflictingContainsRuleOfAnotherSubcategoryMakesTheDefaultWhole() {
         Assert.assertEquals(
-            PayeeWordSelection.whole("COFFEEHOUSE akropole"),
-            defaultFor(rule("COFFEEHOUSE", "gifts", "toys"), subcategoryId = "cards"),
+            PayeeWordSelection.whole("coffeehouse centre"),
+            defaultFor(rule("coffeehouse", "gifts", "toys"), subcategoryId = "cards"),
         )
         Assert.assertEquals(
-            PayeeWordSelection.whole("COFFEEHOUSE akropole"),
-            defaultFor(rule("COFFEEHOUSE", "gifts", "toys"), subcategoryId = null),
+            PayeeWordSelection.whole("coffeehouse centre"),
+            defaultFor(rule("coffeehouse", "gifts", "toys"), subcategoryId = null),
         )
     }
 
     @Test
     fun sameTargetContainsRuleKeepsThePart() {
         Assert.assertEquals(
-            PayeeWordSelection.leading("COFFEEHOUSE akropole", 1),
-            defaultFor(rule("COFFEEHOUSE", "gifts", "cards"), subcategoryId = "cards"),
+            PayeeWordSelection.leading("coffeehouse centre", 1),
+            defaultFor(rule("coffeehouse", "gifts", "cards"), subcategoryId = "cards"),
         )
     }
 
     @Test
     fun exactOrRangeRulesDoNotBlock() {
-        val part = PayeeWordSelection.leading("COFFEEHOUSE akropole", 1)
+        val part = PayeeWordSelection.leading("coffeehouse centre", 1)
         Assert.assertEquals(
             part,
-            defaultFor(rule("COFFEEHOUSE", "food", matchType = PayeeRule.MatchType.Exact)),
+            defaultFor(rule("coffeehouse", "food", matchType = PayeeRule.MatchType.Exact)),
         )
         Assert.assertEquals(
             part,
             defaultFor(
                 rule(
-                    "COFFEEHOUSE", "food",
+                    "coffeehouse", "food",
                     amountRange = AmountRange(
                         min = java.math.BigDecimal.TEN,
                         max = null,
@@ -228,19 +228,19 @@ class PayeeRulePatternSuggesterTest {
 
     @Test
     fun unrelatedPatternDoesNotBlock() = Assert.assertEquals(
-        PayeeWordSelection.leading("COFFEEHOUSE akropole", 1),
+        PayeeWordSelection.leading("coffeehouse centre", 1),
         defaultFor(rule("burger", "food")),
     )
 
     @Test
     fun defaultSelectionIsTheSuggestedLeadingRun() {
         Assert.assertEquals(
-            PayeeWordSelection(listOf("COFFEEHOUSE", "akropole"), 0, 0),
-            PayeeRulePatternSuggester.defaultSelection("COFFEEHOUSE akropole", "food", known)
+            PayeeWordSelection(listOf("coffeehouse", "centre"), 0, 0),
+            PayeeRulePatternSuggester.defaultSelection("coffeehouse centre", "food", known)
         )
         Assert.assertEquals(
-            PayeeWordSelection(listOf("COFFEEHOUSE", "akropole"), 0, 1),
-            PayeeRulePatternSuggester.defaultSelection("COFFEEHOUSE akropole", "transport", known)
+            PayeeWordSelection(listOf("coffeehouse", "centre"), 0, 1),
+            PayeeRulePatternSuggester.defaultSelection("coffeehouse centre", "transport", known)
         )
         Assert.assertNull(PayeeRulePatternSuggester.defaultSelection("", "food", known))
     }

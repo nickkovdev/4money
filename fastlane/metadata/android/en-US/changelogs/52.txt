@@ -1,0 +1,4 @@
+0.33.0: first open-source release of the self-hosted fork.
+- New application id (io.github.nickkovdev.money): installs as a separate app. Sign in again, grant notification access again. Before switching: open the old app and let it sync, then uninstall it (or at least revoke its notification access) before enabling sources in the new one.
+- Cleartext HTTP hosts are set at build time (cleartextHosts).
+- CI, self-hosting, development and 1Money import guides.

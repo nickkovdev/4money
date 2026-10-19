@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+/* Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -914,7 +914,7 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
                     title = "COFFEEHOUSE CENTRE RIG",
                     isRememberOn = true,
                     rememberWords = ViewRememberPayee(
-                        PayeeWordSelection.leading("COFFEEHOUSE CENTRE RIG", 1)!!
+                        PayeeWordSelection.leading("coffeehouse centre rig", 1)!!
                     ),
                     amount = ViewAmount(
                         value = BigInteger("-702"),
@@ -930,7 +930,7 @@ private fun InboxCardsScreenPreview() = MoneyTheme(colors = MidnightMoneyColors)
                 ),
                 ViewInboxCard(
                     key = "2",
-                    title = "Rimi",
+                    title = "Greenmart",
                     amount = null,
                     isIncoming = false,
                     isForeignCurrency = false,

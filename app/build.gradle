@@ -14,6 +14,51 @@ if (localPropertiesFile.exists()) {
 }
 def ciSigningKeystoreFile = project.file("ci-signing.jks")
 
+/**
+ * Generates res/xml/network_security_config.xml: HTTPS only, plus optional cleartext hosts
+ * (comma-separated `cleartextHosts` in app/local.properties).
+ */
+abstract class GenerateNetworkSecurityConfigTask extends DefaultTask {
+    @Input
+    abstract Property<String> getCleartextHosts()
+
+    @OutputDirectory
+    abstract DirectoryProperty getOutputDir()
+
+    @TaskAction
+    void generate() {
+        def hosts = cleartextHosts.get().split(",")
+                .collect { it.trim() }
+                .findAll { !it.isEmpty() }
+        hosts.each { host ->
+            if (!(host ==~ /[A-Za-z0-9.:-]+/)) {
+                throw new GradleException(
+                        "Invalid entry in cleartextHosts: '${host}'. " +
+                                "Only letters, digits, '.', '-' and ':' are allowed."
+                )
+            }
+        }
+
+        def lines = []
+        lines << '<?xml version="1.0" encoding="utf-8"?>'
+        lines << '<network-security-config>'
+        lines << '    <base-config cleartextTrafficPermitted="false" />'
+        if (!hosts.isEmpty()) {
+            lines << '    <!-- Generated from cleartextHosts in app/local.properties -->'
+            lines << '    <domain-config cleartextTrafficPermitted="true">'
+            hosts.each { host ->
+                lines << "        <domain includeSubdomains=\"false\">${host}</domain>".toString()
+            }
+            lines << '    </domain-config>'
+        }
+        lines << '</network-security-config>'
+
+        def file = outputDir.file("xml/network_security_config.xml").get().asFile
+        file.parentFile.mkdirs()
+        file.text = lines.join("\n") + "\n"
+    }
+}
+
 android {
     namespace "ua.com.radiokot.money"
 
@@ -21,14 +66,14 @@ android {
     compileSdkVersion 37
 
     defaultConfig {
-        applicationId "ua.com.radiokot.money"
+        applicationId "io.github.nickkovdev.money"
 
         //noinspection OldTargetApi
         targetSdk 36
         minSdk 26
 
-        versionCode 51
-        versionName "0.32.0"
+        versionCode 52
+        versionName "0.33.0"
 
         resConfigs "en", "ru"
 
@@ -44,7 +89,7 @@ android {
         buildConfigField 'String', 'POWERSYNC_URL', "\"${localProperties.getProperty('powerSyncUrl')}\""
         buildConfigField 'String', 'AUTH_TEMP_CREDENTIAL', "\"${localProperties.getProperty('authTempCredential')}\""
 
-        resValue 'string', 'uri_scheme', 'money21m'
+        resValue 'string', 'uri_scheme', 'io.github.nickkovdev.money'
         resValue 'string', 'auth_uri_host', 'auth'
     }
 
@@ -83,7 +128,7 @@ android {
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
 
-            resValue 'string', 'uri_scheme', 'money21m-debug'
+            resValue 'string', 'uri_scheme', 'io.github.nickkovdev.money.debug'
         }
 
         release {
@@ -182,6 +227,19 @@ androidComponents {
         variant.packaging.resources.excludes.add("META-INF/versions/**")
         variant.packaging.resources.excludes.add("META-INF/*.version")
         variant.packaging.resources.excludes.add("**.kotlin_module")
+    }
+
+    onVariants(selector().all()) { variant ->
+        def generateNetworkSecurityConfig = project.tasks.register(
+                "generate${variant.name.capitalize()}NetworkSecurityConfig",
+                GenerateNetworkSecurityConfigTask
+        ) {
+            it.cleartextHosts.set(localProperties.getProperty('cleartextHosts', ''))
+        }
+        variant.sources.res.addGeneratedSourceDirectory(
+                generateNetworkSecurityConfig,
+                { it.outputDir }
+        )
     }
 
     onVariants(selector().all()) { variant ->

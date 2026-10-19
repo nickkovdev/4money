@@ -1,4 +1,4 @@
-/* Copyright 2025 Oleg Koretsky
+/* Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -40,7 +40,7 @@ data class ViewRememberPayee(
     val first: Int,
     val last: Int,
     /**
-     * «COFFEEHOUSE …»; null when the whole payee is selected.
+     * «coffeehouse …»; null when the whole payee is selected.
      */
     val hintPattern: String?,
     /**
@@ -109,7 +109,7 @@ fun RememberPayeeWords(
 private fun RememberPayeeWordsPreview() = MoneyTheme {
     RememberPayeeWords(
         remember = ViewRememberPayee(
-            PayeeWordSelection.leading("COFFEEHOUSE CENTRE RIG", 1)!!
+            PayeeWordSelection.leading("coffeehouse centre rig", 1)!!
         ),
         onWordClicked = {},
     )

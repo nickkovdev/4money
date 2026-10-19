@@ -9,7 +9,7 @@ Replace 1Money with a personal fork of 4Money backed by my own server, keep the 
 should become an expense in the right category automatically, or land in an inbox
 to be categorized manually, teaching the app a rule on the way.
 
-Single user. Phone: Samsung S25+ (Android, no root). Battery efficiency is a hard requirement.
+Single user. Phone: an Android phone (no root). Battery efficiency is a hard requirement.
 
 ## Sub-projects
 
@@ -23,7 +23,7 @@ Single user. Phone: Samsung S25+ (Android, no root). Battery efficiency is a har
 
 ## A. Backend
 
-Runs on the Azure VM next to the already existing self-hosted Supabase, which is shared
+Runs on the server next to the already existing self-hosted Supabase, which is shared
 with other projects. 4Money is isolated in its own Postgres schema.
 
 - Schema and RPCs: `supabase/migrations/20261001000000_money_schema.sql`.
@@ -40,7 +40,8 @@ with other projects. 4Money is isolated in its own Postgres schema.
   Postgres bucket storage in the `powersync_storage` DB of the same Postgres, no MongoDB.
   Auth by the Supabase HS256 JWT secret. Published only on the Tailscale IP.
 - Network: the phone reaches Supabase (`:8000`) and PowerSync (`:8080`) only via Tailscale.
-  Cleartext HTTP is allowed for that single IP in `network_security_config.xml`,
+  Cleartext HTTP is allowed for that single IP in `network_security_config.xml`
+  (now generated from the `cleartextHosts` key, see docs/self-hosting.md),
   WireGuard encrypts the traffic.
 - Auth: the app's current start screen signs in by email/password with
   `authTempCredential` used as both. A confirmed user was created with a random long credential.
@@ -359,7 +360,7 @@ Inbox, inbox cards, Inbox tab accept), the rule pattern is chosen from the norma
 - Default selection (pure `PayeeRulePatternSuggester`): the longest leading word run shared with another
   known payee (payee rule patterns and auto-booked/recorded transfer memos) of the same category, ignoring
   short (1–2 chars), digit-only and generic company-form tokens; none → the whole payee.
-- A hint "Will match every payee with «COFFEEHOUSE …»" is shown when a `contains` rule will be created.
+- A hint "Will match every payee with «coffeehouse …»" is shown when a `contains` rule will be created.
 - Existing exact rules are never deleted (exact wins over contains in matching). The Undo of an accept
   removes the rule that accept created, exact or contains.
 - Strings en + ru; privacy mode unaffected (no amounts added).

@@ -1,3 +1,22 @@
+/* Copyright 2026 Nikita Kovalovs
+
+   This file is part of the 4Money,
+   a budget tracking Android app.
+
+   4Money is free software: you can redistribute it
+   and/or modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
+
+   4Money is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+   See the GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with 4Money. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package ua.com.radiokot.money.inbox.logic
 
 import kotlinx.coroutines.runBlocking
@@ -46,13 +65,13 @@ class CompleteInboxItemUseCaseTest {
     fun marksDoneAndLearnsRule() = runBlocking {
         addPendingItem()
 
-        useCase("item", "tr", exact("ACME CLOUD"), account, category).getOrThrow()
+        useCase("item", "tr", exact("acme cloud"), account, category).getOrThrow()
 
         val item = inbox.items.value.single()
         assertEquals(InboxItem.Status.Done, item.status)
         assertEquals("tr", item.transferId)
         val rule = rules.rules.value.single()
-        assertEquals("ACME CLOUD", rule.payeePattern)
+        assertEquals("acme cloud", rule.payeePattern)
         assertEquals(PayeeRule.MatchType.Exact, rule.matchType)
         assertEquals("cat", rule.categoryId)
         assertEquals("sub", rule.subcategoryId)
@@ -98,12 +117,12 @@ class CompleteInboxItemUseCaseTest {
 
         useCase(
             "item", "tr",
-            PayeeRememberChoice("COFFEEHOUSE", PayeeRule.MatchType.Contains),
+            PayeeRememberChoice("coffeehouse", PayeeRule.MatchType.Contains),
             account, category,
         ).getOrThrow()
 
         val rule = rules.rules.value.single()
-        assertEquals("COFFEEHOUSE", rule.payeePattern)
+        assertEquals("coffeehouse", rule.payeePattern)
         assertEquals(PayeeRule.MatchType.Contains, rule.matchType)
     }
 }

@@ -24,9 +24,9 @@
 - Horizontal swipe on content switches the period on Categories, Transactions, Overview; tabs switch only by tapping the bottom bar; vertical scrolling must not be hijacked.
 - Existing transfer behaviour must keep working: editing a transfer, income direction, account→account transfers, different-currency source/destination amounts.
 - Every task leaves the app building (`assembleDebug`) and unit tests green (`testDebugUnitTest`).
-- Commands run in Git Bash from `E:\projects\4money`:
-  - `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest`
-  - `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat assembleDebug`
+- Commands run in Git Bash from `<repo checkout>`:
+  - `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest`
+  - `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat assembleDebug`
   - A single test class: append `--tests 'ua.com.radiokot.money.<package>.<ClassName>'` to `testDebugUnitTest`.
 - New Kotlin files start with the same GPL header the existing files use (copy it from any file, e.g. `home/view/HomeViewModel.kt`, keep "Copyright 2025 Oleg Koretsky" as the project header). It is omitted from the code blocks below for brevity.
 - All Kotlin sources live under `app/src/main/java/ua/com/radiokot/money/` (abbreviated `…/money/` below); tests under `app/src/test/java/ua/com/radiokot/money/`.
@@ -152,7 +152,7 @@ class ThemeModeTest {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.theme.data.ThemeModeTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.theme.data.ThemeModeTest'`
 Expected: FAIL, compilation error `Unresolved reference: ThemeMode`.
 
 - [ ] **Step 3: Implement ThemeMode and preferences**
@@ -267,7 +267,7 @@ val themeModule = module {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.theme.data.ThemeModeTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.theme.data.ThemeModeTest'`
 Expected: PASS (4 tests).
 
 - [ ] **Step 5: Add the color tokens and MoneyTheme**
@@ -608,7 +608,7 @@ and add `import ua.com.radiokot.money.uikit.theme.MoneyTheme`.
 
 - [ ] **Step 11: Build and run all tests**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. On a device with system dark mode the window background is now dark; most text is still black (fixed in Tasks 3–4).
 
 - [ ] **Step 12: Commit**
@@ -727,7 +727,7 @@ In the public `PreferencesScreen(viewModel)` pass `themeMode = viewModel.themeMo
 
 - [ ] **Step 4: Build**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL.
 
 - [ ] **Step 5: Manual check (theme matrix)**
@@ -805,7 +805,7 @@ Append to `ViewAmountFormatTest`:
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.view.ViewAmountFormatTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.view.ViewAmountFormatTest'`
 Expected: FAIL, `No parameter with name 'positiveColor' found`.
 
 - [ ] **Step 3: Implement configurable colors**
@@ -872,7 +872,7 @@ fun rememberViewAmountFormat(): ViewAmountFormat {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.view.ViewAmountFormatTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.view.ViewAmountFormatTest'`
 Expected: PASS.
 
 - [ ] **Step 5: Use the theme-aware format everywhere**
@@ -988,7 +988,7 @@ and in the memo `TextStyle` replace `color = Color.Gray,` with `color = MoneyThe
 
 - [ ] **Step 8: Build and run tests**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. In dark mode Accounts, Categories and Activity text is light; amounts use the dark income/expense tones. Light mode looks as before.
 
 - [ ] **Step 9: Commit**
@@ -1083,7 +1083,7 @@ Expected: no output.
 
 - [ ] **Step 4: Build and run tests**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual: in dark mode open each screen (accounts, edit account, archived, categories, edit category/subcategory, activity, transfer sheet, counterparty selection, passcode setup/unlock, preferences): no white panels, readable text, visible field cursors.
 
 - [ ] **Step 5: Commit**
@@ -1187,7 +1187,7 @@ class ItemColorSchemeAccentsTest {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.colors.data.ItemColorSchemeAccentsTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.colors.data.ItemColorSchemeAccentsTest'`
 Expected: FAIL, `Unresolved reference: ItemColorSchemeAccents`.
 
 - [ ] **Step 3: Implement**
@@ -1273,7 +1273,7 @@ object ItemColorSchemeAccents {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.colors.data.ItemColorSchemeAccentsTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.colors.data.ItemColorSchemeAccentsTest'`
 Expected: PASS (5 tests). If `darkLogoColors_…` fails for a family whose level-4 is too dark (luminance check), lighten only that family by changing `accent()` to pick level 3 for it and add the case to `accent_IsFamilyLevel4`; do not weaken the test.
 
 - [ ] **Step 5: Use it in ItemLogo**
@@ -1366,7 +1366,7 @@ Imports to add: `androidx.compose.foundation.shape.CircleShape`, `ua.com.radioko
 
 - [ ] **Step 6: Build, test, check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual (dark): account and category avatars are circles with a dark tinted background and saturated icon/letter; the icon picker shows the same style.
 
 - [ ] **Step 7: Commit**
@@ -1747,7 +1747,7 @@ Line icons are [Tabler Icons](https://github.com/tabler/tabler-icons) (MIT), see
 
 - [ ] **Step 6: Build**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL (AAPT validates every generated vector). Manual: Edit category → icon picker shows the new line-icon sections; icons render tinted in both themes.
 
 - [ ] **Step 7: Commit**
@@ -1818,7 +1818,7 @@ In `BottomNavigation` replace `icon = "👛"` → `icon = R.drawable.ic_tabler_w
 
 - [ ] **Step 3: Build and check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat assembleDebug`
 Expected: BUILD SUCCESSFUL; the bar shows four line icons, the current tab keeps the pill indicator, the red dot shows on More when there are sync errors.
 
 - [ ] **Step 4: Commit**
@@ -1960,7 +1960,7 @@ class DailyAmountConversionTest {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.logic.DailyAmountConversionTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.logic.DailyAmountConversionTest'`
 Expected: FAIL, `Unresolved reference: convertDailyAmount`.
 
 - [ ] **Step 3: Implement**
@@ -2016,7 +2016,7 @@ fun convertDailyAmount(
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.logic.DailyAmountConversionTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.logic.DailyAmountConversionTest'`
 Expected: PASS (4 tests). If `convertsWithTheDayPrice` is off by rounding, check `CurrencyPair.baseToQuote` rounding (do not change it); adjust the expected value only if `baseToQuote` truncates by design, and note it in the test.
 
 - [ ] **Step 5: Use it in GetCategoriesWithAmountsAndTotalUseCase**
@@ -2075,7 +2075,7 @@ Add `import ua.com.radiokot.money.currency.logic.convertDailyAmount`; remove the
 
 - [ ] **Step 6: Build and run all tests**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL; Categories total unchanged for single-currency data.
 
 - [ ] **Step 7: Commit**
@@ -2177,7 +2177,7 @@ class DonutSegmentsTest {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.uikit.chart.DonutSegmentsTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.uikit.chart.DonutSegmentsTest'`
 Expected: FAIL, `Unresolved reference: computeDonutSegments`.
 
 - [ ] **Step 3: Implement the geometry**
@@ -2238,7 +2238,7 @@ fun <K> computeDonutSegments(
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.uikit.chart.DonutSegmentsTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.uikit.chart.DonutSegmentsTest'`
 Expected: PASS (6 tests). (`sweepsPlusGapsCoverTheCircle` holds when no share is below the gap; `tinyShare_NeverNegative` documents the clamp.)
 
 - [ ] **Step 5: Implement the ring**
@@ -2353,7 +2353,7 @@ private fun DonutRingPreview() = DonutRing(
 
 - [ ] **Step 6: Build**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL; the preview shows three colored arcs.
 
 - [ ] **Step 7: Commit**
@@ -2436,7 +2436,7 @@ class CategoryRingLayoutTest {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.categories.view.CategoryRingLayoutTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.categories.view.CategoryRingLayoutTest'`
 Expected: FAIL, `Unresolved reference: layoutAroundRing`.
 
 - [ ] **Step 3: Implement the layout**
@@ -2476,7 +2476,7 @@ fun <T> layoutAroundRing(items: List<T>): CategoryRingLayout<T> {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.categories.view.CategoryRingLayoutTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.categories.view.CategoryRingLayoutTest'`
 Expected: PASS (4 tests).
 
 - [ ] **Step 5: Grid composable**
@@ -2876,7 +2876,7 @@ Imports to add: `androidx.compose.ui.Alignment`, `androidx.compose.ui.text.font.
 
 - [ ] **Step 8: Build, test, check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual: Categories shows one row of 4, then 2 categories left/right of the ring, then rows; ring segments match category colors and shares; center shows expense (pink) and income (green) totals, the current mode bigger; tap the ring → switches to income categories and segments re-animate; tap/long-tap categories and "add" work as before; archive expands.
 
 - [ ] **Step 9: Commit**
@@ -3082,7 +3082,7 @@ class OverviewStatsCalculatorTest {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.overview.logic.OverviewStatsCalculatorTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.overview.logic.OverviewStatsCalculatorTest'`
 Expected: FAIL, `Unresolved reference: OverviewStatsCalculator`.
 
 - [ ] **Step 3: Implement**
@@ -3282,7 +3282,7 @@ object OverviewStatsCalculator {
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.overview.logic.OverviewStatsCalculatorTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.overview.logic.OverviewStatsCalculatorTest'`
 Expected: PASS (12 tests).
 
 - [ ] **Step 5: Commit**
@@ -3475,7 +3475,7 @@ In `HomeModule.kt` add `overviewModule` to `includes(...)` and `import ua.com.ra
 
 - [ ] **Step 3: Build and run tests**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL.
 
 - [ ] **Step 4: Commit**
@@ -4220,7 +4220,7 @@ In `HomeActivity.kt` `NavHost { … }`, after `activityScreen(...)`, add (import
 
 - [ ] **Step 6: Build and run tests**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. The Overview screen is reachable after Task 15; the bar chart preview renders in Android Studio.
 
 - [ ] **Step 7: Commit**
@@ -4369,7 +4369,7 @@ Imports: `androidx.compose.foundation.shape.CircleShape`, `androidx.compose.ui.d
 
 - [ ] **Step 4: Build and check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual:
 - Bottom bar: Accounts, Categories, Transactions, Overview; the profile icon top-left opens More (settings); back or the icon again returns; switching a tab from More closes it; the red dot moves to the profile icon on sync errors.
 - Overview: balance = income − expense; tapping Income/Expenses cards switches the chart and stats; bars stacked by the top 4 categories in their colors, the rest grey; day/week averages and month total look right against Categories totals for the same month; top 3 with % and "More…" → Categories tab; past month and "entire time" (if reachable) don't crash.
@@ -4439,7 +4439,7 @@ class PeriodSwipeTest {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.history.view.PeriodSwipeTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.history.view.PeriodSwipeTest'`
 Expected: FAIL, `Unresolved reference: resolvePeriodSwipe`.
 
 - [ ] **Step 3: Implement**
@@ -4589,7 +4589,7 @@ fun PeriodSlideContainer(
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.history.view.PeriodSwipeTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.history.view.PeriodSwipeTest'`
 Expected: PASS (2 tests).
 
 - [ ] **Step 5: Apply to the three screens**
@@ -4642,7 +4642,7 @@ and wrap the grid:
 
 - [ ] **Step 6: Build and check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual on Categories, Transactions, Overview: swipe right → previous month, content slides in from the left; swipe left → next month (only if enabled, not into the future); short or diagonal-vertical swipes do nothing; vertical flings scroll the grid/list/overview normally; tapping categories/transfers still works; swiping on the bottom bar does nothing.
 
 - [ ] **Step 7: Commit**
@@ -4722,7 +4722,7 @@ Remove `rememberViewAmountFormat()` locals that become unused.
 
 - [ ] **Step 3: Build and check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual: switching months on Categories/Overview and adding a transfer make the totals count to the new value (like category amounts already do).
 
 - [ ] **Step 4: Commit**
@@ -4834,7 +4834,7 @@ and the content transition between stacked sheets:
 
 - [ ] **Step 4: Build and check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual: edit account/category activities slide in from the right and back out; More slides in and back; tabs cross-fade; the transfer sheet rises smoothly without bounce; transfer → counterparty selection sheet cross-fades with a slight zoom; the sheet still cannot be flung closed by accident.
 
 - [ ] **Step 5: Commit**
@@ -4957,7 +4957,7 @@ class SwipeRevealTest {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.history.view.PendingTransferDeletionsTest' --tests 'ua.com.radiokot.money.transfers.view.SwipeRevealTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.history.view.PendingTransferDeletionsTest' --tests 'ua.com.radiokot.money.transfers.view.SwipeRevealTest'`
 Expected: FAIL, unresolved `PendingTransferDeletions`, `shouldSettleRevealed`.
 
 - [ ] **Step 3: Implement the undo queue**
@@ -5208,7 +5208,7 @@ fun SwipeRevealRow(
 
 - [ ] **Step 5: Run tests to verify they pass**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.history.view.PendingTransferDeletionsTest' --tests 'ua.com.radiokot.money.transfers.view.SwipeRevealTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.history.view.PendingTransferDeletionsTest' --tests 'ua.com.radiokot.money.transfers.view.SwipeRevealTest'`
 Expected: PASS (5 + 3 tests).
 
 - [ ] **Step 6: ViewModel**
@@ -5453,7 +5453,7 @@ The long-press revert confirmation stays as it is.
 
 - [ ] **Step 8: Build and check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual:
 - Swipe a row left → Edit/Delete; release halfway → snaps; swipe back right closes; vertical list scrolling still works while rows are closed and open.
 - Edit opens the transfer sheet for that transfer and closes the row.
@@ -5567,7 +5567,7 @@ class AmountInputStateTest {
 
 - [ ] **Step 2: Run the tests**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.view.AmountInputStateTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.currency.view.AmountInputStateTest'`
 Expected: PASS (7 tests) — they pin existing behaviour. If a test fails, the failure shows the real current behaviour: fix the test only if the app behaves that way on device too and it is acceptable; otherwise fix `AmountInputState`. If the run fails with `Method ... not mocked` from the Compose snapshot runtime, add to `android { }` in `app/build.gradle`: `testOptions { unitTests.returnDefaultValues = true }`.
 
 - [ ] **Step 3: Rewrite the keypad**
@@ -5806,7 +5806,7 @@ Imports to add: `androidx.annotation.DrawableRes`, `androidx.compose.ui.res.pain
 
 - [ ] **Step 4: Build and check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual: the transfer sheet keypad has the new layout (date/currency keys are wired in Task 21, disabled until then); `12 + 3 =` shows 15 and the confirm key shows "=" while an operator is pending; long-press ⌫ clears; account balance edit (account action sheet) still works.
 
 - [ ] **Step 5: Commit**
@@ -5903,7 +5903,7 @@ Append to `ItemColorSchemeAccentsTest`:
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.view.TransferSheetLabelsTest' --tests 'ua.com.radiokot.money.colors.data.ItemColorSchemeAccentsTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.view.TransferSheetLabelsTest' --tests 'ua.com.radiokot.money.colors.data.ItemColorSchemeAccentsTest'`
 Expected: FAIL, unresolved `transferKindOf`, `onAccent`.
 
 - [ ] **Step 3: Implement labels and onAccent**
@@ -5983,7 +5983,7 @@ In `ItemColorSchemeAccents` extract the name choice and add `onAccent`:
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.view.TransferSheetLabelsTest' --tests 'ua.com.radiokot.money.colors.data.ItemColorSchemeAccentsTest'`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest --tests 'ua.com.radiokot.money.transfers.view.TransferSheetLabelsTest' --tests 'ua.com.radiokot.money.colors.data.ItemColorSchemeAccentsTest'`
 Expected: PASS.
 
 - [ ] **Step 5: Chips, amount text, ViewModel**
@@ -6449,7 +6449,7 @@ Imports to add: `androidx.compose.foundation.layout.size`, `androidx.compose.fou
 
 - [ ] **Step 7: Build and check**
 
-Run: `export JAVA_HOME="$(cygpath -w $(ls -d /e/dev/jdk-21*))" ANDROID_HOME='E:\dev\android-sdk'; ./gradlew.bat testDebugUnitTest assembleDebug`
+Run: `export JAVA_HOME=<jdk-21> ANDROID_HOME=<android-sdk>; ./gradlew.bat testDebugUnitTest assembleDebug`
 Expected: BUILD SUCCESSFUL. Manual, light and dark:
 - Expense from a category tap: left half "From account" in the account color, right half "To category" in the category color, both with icon badges; tapping each half opens the counterparty selection.
 - Subcategories: one horizontally scrollable line of outlined pills with the category icon in the category color; tap selects (filled), tap again deselects; long titles never wrap.
