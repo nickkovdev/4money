@@ -20,6 +20,8 @@
 package ua.com.radiokot.money.overview.logic
 
 import ua.com.radiokot.money.categories.data.Subcategory
+import ua.com.radiokot.money.categories.logic.ArchivedSubcategoryAmounts
+import ua.com.radiokot.money.categories.logic.SubcategoryAmountKey
 import ua.com.radiokot.money.privacy.logic.PrivacyAmounts
 import java.math.BigInteger
 
@@ -29,10 +31,7 @@ import java.math.BigInteger
 object CategoryStatsCalculator {
 
     data class SubcategoryRow(
-        /**
-         * Null for transfers without a subcategory.
-         */
-        val subcategory: Subcategory?,
+        val key: SubcategoryAmountKey,
         val amount: BigInteger,
         /**
          * Share of the sum of all the amounts, within 0..1.
@@ -41,24 +40,33 @@ object CategoryStatsCalculator {
     )
 
     /**
+     * Archived subcategories are folded into one row.
+     *
      * @return rows with non-zero amounts, the biggest first,
-     * ties ordered by title with the no-subcategory bucket last.
+     * ties ordered by title, then the no-subcategory bucket, then the archived one.
      */
     fun subcategoryRows(
         amountBySubcategory: Map<Subcategory?, BigInteger>,
     ): List<SubcategoryRow> {
-        val total = amountBySubcategory.values.fold(BigInteger.ZERO, BigInteger::add)
+        val folded = ArchivedSubcategoryAmounts.fold(amountBySubcategory)
+        val total = folded.values.fold(BigInteger.ZERO, BigInteger::add)
 
-        return amountBySubcategory.entries
+        return folded.entries
             .filter { (_, amount) -> amount.signum() != 0 }
             .sortedWith(
-                compareByDescending<Map.Entry<Subcategory?, BigInteger>> { it.value }
-                    .thenBy { it.key == null }
-                    .thenBy { it.key?.title }
+                compareByDescending<Map.Entry<SubcategoryAmountKey, BigInteger>> { it.value }
+                    .thenBy {
+                        when (it.key) {
+                            is SubcategoryAmountKey.Active -> 0
+                            SubcategoryAmountKey.None -> 1
+                            SubcategoryAmountKey.Archived -> 2
+                        }
+                    }
+                    .thenBy { (it.key as? SubcategoryAmountKey.Active)?.subcategory?.title }
             )
-            .map { (subcategory, amount) ->
+            .map { (key, amount) ->
                 SubcategoryRow(
-                    subcategory = subcategory,
+                    key = key,
                     amount = amount,
                     fraction = PrivacyAmounts.shareFraction(amount, total),
                 )

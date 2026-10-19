@@ -43,7 +43,6 @@ class InboxTransferPrefillTest {
         assertEquals(LocalDateTime(2026, 10, 2, 8, 6), route.dateTime)
         assertEquals("item", route.inboxItemId)
         assertEquals("ACME CLOUD", route.rememberPayee)
-        assertEquals("ACME CLOUD", route.rememberPayeeDisplayName)
     }
 
     @Test

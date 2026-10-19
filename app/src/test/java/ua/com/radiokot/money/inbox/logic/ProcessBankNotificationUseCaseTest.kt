@@ -8,6 +8,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import ua.com.radiokot.money.categories.data.Category
+import ua.com.radiokot.money.categories.data.Subcategory
 import ua.com.radiokot.money.inbox.FakeAccountRepository
 import ua.com.radiokot.money.inbox.FakeCategoryRepository
 import ua.com.radiokot.money.inbox.FakeInboxRepository
@@ -74,6 +75,7 @@ class ProcessBankNotificationUseCaseTest {
     private fun useCase(
         rules: List<PayeeRule> = listOf(rule),
         categories: List<Category> = listOf(testCategory("cat-food")),
+        subcategories: List<Subcategory> = emptyList(),
         ruleRepository: FakePayeeRuleRepository = FakePayeeRuleRepository(rules),
         templates: List<NotificationTemplate> = emptyList(),
         behaviour: AutoBookBehaviour = AutoBookBehaviour(
@@ -86,7 +88,7 @@ class ProcessBankNotificationUseCaseTest {
         inboxRepository = inbox,
         payeeRuleRepository = ruleRepository,
         accountRepository = FakeAccountRepository(listOf(testAccount("acc-main"))),
-        categoryRepository = FakeCategoryRepository(categories),
+        categoryRepository = FakeCategoryRepository(categories, subcategories),
         cardAccountResolver = object : CardAccountResolver {
             override suspend fun resolve(
                 cardLast4: String?,
@@ -222,6 +224,27 @@ class ProcessBankNotificationUseCaseTest {
 
         assertEquals(Outcome.Pending(itemId = "id-0", reason = PendingReason.CategoryMissing), outcome)
         assertTrue(transfers.calls.isEmpty())
+    }
+
+    @Test
+    fun ruleToArchivedSubcategoryRecordsToTheParentCategory() = runBlocking {
+        val bakery = Subcategory(
+            title = "Bakery",
+            position = 0.0,
+            categoryId = "cat-food",
+            id = "sub-bakery",
+            isArchived = true,
+        )
+
+        useCase(
+            rules = listOf(rule.copy(subcategoryId = "sub-bakery")),
+            subcategories = listOf(bakery),
+        ).invoke(eurPayment).getOrThrow()
+
+        assertEquals(
+            TransferCounterpartyId.Category("cat-food", null),
+            transfers.calls.single().destinationId,
+        )
     }
 
     private val salary = IncomingBankNotification(

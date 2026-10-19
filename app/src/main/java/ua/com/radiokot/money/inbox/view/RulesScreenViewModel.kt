@@ -226,9 +226,25 @@ class RulesScreenViewModel(
                 isIncome = isIncome,
             )).let { draft ->
             draft.copy(
-                categoryOptions = (draft.categoryOptions + categoryOptions).distinct(),
+                categoryOptions = (draft.categoryOptions + categoryOptions.map(::withoutArchivedSubcategory))
+                    .distinct(),
             )
         }
+    }
+
+    /**
+     * An option with an archived subcategory becomes its parent category.
+     */
+    private fun withoutArchivedSubcategory(option: ViewRangeTarget.Category): ViewRangeTarget.Category {
+        val subcategoryId = option.subcategoryId
+        if (subcategoryId == null || subcategoriesById[subcategoryId]?.isArchived != true) {
+            return option
+        }
+        return option.copy(
+            subcategoryId = null,
+            title = categoriesById[option.categoryId]?.title
+                ?: option.title.substringBefore(" · "),
+        )
     }
 
     fun onAddRangeClicked(group: ViewPayeeRuleGroup) {
@@ -238,7 +254,7 @@ class RulesScreenViewModel(
     private fun newDraft(group: ViewPayeeRuleGroup): ViewRangeDraft {
         val rules = group.rows.map(ViewPayeeRuleRow::rule)
         val options = rules
-            .mapNotNull(::targetOf)
+            .mapNotNull { targetOf(it, withArchivedSubcategory = false) }
             .filterIsInstance<ViewRangeTarget.Category>()
             .distinct()
         val isIncome = rules
@@ -259,13 +275,22 @@ class RulesScreenViewModel(
         )
     }
 
-    private fun targetOf(rule: PayeeRule): ViewRangeTarget? {
+    /**
+     * @param withArchivedSubcategory whether an archived subcategory stays in the target.
+     * Options never offer one: they get the parent category instead.
+     */
+    private fun targetOf(
+        rule: PayeeRule,
+        withArchivedSubcategory: Boolean = true,
+    ): ViewRangeTarget? {
         if (rule.action == PayeeRule.Action.Ask) {
             return ViewRangeTarget.Ask
         }
         val category = rule.categoryId?.let(categoriesById::get)
             ?: return null
-        val subcategory = rule.subcategoryId?.let(subcategoriesById::get)
+        val subcategory = rule.subcategoryId
+            ?.let(subcategoriesById::get)
+            ?.takeIf { withArchivedSubcategory || !it.isArchived }
         return ViewRangeTarget.Category(
             categoryId = category.id,
             subcategoryId = subcategory?.id,

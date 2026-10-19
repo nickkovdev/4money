@@ -179,4 +179,38 @@ class InboxCardSuggesterTest {
         Assert.assertTrue(withRule.suggestion?.reason is InboxCardSuggester.Reason.Rule)
         Assert.assertTrue(withRule.alternatives.isEmpty())
     }
+
+    @Test
+    fun archivedSubcategoryFallsBackToTheCategory() {
+        val bakery = CategoryKey("food", "bakery")
+        val dropBakery = { key: CategoryKey ->
+            if (key.subcategoryId == "bakery") key.copy(subcategoryId = null) else key
+        }
+
+        val withRule = InboxCardSuggester.suggest(
+            normalizedPayee = "example fuel",
+            rules = listOf(rule("example fuel", bakery)),
+            history = emptyList(),
+            mapKey = dropBakery,
+        )
+        Assert.assertEquals(food, withRule.suggestion?.category)
+        Assert.assertTrue(withRule.suggestion?.reason is InboxCardSuggester.Reason.Rule)
+
+        val fromHistory = InboxCardSuggester.suggest(
+            normalizedPayee = "example fuel",
+            rules = emptyList(),
+            history = listOf(
+                HistoryEntry("example fuel", bakery),
+                HistoryEntry("example fuel", food),
+                HistoryEntry("example fuel", car),
+            ),
+            mapKey = dropBakery,
+        )
+        Assert.assertEquals(food, fromHistory.suggestion?.category)
+        Assert.assertEquals(
+            InboxCardSuggester.Reason.PayeeHistory(2),
+            fromHistory.suggestion?.reason,
+        )
+        Assert.assertEquals(listOf(car), fromHistory.alternatives)
+    }
 }

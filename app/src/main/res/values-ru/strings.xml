@@ -127,6 +127,9 @@
     <string name="categories_add_subcategory">Добавить подкатегорию</string>
     <string name="categories_new_subcategory">Новая подкатегория</string>
     <string name="categories_edit_subcategory">Подкатегория</string>
+    <string name="categories_subcategory_archived">В архиве</string>
+    <string name="categories_subcategory_archive">В архив</string>
+    <string name="categories_subcategory_unarchive">Вернуть из архива</string>
     <plurals name="transaction_count">
         <item quantity="one">%d операция</item>
         <item quantity="few">%d операции</item>
@@ -147,6 +150,7 @@
     <string name="overview_all_categories">Все категории</string>
     <string name="overview_transactions">Операции</string>
     <string name="overview_no_subcategory">Без подкатегории</string>
+    <string name="subcategories_archived_row">Архивные</string>
 
     <!-- Transfers -->
     <string name="transfers_kind_expense">Расход</string>
@@ -160,7 +164,10 @@
     <string name="transfers_expense_category">Категория расхода</string>
     <string name="transfers_swap">Поменять местами</string>
     <string name="transfers_note">Заметка</string>
-    <string name="transfers_remember_for">Запомнить для «%1$s»</string>
+    <string name="remember_payee_for">Запомнить для:</string>
+    <string name="remember_payee_too_broad">Слишком коротко для других получателей, будет запомнен только этот получатель</string>
+    <string name="remember_payee_contains_hint">Будет срабатывать для всех «%1$s»</string>
+    <string name="remember_payee_exact_hint">Только этот получатель</string>
     <string name="transfers_empty_title">Нет операций</string>
     <string name="transfers_empty_text">За этот период пока ничего нет</string>
 

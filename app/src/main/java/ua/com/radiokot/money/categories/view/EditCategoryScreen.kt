@@ -255,7 +255,7 @@ private fun EditCategoryScreen(
                             horizontal = MoneySpacing.rowHorizontal,
                             vertical = 14.dp,
                         )
-                        .alpha(if (isSubcategoryEditable) 1f else 0.5f)
+                        .alpha(if (isSubcategoryEditable && !item.isArchived) 1f else 0.5f)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_tabler_grip_vertical),
@@ -274,13 +274,21 @@ private fun EditCategoryScreen(
                             .weight(1f)
                     )
 
-                    Icon(
-                        painter = painterResource(R.drawable.ic_tabler_pencil),
-                        contentDescription = stringResource(R.string.common_edit),
-                        tint = MoneyTheme.colors.ink3,
-                        modifier = Modifier
-                            .size(16.dp)
-                    )
+                    if (item.isArchived) {
+                        Text(
+                            text = stringResource(R.string.categories_subcategory_archived),
+                            style = MoneyTheme.typography.small,
+                            color = MoneyTheme.colors.ink3,
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_tabler_pencil),
+                            contentDescription = stringResource(R.string.common_edit),
+                            tint = MoneyTheme.colors.ink3,
+                            modifier = Modifier
+                                .size(16.dp)
+                        )
+                    }
                 }
             }
         }

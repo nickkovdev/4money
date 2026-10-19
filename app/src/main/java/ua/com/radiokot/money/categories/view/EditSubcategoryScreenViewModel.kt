@@ -42,6 +42,10 @@ class EditSubcategoryScreenViewModel(
     private val subcategoryToUpdate = parameters.subcategoryToUpdate
     val isNewSubcategory: Boolean
         get() = subcategoryToUpdate.isNew
+    val isArchiveVisible: Boolean
+        get() = !subcategoryToUpdate.isNew
+    val isArchived: Boolean
+        get() = subcategoryToUpdate.isArchived
     private val _title: MutableStateFlow<String> =
         MutableStateFlow(subcategoryToUpdate.title)
     val title = _title.asStateFlow()
@@ -74,6 +78,22 @@ class EditSubcategoryScreenViewModel(
 
         log.debug {
             "onSaveClicked(): done:" +
+                    "\nresult=$result"
+        }
+
+        _events.tryEmit(Event.Done(result))
+    }
+
+    fun onArchiveClicked() {
+
+        val result = subcategoryToUpdate.copy(
+            title = _title.value.takeIf(String::isNotBlank)
+                ?: subcategoryToUpdate.title,
+            isArchived = !subcategoryToUpdate.isArchived,
+        )
+
+        log.debug {
+            "onArchiveClicked(): done:" +
                     "\nresult=$result"
         }
 

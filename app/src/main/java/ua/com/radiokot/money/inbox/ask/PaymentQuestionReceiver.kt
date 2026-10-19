@@ -104,7 +104,7 @@ class PaymentQuestionReceiver :
                     .invoke(
                         itemId = item.id,
                         transferId = transferId,
-                        rememberPayeePattern = null,
+                        remember = null,
                         sourceId = decision.sourceId,
                         destinationId = decision.destinationId,
                     )
