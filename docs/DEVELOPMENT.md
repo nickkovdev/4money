@@ -198,7 +198,19 @@ any existing file, for example the top of
 Copyright 2026 Nikita Kovalovs
 ```
 
-Keep existing copyright lines in files inherited from upstream (Oleg Koretsky).
+Never remove an existing copyright line: GPL-3.0 requires keeping the notices of the code you build
+on. In practice:
+
+- A file written from scratch: only your line.
+- A file inherited from upstream, or a new file that copies or adapts upstream code (for example a
+  screen started from an existing one): keep `Copyright 2025 Oleg Koretsky` and add your line below it:
+
+```
+/* Copyright 2025 Oleg Koretsky
+   Copyright 2026 Nikita Kovalovs
+```
+
+When unsure, keep both lines.
 
 ## Upstream and the namespace
 
