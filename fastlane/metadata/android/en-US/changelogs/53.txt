@@ -1,0 +1,1 @@
+0.33.1: unsynced changes are no longer dropped after a long time offline or on network errors.

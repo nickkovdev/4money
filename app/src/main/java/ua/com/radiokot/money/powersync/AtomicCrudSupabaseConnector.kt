@@ -1,4 +1,5 @@
 /* Copyright 2025 Oleg Koretsky
+   Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -34,13 +35,9 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
-import io.ktor.client.plugins.HttpSend
-import io.ktor.client.plugins.plugin
-import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import ua.com.radiokot.money.lazyLogger
@@ -52,6 +49,9 @@ import ua.com.radiokot.money.lazyLogger
  *
  * ⚠️ Empty updates (update with no data) are not supported,
  * ensure that all the tables in the schema have `ignoreEmptyUpdates = true` param.
+ *
+ * A transaction is only discarded when [UploadErrorClassifier] says the server
+ * definitively rejected its data; auth, network and server errors keep it in the queue.
  */
 @OptIn(SupabaseInternal::class)
 class AtomicCrudSupabaseConnector(
@@ -60,25 +60,11 @@ class AtomicCrudSupabaseConnector(
 ) : PowerSyncBackendConnector() {
 
     private val log by lazyLogger("AtomicCrud")
-    private var errorCode: String? = null
 
-    private object PostgresFatalCodes {
-        // Using Regex patterns for Postgres error codes
-        private val FATAL_RESPONSE_CODES =
-            listOf(
-                // Class 22 — Data Exception
-                "^22...".toRegex(),
-                // Class 23 — Integrity Constraint Violation
-                "^23...".toRegex(),
-                // INSUFFICIENT PRIVILEGE
-                "^42501$".toRegex(),
-            )
-
-        fun isFatalError(code: String): Boolean =
-            FATAL_RESPONSE_CODES.any { pattern ->
-                pattern.matches(code)
-            }
-    }
+    private val sessionGuard = UploadSessionGuard(
+        currentSessionExpiresAt = { supabaseClient.auth.currentSessionOrNull()?.expiresAt },
+        refreshSession = { supabaseClient.auth.refreshCurrentSession() },
+    )
 
     @Serializable
     @Suppress("unused")
@@ -148,31 +134,6 @@ class AtomicCrudSupabaseConnector(
         require(supabaseClient.pluginManager.getPluginOrNull(Postgrest) != null) {
             "The Postgrest plugin must be installed on the Supabase client"
         }
-
-        // This retrieves the error code from the response
-        // as this is not accessible in the Supabase client RestException
-        // to handle fatal Postgres errors
-        val json = Json { coerceInputValues = true }
-        supabaseClient.httpClient.httpClient.plugin(HttpSend).intercept { request ->
-            val resp = execute(request)
-            val response = resp.response
-            if (response.status.value >= 400) {
-                val responseText = response.bodyAsText()
-
-                try {
-                    val error = json.decodeFromString<Map<String, String?>>(
-                        responseText,
-                    )
-                    errorCode = error["code"]
-                } catch (e: Exception) {
-                    log.error(e) {
-                        "intercept(): failed parsing error response:" +
-                                "\n"
-                    }
-                }
-            }
-            resp
-        }
     }
 
     override suspend fun fetchCredentials(
@@ -205,6 +166,19 @@ class AtomicCrudSupabaseConnector(
         val transaction = database.getNextCrudTransaction()
             ?: return@runWrapped
 
+        // Without a user session supabase-kt sends the anon key as the bearer token,
+        // and the RPC calls fail with 42501 as `anon`. Never upload like that:
+        // the exception keeps the transaction in the queue for a later retry.
+        try {
+            sessionGuard.ensureValidSession()
+        } catch (e: NoUserSessionException) {
+            log.warn(e) {
+                "uploadData(): no valid user session, retrying later:" +
+                        "\ntransactionId=${transaction.transactionId}"
+            }
+            throw e
+        }
+
         try {
             if (!tryToUploadSpecialTransaction(transaction)) {
                 supabaseClient.postgrest.rpc(
@@ -219,34 +193,69 @@ class AtomicCrudSupabaseConnector(
                 throw e
             }
 
-            if (errorCode != null && PostgresFatalCodes.isFatalError(errorCode.toString())) {
-                /**
-                 * Instead of blocking the queue with these errors,
-                 * discard the transaction.
-                 *
-                 * Note that these errors typically indicate a bug in the application.
-                 * If protecting against data loss is important, save the failing records
-                 * elsewhere instead of discarding, and/or notify the user.
-                 */
+            // Classified from this exception only, never from shared state.
+            val failure = UploadFailure.of(e)
 
-                log.error(e) {
-                    "uploadData(): fatal error on upload, discarding transaction:" +
-                            "\ntransaction=$transaction" +
-                            "\n"
+            when (UploadErrorClassifier.classify(failure)) {
+                UploadErrorAction.DISCARD -> {
+                    /**
+                     * The server definitively rejected the data of an authenticated request.
+                     * Instead of blocking the queue, discard the transaction.
+                     * The full transaction is logged so the data can be restored manually.
+                     */
+
+                    log.error(e) {
+                        "uploadData(): server rejected the data, discarding transaction:" +
+                                "\nhttpStatus=${failure.httpStatus}" +
+                                "\ncode=${failure.postgresCode}" +
+                                "\ntransaction=$transaction" +
+                                "\n"
+                    }
+
+                    transaction.complete(null)
                 }
 
-                transaction.complete(null)
+                UploadErrorAction.REFRESH_SESSION_AND_RETRY -> {
+                    log.warn(e) {
+                        "uploadData(): unauthorized, refreshing session and retrying transaction:" +
+                                "\nhttpStatus=${failure.httpStatus}" +
+                                "\ncode=${failure.postgresCode}" +
+                                "\ntransaction=$transaction" +
+                                "\n"
+                    }
 
-                return@runWrapped
+                    refreshSessionQuietly()
+
+                    throw e
+                }
+
+                UploadErrorAction.RETRY -> {
+                    log.warn(e) {
+                        "uploadData(): error on upload, retrying transaction:" +
+                                "\nhttpStatus=${failure.httpStatus}" +
+                                "\ncode=${failure.postgresCode}" +
+                                "\nisNetwork=${failure.isNetwork}" +
+                                "\ntransaction=$transaction" +
+                                "\n"
+                    }
+
+                    throw e
+                }
+            }
+        }
+    }
+
+    private suspend fun refreshSessionQuietly() {
+        try {
+            supabaseClient.auth.refreshCurrentSession()
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
             }
 
             log.warn(e) {
-                "uploadData(): error on upload, retrying transaction:" +
-                        "\ntransaction=$transaction" +
-                        "\n"
+                "refreshSessionQuietly(): failed refreshing the session, will retry later"
             }
-
-            throw e
         }
     }
 

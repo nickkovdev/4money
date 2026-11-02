@@ -85,7 +85,7 @@ Reports: `app/build/reports/` (lint HTML, test results).
 The debug APK is named after the application id and version:
 
 ```bash
-adb install -r app/build/outputs/apk/debug/io.github.nickkovdev.money.debug-0.33.0-debug.apk
+adb install -r app/build/outputs/apk/debug/io.github.nickkovdev.money.debug-0.33.1-debug.apk
 adb shell am start -n io.github.nickkovdev.money.debug/ua.com.radiokot.money.home.view.HomeActivity
 ```
 

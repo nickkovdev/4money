@@ -7,6 +7,22 @@ used there. The dates are the days the stage was built (the F6 pull request was 
 2026-10-19). Migrations live in `supabase/migrations`; apply them in file-name order before installing a
 build that needs them (see [self-hosting.md](self-hosting.md)).
 
+## 0.33.1 (versionCode 53): uploads are never discarded on auth or network errors, 2026-11-02
+
+- Bug fix (data loss). After a long time offline the access token had expired, and the first upload
+  went out with the anon key; the server refused it with 42501 (HTTP 401), which the uploader treated
+  as fatal and discarded the queued changes. The error code was also kept in a shared field and never
+  reset, so later network errors were discarded too.
+- The upload error is now classified from the exception itself (`UploadErrorClassifier`). A change is
+  discarded only when the server rejected its data for the signed-in user: Postgres class 22 or 23 with
+  a 4xx status other than 401, or 42501 with HTTP 403. Any 401 refreshes the session and retries; network
+  errors, timeouts, 5xx and unknown errors retry.
+- Before uploading, the app makes sure the user session is valid for at least 60 seconds and refreshes it
+  otherwise (`UploadSessionGuard`); without a user session nothing is uploaded and the upload is retried
+  later.
+- The discard log line now also has the HTTP status and the error code, next to the full transaction.
+- Migration: no server change.
+
 ## 0.33.0 (versionCode 52): open-source readiness, 2026-10-19
 
 - New application id `io.github.nickkovdev.money` (debug: `io.github.nickkovdev.money.debug`). It installs
