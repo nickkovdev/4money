@@ -39,8 +39,8 @@ enum class UploadErrorAction {
     REFRESH_SESSION_AND_RETRY,
 
     /**
-     * The server definitively rejected the data of an authenticated request.
-     * Retrying would block the queue forever.
+     * The server could not even convert the data of an authenticated request (Postgres class 22/23).
+     * Retrying would block the queue forever. The transaction is written to [DiscardedUploadsLog] first.
      */
     DISCARD,
 }
@@ -96,18 +96,17 @@ data class UploadFailure(
  * Decides whether a failed upload may be discarded.
  * Stateless: the decision depends only on the given failure.
  *
- * A transaction is discarded only when the server definitively rejected its data
- * while the request was made as the authenticated user:
- * - Postgres class 22 (data exception) or 23 (integrity constraint violation) with a 4xx status other than 401;
- * - 42501 (insufficient privilege) with 403. PostgREST answers 403 for it when the role is authenticated,
- *   and 401 when the request was made as `anon` (e.g. with an expired token).
+ * The only discard: Postgres class 22 (data exception) or 23 (integrity constraint violation)
+ * with a 4xx status other than 401. Errors raised inside the server functions are dead-lettered
+ * by the server itself (`money.sync_errors`) and acknowledged, so a 22/23 reaching the client
+ * comes from converting the arguments before the function body runs: retrying can never succeed.
  *
  * Everything else is retried: 401 of any kind (after a session refresh),
+ * 42501 with any status (a missing grant is a server configuration problem, discarding would wipe the queue),
  * network errors, timeouts, 5xx and unknown failures.
  */
 object UploadErrorClassifier {
     private val DATA_ERROR_CODE = "^2[23][0-9A-Z]{3}$".toRegex()
-    private const val INSUFFICIENT_PRIVILEGE = "42501"
 
     fun classify(failure: UploadFailure): UploadErrorAction {
         val status = failure.httpStatus
@@ -119,9 +118,6 @@ object UploadErrorClassifier {
 
             failure.isNetwork || status == null || status !in 400..499 || code == null ->
                 UploadErrorAction.RETRY
-
-            code == INSUFFICIENT_PRIVILEGE && status == 403 ->
-                UploadErrorAction.DISCARD
 
             DATA_ERROR_CODE.matches(code) ->
                 UploadErrorAction.DISCARD

@@ -71,9 +71,10 @@ class UploadErrorClassifierTest {
     }
 
     @Test
-    fun insufficientPrivilegeAsAuthenticatedIsDiscard() {
+    fun insufficientPrivilegeAsAuthenticatedIsRetry() {
+        // A missing grant is a server configuration problem; discarding would wipe the queue.
         assertEquals(
-            DISCARD,
+            RETRY,
             UploadErrorClassifier.classify(UploadFailure(httpStatus = 403, postgresCode = "42501", isNetwork = false)),
         )
     }
@@ -177,8 +178,8 @@ class UploadErrorClassifierTest {
     }
 
     @Test
-    fun postgrestAuthenticated42501IsDiscard() {
-        assertEquals(DISCARD, classify(postgrestException(403, "42501")))
+    fun postgrestAuthenticated42501IsRetry() {
+        assertEquals(RETRY, classify(postgrestException(403, "42501")))
     }
 
     @Test
@@ -215,6 +216,18 @@ class UploadErrorClassifierTest {
     }
 
     @Test
+    fun adapterMarksTimeoutsAsNetwork() {
+        assertTrue(UploadFailure.of(SocketTimeoutException("read timed out")).isNetwork)
+        assertTrue(UploadFailure.of(HttpRequestTimeoutException("https://example.invalid", 10_000L)).isNetwork)
+        assertTrue(UploadFailure.of(HttpRequestException("timeout", HttpRequestBuilder())).isNetwork)
+    }
+
+    @Test
+    fun malformedEntryIsRetry() {
+        assertEquals(RETRY, classify(MalformedCrudEntryException("transfers entry has no source_id")))
+    }
+
+    @Test
     fun ioExceptionsAndTimeoutsAreRetry() {
         assertEquals(RETRY, classify(IOException("connection reset")))
         assertEquals(RETRY, classify(SocketTimeoutException("read timed out")))
@@ -242,7 +255,7 @@ class UploadErrorClassifierTest {
 
     @Test
     fun discardFollowedByNetworkErrorIsRetry() {
-        assertEquals(DISCARD, classify(postgrestException(403, "42501")))
+        assertEquals(DISCARD, classify(postgrestException(400, "23505")))
         assertEquals(RETRY, classify(HttpRequestException("Unable to resolve host", HttpRequestBuilder())))
     }
 }

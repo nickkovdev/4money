@@ -324,6 +324,11 @@
     <string name="settings_sign_out">Sign out</string>
     <string name="settings_sign_out_title">Sign out?</string>
     <string name="settings_sign_out_text">You will need to authenticate again to see your data on this device.</string>
+    <plurals name="settings_sign_out_unsent_changes">
+        <item quantity="one">Warning: %d unsent change will be lost. Connect to the internet and wait for sync to keep it.</item>
+        <item quantity="other">Warning: %d unsent changes will be lost. Connect to the internet and wait for sync to keep them.</item>
+    </plurals>
+    <string name="settings_sign_out_unsent_changes_unknown">Warning: could not check for unsent changes. Any not yet synced will be lost.</string>
 
     <!-- Auth -->
     <string name="auth_just_authenticate">Just authenticate</string>

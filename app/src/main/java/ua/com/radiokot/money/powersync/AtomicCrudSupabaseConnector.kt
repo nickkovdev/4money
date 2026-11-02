@@ -50,20 +50,42 @@ import ua.com.radiokot.money.lazyLogger
  * ⚠️ Empty updates (update with no data) are not supported,
  * ensure that all the tables in the schema have `ignoreEmptyUpdates = true` param.
  *
- * A transaction is only discarded when [UploadErrorClassifier] says the server
- * definitively rejected its data; auth, network and server errors keep it in the queue.
+ * Uploading and the failure handling are done by [CrudTransactionUploader]:
+ * a transaction is only discarded for Postgres class 22/23 errors (see [UploadErrorClassifier]),
+ * and then it is written to [discardedUploadsLog] first. Auth, network, permission
+ * and server errors keep it in the queue.
  */
 @OptIn(SupabaseInternal::class)
 class AtomicCrudSupabaseConnector(
     private val supabaseClient: SupabaseClient,
     private val powerSyncEndpoint: String,
+    private val discardedUploadsLog: DiscardedUploadsLog,
 ) : PowerSyncBackendConnector() {
 
     private val log by lazyLogger("AtomicCrud")
 
-    private val sessionGuard = UploadSessionGuard(
-        currentSessionExpiresAt = { supabaseClient.auth.currentSessionOrNull()?.expiresAt },
-        refreshSession = { supabaseClient.auth.refreshCurrentSession() },
+    // At most one refresh per 30 s from here, otherwise supabase-kt auto-refresh does the job.
+    private val refreshThrottle = RefreshThrottle()
+
+    private val uploader = CrudTransactionUploader(
+        ensureValidSession = UploadSessionGuard(
+            currentSessionExpiresAt = { supabaseClient.auth.currentSessionOrNull()?.expiresAt },
+            refreshSession = {
+                if (!refreshThrottle.tryRefresh { supabaseClient.auth.refreshCurrentSession() }) {
+                    throw NoUserSessionException("Session refresh throttled")
+                }
+            },
+        )::ensureValidSession,
+        send = { transaction ->
+            if (!tryToUploadSpecialTransaction(transaction)) {
+                supabaseClient.postgrest.rpc(
+                    function = "atomic_crud",
+                    parameters = AtomicCrudInput(transaction),
+                )
+            }
+        },
+        refreshSession = ::refreshSessionQuietly,
+        discardedUploadsLog = discardedUploadsLog,
     )
 
     @Serializable
@@ -100,7 +122,7 @@ class AtomicCrudSupabaseConnector(
 
     @Serializable
     @Suppress("unused")
-    private class TransferInput(
+    internal class TransferInput(
         @SerialName("id")
         val id: String,
         @SerialName("source_id")
@@ -118,13 +140,21 @@ class AtomicCrudSupabaseConnector(
     ) {
         constructor(crudEntry: CrudEntry) : this(
             id = crudEntry.id,
-            sourceId = crudEntry.opData?.get("source_id")!!,
-            sourceAmount = crudEntry.opData?.get("source_amount")!!,
-            destinationId = crudEntry.opData?.get("destination_id")!!,
-            destinationAmount = crudEntry.opData?.get("destination_amount")!!,
+            sourceId = crudEntry.requireValue("source_id"),
+            sourceAmount = crudEntry.requireValue("source_amount"),
+            destinationId = crudEntry.requireValue("destination_id"),
+            destinationAmount = crudEntry.requireValue("destination_amount"),
             memo = crudEntry.opData?.get("memo"),
-            time = crudEntry.opData?.get("time")!!,
+            time = crudEntry.requireValue("time"),
         )
+
+        private companion object {
+            fun CrudEntry.requireValue(column: String): String =
+                opData?.get(column)
+                    ?: throw MalformedCrudEntryException(
+                        "$table entry $id has no $column"
+                    )
+        }
     }
 
     init {
@@ -166,88 +196,19 @@ class AtomicCrudSupabaseConnector(
         val transaction = database.getNextCrudTransaction()
             ?: return@runWrapped
 
-        // Without a user session supabase-kt sends the anon key as the bearer token,
-        // and the RPC calls fail with 42501 as `anon`. Never upload like that:
-        // the exception keeps the transaction in the queue for a later retry.
-        try {
-            sessionGuard.ensureValidSession()
-        } catch (e: NoUserSessionException) {
-            log.warn(e) {
-                "uploadData(): no valid user session, retrying later:" +
-                        "\ntransactionId=${transaction.transactionId}"
-            }
-            throw e
-        }
-
-        try {
-            if (!tryToUploadSpecialTransaction(transaction)) {
-                supabaseClient.postgrest.rpc(
-                    function = "atomic_crud",
-                    parameters = AtomicCrudInput(transaction),
-                )
-            }
-            transaction.complete(null)
-        } catch (e: Exception) {
-
-            if (e is CancellationException) {
-                throw e
-            }
-
-            // Classified from this exception only, never from shared state.
-            val failure = UploadFailure.of(e)
-
-            when (UploadErrorClassifier.classify(failure)) {
-                UploadErrorAction.DISCARD -> {
-                    /**
-                     * The server definitively rejected the data of an authenticated request.
-                     * Instead of blocking the queue, discard the transaction.
-                     * The full transaction is logged so the data can be restored manually.
-                     */
-
-                    log.error(e) {
-                        "uploadData(): server rejected the data, discarding transaction:" +
-                                "\nhttpStatus=${failure.httpStatus}" +
-                                "\ncode=${failure.postgresCode}" +
-                                "\ntransaction=$transaction" +
-                                "\n"
-                    }
-
-                    transaction.complete(null)
-                }
-
-                UploadErrorAction.REFRESH_SESSION_AND_RETRY -> {
-                    log.warn(e) {
-                        "uploadData(): unauthorized, refreshing session and retrying transaction:" +
-                                "\nhttpStatus=${failure.httpStatus}" +
-                                "\ncode=${failure.postgresCode}" +
-                                "\ntransaction=$transaction" +
-                                "\n"
-                    }
-
-                    refreshSessionQuietly()
-
-                    throw e
-                }
-
-                UploadErrorAction.RETRY -> {
-                    log.warn(e) {
-                        "uploadData(): error on upload, retrying transaction:" +
-                                "\nhttpStatus=${failure.httpStatus}" +
-                                "\ncode=${failure.postgresCode}" +
-                                "\nisNetwork=${failure.isNetwork}" +
-                                "\ntransaction=$transaction" +
-                                "\n"
-                    }
-
-                    throw e
-                }
-            }
-        }
+        uploader.upload(transaction)
     }
 
     private suspend fun refreshSessionQuietly() {
         try {
-            supabaseClient.auth.refreshCurrentSession()
+            val refreshed = refreshThrottle.tryRefresh {
+                supabaseClient.auth.refreshCurrentSession()
+            }
+            if (!refreshed) {
+                log.debug {
+                    "refreshSessionQuietly(): refreshed less than 30 s ago, skipping"
+                }
+            }
         } catch (e: Exception) {
             if (e is CancellationException) {
                 throw e

@@ -20,6 +20,7 @@
 package ua.com.radiokot.money.preferences.view
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -40,6 +41,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import org.koin.compose.viewmodel.koinViewModel
 import ua.com.radiokot.money.inbox.listener.NotificationAccess
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import ua.com.radiokot.money.R
 
@@ -62,6 +64,8 @@ fun NavGraphBuilder.preferencesScreen(
 ) {
 
     var isSignOutConfirmationShown by rememberSaveable { mutableStateOf(false) }
+    // 0: none, > 0: the count, -1: the check failed.
+    var unsentChanges by rememberSaveable { mutableIntStateOf(0) }
     val context = LocalContext.current
     val viewModel = koinViewModel<PreferencesScreenViewModel>()
 
@@ -86,7 +90,12 @@ fun NavGraphBuilder.preferencesScreen(
                     onProceedToAutoBook()
 
 
-                PreferencesScreenViewModel.Event.ProceedToSignOutConfirmation -> {
+                is PreferencesScreenViewModel.Event.ProceedToSignOutConfirmation -> {
+                    unsentChanges = when (val warning = event.unsentChangesWarning) {
+                        UnsentChangesWarning.None -> 0
+                        is UnsentChangesWarning.Count -> warning.count
+                        UnsentChangesWarning.Unknown -> -1
+                    }
                     isSignOutConfirmationShown = true
                 }
             }
@@ -103,7 +112,22 @@ fun NavGraphBuilder.preferencesScreen(
     if (isSignOutConfirmationShown) {
         MoneyDialog(
             title = stringResource(R.string.settings_sign_out_title),
-            text = stringResource(R.string.settings_sign_out_text),
+            text = when {
+                unsentChanges > 0 ->
+                    stringResource(R.string.settings_sign_out_text) + "\n\n" +
+                            pluralStringResource(
+                                R.plurals.settings_sign_out_unsent_changes,
+                                unsentChanges,
+                                unsentChanges,
+                            )
+
+                unsentChanges < 0 ->
+                    stringResource(R.string.settings_sign_out_text) + "\n\n" +
+                            stringResource(R.string.settings_sign_out_unsent_changes_unknown)
+
+                else ->
+                    stringResource(R.string.settings_sign_out_text)
+            },
             confirmText = stringResource(R.string.settings_sign_out),
             isDestructive = true,
             onConfirm = {

@@ -42,6 +42,7 @@ import ua.com.radiokot.money.inbox.sources.logic.NotificationSourceRegistry
 import ua.com.radiokot.money.lazyLogger
 import ua.com.radiokot.money.lock.logic.AppLock
 import ua.com.radiokot.money.lock.logic.DisableAppLockUseCase
+import ua.com.radiokot.money.powersync.UnsentChangesCounter
 import ua.com.radiokot.money.preferences.logic.AppLanguage
 import ua.com.radiokot.money.syncerrors.data.SyncErrorRepository
 import ua.com.radiokot.money.theme.data.ThemeMode
@@ -56,6 +57,7 @@ class PreferencesScreenViewModel(
     private val disableAppLockUseCase: DisableAppLockUseCase,
     private val themePreferences: ThemePreferences,
     sourceRegistry: NotificationSourceRegistry,
+    private val unsentChangesCounter: UnsentChangesCounter,
 ) : ViewModel() {
 
     private val log by lazyLogger("PreferencesScreenVM")
@@ -164,8 +166,21 @@ class PreferencesScreenViewModel(
         currencyPreferences.primaryCurrencyCode.value = primaryCurrencyCodeValue.value
     }
 
+    private var signOutConfirmationJob: Job? = null
     fun onSignOutClicked() {
-        _events.tryEmit(Event.ProceedToSignOutConfirmation)
+
+        signOutConfirmationJob?.cancel()
+        signOutConfirmationJob = viewModelScope.launch {
+            // Signing out clears the local database, including changes not uploaded yet.
+            val warning = UnsentChangesWarning.check(unsentChangesCounter::count)
+
+            log.debug {
+                "onSignOutClicked(): proceeding to confirmation:" +
+                        "\nwarning=$warning"
+            }
+
+            _events.tryEmit(Event.ProceedToSignOutConfirmation(warning))
+        }
     }
 
     fun onSignOutConfirmed() {
@@ -239,6 +254,8 @@ class PreferencesScreenViewModel(
         /**
          * Pass the confirmation to [onSignOutConfirmed].
          */
-        object ProceedToSignOutConfirmation : Event
+        class ProceedToSignOutConfirmation(
+            val unsentChangesWarning: UnsentChangesWarning,
+        ) : Event
     }
 }
