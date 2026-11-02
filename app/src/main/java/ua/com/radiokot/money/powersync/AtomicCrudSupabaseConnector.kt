@@ -1,4 +1,5 @@
 /* Copyright 2025 Oleg Koretsky
+   Copyright 2026 Nikita Kovalovs
 
    This file is part of the 4Money,
    a budget tracking Android app.
@@ -34,13 +35,9 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
-import io.ktor.client.plugins.HttpSend
-import io.ktor.client.plugins.plugin
-import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import ua.com.radiokot.money.lazyLogger
@@ -52,33 +49,44 @@ import ua.com.radiokot.money.lazyLogger
  *
  * ⚠️ Empty updates (update with no data) are not supported,
  * ensure that all the tables in the schema have `ignoreEmptyUpdates = true` param.
+ *
+ * Uploading and the failure handling are done by [CrudTransactionUploader]:
+ * a transaction is only discarded for Postgres class 22/23 errors (see [UploadErrorClassifier]),
+ * and then it is written to [discardedUploadsLog] first. Auth, network, permission
+ * and server errors keep it in the queue.
  */
 @OptIn(SupabaseInternal::class)
 class AtomicCrudSupabaseConnector(
     private val supabaseClient: SupabaseClient,
     private val powerSyncEndpoint: String,
+    private val discardedUploadsLog: DiscardedUploadsLog,
 ) : PowerSyncBackendConnector() {
 
     private val log by lazyLogger("AtomicCrud")
-    private var errorCode: String? = null
 
-    private object PostgresFatalCodes {
-        // Using Regex patterns for Postgres error codes
-        private val FATAL_RESPONSE_CODES =
-            listOf(
-                // Class 22 — Data Exception
-                "^22...".toRegex(),
-                // Class 23 — Integrity Constraint Violation
-                "^23...".toRegex(),
-                // INSUFFICIENT PRIVILEGE
-                "^42501$".toRegex(),
-            )
+    // At most one refresh per 30 s from here, otherwise supabase-kt auto-refresh does the job.
+    private val refreshThrottle = RefreshThrottle()
 
-        fun isFatalError(code: String): Boolean =
-            FATAL_RESPONSE_CODES.any { pattern ->
-                pattern.matches(code)
+    private val uploader = CrudTransactionUploader(
+        ensureValidSession = UploadSessionGuard(
+            currentSessionExpiresAt = { supabaseClient.auth.currentSessionOrNull()?.expiresAt },
+            refreshSession = {
+                if (!refreshThrottle.tryRefresh { supabaseClient.auth.refreshCurrentSession() }) {
+                    throw NoUserSessionException("Session refresh throttled")
+                }
+            },
+        )::ensureValidSession,
+        send = { transaction ->
+            if (!tryToUploadSpecialTransaction(transaction)) {
+                supabaseClient.postgrest.rpc(
+                    function = "atomic_crud",
+                    parameters = AtomicCrudInput(transaction),
+                )
             }
-    }
+        },
+        refreshSession = ::refreshSessionQuietly,
+        discardedUploadsLog = discardedUploadsLog,
+    )
 
     @Serializable
     @Suppress("unused")
@@ -114,7 +122,7 @@ class AtomicCrudSupabaseConnector(
 
     @Serializable
     @Suppress("unused")
-    private class TransferInput(
+    internal class TransferInput(
         @SerialName("id")
         val id: String,
         @SerialName("source_id")
@@ -132,13 +140,21 @@ class AtomicCrudSupabaseConnector(
     ) {
         constructor(crudEntry: CrudEntry) : this(
             id = crudEntry.id,
-            sourceId = crudEntry.opData?.get("source_id")!!,
-            sourceAmount = crudEntry.opData?.get("source_amount")!!,
-            destinationId = crudEntry.opData?.get("destination_id")!!,
-            destinationAmount = crudEntry.opData?.get("destination_amount")!!,
+            sourceId = crudEntry.requireValue("source_id"),
+            sourceAmount = crudEntry.requireValue("source_amount"),
+            destinationId = crudEntry.requireValue("destination_id"),
+            destinationAmount = crudEntry.requireValue("destination_amount"),
             memo = crudEntry.opData?.get("memo"),
-            time = crudEntry.opData?.get("time")!!,
+            time = crudEntry.requireValue("time"),
         )
+
+        private companion object {
+            fun CrudEntry.requireValue(column: String): String =
+                opData?.get(column)
+                    ?: throw MalformedCrudEntryException(
+                        "$table entry $id has no $column"
+                    )
+        }
     }
 
     init {
@@ -147,31 +163,6 @@ class AtomicCrudSupabaseConnector(
         }
         require(supabaseClient.pluginManager.getPluginOrNull(Postgrest) != null) {
             "The Postgrest plugin must be installed on the Supabase client"
-        }
-
-        // This retrieves the error code from the response
-        // as this is not accessible in the Supabase client RestException
-        // to handle fatal Postgres errors
-        val json = Json { coerceInputValues = true }
-        supabaseClient.httpClient.httpClient.plugin(HttpSend).intercept { request ->
-            val resp = execute(request)
-            val response = resp.response
-            if (response.status.value >= 400) {
-                val responseText = response.bodyAsText()
-
-                try {
-                    val error = json.decodeFromString<Map<String, String?>>(
-                        responseText,
-                    )
-                    errorCode = error["code"]
-                } catch (e: Exception) {
-                    log.error(e) {
-                        "intercept(): failed parsing error response:" +
-                                "\n"
-                    }
-                }
-            }
-            resp
         }
     }
 
@@ -205,48 +196,27 @@ class AtomicCrudSupabaseConnector(
         val transaction = database.getNextCrudTransaction()
             ?: return@runWrapped
 
-        try {
-            if (!tryToUploadSpecialTransaction(transaction)) {
-                supabaseClient.postgrest.rpc(
-                    function = "atomic_crud",
-                    parameters = AtomicCrudInput(transaction),
-                )
-            }
-            transaction.complete(null)
-        } catch (e: Exception) {
+        uploader.upload(transaction)
+    }
 
+    private suspend fun refreshSessionQuietly() {
+        try {
+            val refreshed = refreshThrottle.tryRefresh {
+                supabaseClient.auth.refreshCurrentSession()
+            }
+            if (!refreshed) {
+                log.debug {
+                    "refreshSessionQuietly(): refreshed less than 30 s ago, skipping"
+                }
+            }
+        } catch (e: Exception) {
             if (e is CancellationException) {
                 throw e
             }
 
-            if (errorCode != null && PostgresFatalCodes.isFatalError(errorCode.toString())) {
-                /**
-                 * Instead of blocking the queue with these errors,
-                 * discard the transaction.
-                 *
-                 * Note that these errors typically indicate a bug in the application.
-                 * If protecting against data loss is important, save the failing records
-                 * elsewhere instead of discarding, and/or notify the user.
-                 */
-
-                log.error(e) {
-                    "uploadData(): fatal error on upload, discarding transaction:" +
-                            "\ntransaction=$transaction" +
-                            "\n"
-                }
-
-                transaction.complete(null)
-
-                return@runWrapped
-            }
-
             log.warn(e) {
-                "uploadData(): error on upload, retrying transaction:" +
-                        "\ntransaction=$transaction" +
-                        "\n"
+                "refreshSessionQuietly(): failed refreshing the session, will retry later"
             }
-
-            throw e
         }
     }
 

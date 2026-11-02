@@ -32,6 +32,7 @@ import org.koin.dsl.onClose
 import ua.com.radiokot.money.BuildConfig
 import ua.com.radiokot.money.auth.authModule
 import ua.com.radiokot.money.auth.logic.sessionScope
+import java.io.File
 
 val powerSyncModule = module {
     includes(authModule)
@@ -50,12 +51,22 @@ val powerSyncModule = module {
         } bind Queries::class
 
         scoped {
+            PowerSyncUnsentChangesCounter(
+                database = get(),
+            )
+        } bind UnsentChangesCounter::class
+
+        scoped {
             PowerSyncConnection(
                 control = PowerSyncDatabaseControl(
                     database = get(),
                     connector = AtomicCrudSupabaseConnector(
                         supabaseClient = get(),
                         powerSyncEndpoint = BuildConfig.POWERSYNC_URL,
+                        // App-private, never rotated, survives app updates.
+                        discardedUploadsLog = FileDiscardedUploadsLog(
+                            file = File(androidApplication().filesDir, "discarded-uploads.jsonl"),
+                        ),
                     ),
                 ),
             )

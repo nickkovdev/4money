@@ -7,6 +7,29 @@ used there. The dates are the days the stage was built (the F6 pull request was 
 2026-10-19). Migrations live in `supabase/migrations`; apply them in file-name order before installing a
 build that needs them (see [self-hosting.md](self-hosting.md)).
 
+## 0.33.1 (versionCode 53): uploads are never discarded on auth or network errors, 2026-11-02
+
+- Bug fix (data loss). After a long time offline the access token had expired, and the first upload
+  went out with the anon key; the server refused it with 42501 (HTTP 401), which the uploader treated
+  as fatal and discarded the queued changes. The error code was also kept in a shared field and never
+  reset, so later network errors were discarded too.
+- The upload error is now classified from the exception itself (`UploadErrorClassifier`). The only
+  discard left is Postgres class 22 or 23 with a 4xx status other than 401: the server could not even
+  convert the arguments (errors inside the functions are dead-lettered by the server in
+  `money.sync_errors`). Any 401 refreshes the session and retries; 42501 with any status, network errors,
+  timeouts, 5xx, malformed transfer entries and unknown errors retry.
+- Before uploading, the app makes sure the user session is valid for at least 60 seconds and refreshes it
+  otherwise (`UploadSessionGuard`); without a user session nothing is uploaded and the upload is retried
+  later. The app refreshes the session itself at most once per 30 seconds and relies on supabase-kt
+  auto-refresh in between.
+- A discarded transaction is appended as one JSON line (transaction id, time, HTTP status, code, and every
+  entry with op, table, id, data and metadata) to `discarded-uploads.jsonl` in the app-private files
+  directory, which is never rotated and survives app updates. The ERROR log line keeps the full
+  transaction and now also has the HTTP status and the code.
+- The sign-out confirmation warns how many unsent changes signing out would delete (or that they could
+  not be counted). Sign-out is still allowed.
+- Migration: no server change.
+
 ## 0.33.0 (versionCode 52): open-source readiness, 2026-10-19
 
 - New application id `io.github.nickkovdev.money` (debug: `io.github.nickkovdev.money.debug`). It installs
