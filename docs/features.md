@@ -7,6 +7,22 @@ used there. The dates are the days the stage was built (the F6 pull request was 
 2026-10-19). Migrations live in `supabase/migrations`; apply them in file-name order before installing a
 build that needs them (see [self-hosting.md](self-hosting.md)).
 
+## 0.33.2 (versionCode 54): self-transfer pairs, session recovery, upstream 0.31.2, 2026-11-16
+
+- Inbox: money moved between own accounts (for example a round-up to a savings account) arrives as two
+  notifications, the same amount leaving and coming back from the same payee. When a new notification
+  mirrors a pending item (opposite direction, same source app, amount, currency and normalized payee,
+  at most 10 minutes apart), both are dismissed instead of waiting for a category, and no rule records
+  them (`MirroredInboxPair`). Pairs already in the inbox are not touched.
+- Bug fix (sync stalled). When the token expired while the server was unreachable, supabase-kt marked
+  the session as a failed refresh and stopped exposing it; its retry loop ended with the process, so
+  uploads and sync waited for the app to be reopened. The connector now refreshes the stored session
+  itself in that state, before uploads and before sync.
+- Bug fix (crash). The transfer history could crash with `ConcurrentModificationException` when a new
+  page source was created while others were being invalidated after a write.
+- Upstream 0.31.2: PowerSync 1.16.0.
+- Migration: no server change.
+
 ## 0.33.1 (versionCode 53): uploads are never discarded on auth or network errors, 2026-11-02
 
 - Bug fix (data loss). After a long time offline the access token had expired, and the first upload
