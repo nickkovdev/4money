@@ -48,6 +48,7 @@ import ua.com.radiokot.money.transfers.data.TransferCounterpartyId
 import java.lang.ref.WeakReference
 import java.math.BigInteger
 import java.util.UUID
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.time.Duration.Companion.seconds
 
 class PowerSyncTransferHistoryRepository(
@@ -58,8 +59,9 @@ class PowerSyncTransferHistoryRepository(
 
     private val log by lazyLogger("PowerSyncTransferHistoryRepo")
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    // Paging sources are created on the main thread and invalidated from the coroutine scope.
     private val createdPagingSources: MutableList<WeakReference<PagingSource<*, *>>> =
-        mutableListOf()
+        CopyOnWriteArrayList()
 
     override suspend fun getTransferHistoryPage(
         cursor: TransferHistoryPage.Cursor?,
