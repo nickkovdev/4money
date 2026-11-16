@@ -19,6 +19,7 @@
 
 package ua.com.radiokot.money.inbox.logic
 
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.TimeZone
@@ -74,6 +75,15 @@ class ProcessBankNotificationUseCase(
         data class Pending(
             val itemId: String,
             val reason: AutoExpenseResolver.PendingReason,
+        ) : Outcome
+
+        /**
+         * Money moved between own accounts, both items are dismissed.
+         * See [MirroredInboxPair].
+         */
+        data class MirroredPair(
+            val itemId: String,
+            val counterpartItemId: String,
         ) : Outcome
     }
 
@@ -158,6 +168,20 @@ class ProcessBankNotificationUseCase(
                     else
                         InboxItem.Direction.Outgoing,
             )
+
+            val counterpart = MirroredInboxPair.findCounterpart(
+                item = item,
+                pendingItems = inboxRepository.getPendingItemsFlow().first(),
+            )
+            if (counterpart != null) {
+                inboxRepository.addItem(item.copy(status = InboxItem.Status.Dismissed))
+                inboxRepository.dismiss(counterpart.id)
+
+                return@withLock Outcome.MirroredPair(
+                    itemId = item.id,
+                    counterpartItemId = counterpart.id,
+                )
+            }
 
             when (resolution) {
                 is AutoExpenseResolver.Resolution.Create -> {

@@ -165,6 +165,15 @@ class BankNotificationListenerService :
                             }
                         }
                     }
+
+                    if (outcome is ProcessBankNotificationUseCase.Outcome.MirroredPair) {
+                        runCatching { getKoin().get<HomeWidgetUpdater>().requestUpdate() }
+                        runCatching {
+                            sessionScope
+                                .get<PaymentQuestionNotifier>()
+                                .cancel(outcome.counterpartItemId)
+                        }
+                    }
                 }
                 .onFailure { error ->
                     // No text, payee, amount or card digits: the log is public.
