@@ -31,6 +31,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.annotations.SupabaseInternal
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.status.SessionSource
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
@@ -75,6 +76,7 @@ class AtomicCrudSupabaseConnector(
                     throw NoUserSessionException("Session refresh throttled")
                 }
             },
+            recoverSession = ::recoverSessionAfterFailedRefresh,
         )::ensureValidSession,
         send = { transaction ->
             if (!tryToUploadSpecialTransaction(transaction)) {
@@ -169,6 +171,8 @@ class AtomicCrudSupabaseConnector(
     override suspend fun fetchCredentials(
     ): PowerSyncCredentials = runWrapped {
 
+        recoverSessionAfterFailedRefresh()
+
         check(supabaseClient.auth.sessionStatus.value is SessionStatus.Authenticated) {
             "Supabase client is not authenticated"
         }
@@ -197,6 +201,38 @@ class AtomicCrudSupabaseConnector(
             ?: return@runWrapped
 
         uploader.upload(transaction)
+    }
+
+    /**
+     * When supabase-kt auto-refresh fails while the server is unreachable and the token expires,
+     * the status becomes [SessionStatus.RefreshFailure] and the session is no longer exposed.
+     * The auto-refresh retry loop dies with the process, so nothing would refresh it again:
+     * the stored session is refreshed and imported here instead.
+     */
+    private suspend fun recoverSessionAfterFailedRefresh() {
+        if (supabaseClient.auth.sessionStatus.value !is SessionStatus.RefreshFailure) {
+            return
+        }
+
+        val storedSession = supabaseClient.auth.sessionManager.loadSession()
+            ?: return
+
+        val refreshed = refreshThrottle.tryRefresh {
+            log.debug {
+                "recoverSessionAfterFailedRefresh(): refreshing the stored session"
+            }
+
+            supabaseClient.auth.importSession(
+                session = supabaseClient.auth.refreshSession(storedSession.refreshToken),
+                source = SessionSource.Refresh(storedSession),
+            )
+        }
+
+        if (refreshed) {
+            log.info {
+                "Recovered the session after a failed auto-refresh"
+            }
+        }
     }
 
     private suspend fun refreshSessionQuietly() {

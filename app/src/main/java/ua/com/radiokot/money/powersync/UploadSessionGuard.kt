@@ -44,11 +44,14 @@ class NoUserSessionException(
  *
  * @param currentSessionExpiresAt expiration of the current user session, null if there is none
  * @param refreshSession refreshes the current user session, throws on failure
+ * @param recoverSession restores the session supabase-kt stops exposing after its auto-refresh
+ * failed offline (`SessionStatus.RefreshFailure`), throws on failure
  */
 @OptIn(ExperimentalTime::class)
 class UploadSessionGuard(
     private val currentSessionExpiresAt: () -> Instant?,
     private val refreshSession: suspend () -> Unit,
+    private val recoverSession: suspend () -> Unit,
     private val now: () -> Instant = { Clock.System.now() },
 ) {
     /**
@@ -58,7 +61,7 @@ class UploadSessionGuard(
      */
     suspend fun ensureValidSession() {
         val expiresAt = currentSessionExpiresAt()
-            ?: throw NoUserSessionException("No user session")
+            ?: recoverAndGetExpiresAt()
 
         if (!needsRefresh(expiresAt, now())) {
             return
@@ -78,6 +81,25 @@ class UploadSessionGuard(
         if (needsRefresh(refreshedExpiresAt, now())) {
             throw NoUserSessionException("Session still expires at $refreshedExpiresAt after refresh")
         }
+    }
+
+    private suspend fun recoverAndGetExpiresAt(): Instant {
+        try {
+            recoverSession()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            throw NoUserSessionException("Session recovery failed", e)
+        }
+
+        val expiresAt = currentSessionExpiresAt()
+            ?: throw NoUserSessionException("No user session")
+
+        if (needsRefresh(expiresAt, now())) {
+            throw NoUserSessionException("Recovered session expires at $expiresAt")
+        }
+
+        return expiresAt
     }
 
     companion object {

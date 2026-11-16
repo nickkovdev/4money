@@ -82,6 +82,7 @@ class RefreshThrottleTest {
             // Always expired, so every call wants a refresh.
             currentSessionExpiresAt = { Instant.fromEpochSeconds(0) },
             refreshSession = { if (!throttle.tryRefresh { refreshes++ }) throw NoUserSessionException("throttled") },
+            recoverSession = {},
             now = { Instant.fromEpochSeconds(1_000_000) },
         )
         repeat(3) {
