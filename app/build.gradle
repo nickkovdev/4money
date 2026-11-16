@@ -72,8 +72,8 @@ android {
         targetSdk 36
         minSdk 26
 
-        versionCode 53
-        versionName "0.33.1"
+        versionCode 54
+        versionName "0.33.2"
 
         resConfigs "en", "ru"
 
@@ -161,7 +161,7 @@ sqldelight {
 
 ext {
     activityVersion = "1.13.0"
-    powersyncVersion = "1.15.2"
+    powersyncVersion = "1.16.0"
     supabaseVersion = "3.8.0"
 }
 

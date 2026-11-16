@@ -61,19 +61,29 @@ class UploadSessionGuardTest {
         var expiresAt: Instant?,
         val refreshedExpiresAt: Instant?,
         val refreshError: Exception? = null,
+        val recoveredExpiresAt: Instant? = null,
+        val recoverError: Exception? = null,
     ) {
         var refreshCalls = 0
+        var recoverCalls = 0
 
         suspend fun refresh() {
             refreshCalls++
             refreshError?.let { throw it }
             expiresAt = refreshedExpiresAt
         }
+
+        suspend fun recover() {
+            recoverCalls++
+            recoverError?.let { throw it }
+            expiresAt = recoveredExpiresAt
+        }
     }
 
     private fun guard(auth: FakeAuth) = UploadSessionGuard(
         currentSessionExpiresAt = { auth.expiresAt },
         refreshSession = auth::refresh,
+        recoverSession = auth::recover,
         now = { now },
     )
 
@@ -112,6 +122,40 @@ class UploadSessionGuardTest {
     @Test
     fun missingSessionFailsRetryably() {
         val auth = FakeAuth(expiresAt = null, refreshedExpiresAt = now + 1.hours)
+        assertNoSession { guard(auth).ensureValidSession() }
+        assertEquals(1, auth.recoverCalls)
+    }
+
+    @Test
+    fun sessionLostByFailedAutoRefreshIsRecoveredBeforeUpload() = runBlocking {
+        val auth = FakeAuth(
+            expiresAt = null,
+            refreshedExpiresAt = null,
+            recoveredExpiresAt = now + 1.hours,
+        )
+        guard(auth).ensureValidSession()
+        assertEquals(1, auth.recoverCalls)
+        assertEquals(0, auth.refreshCalls)
+    }
+
+    @Test
+    fun failedRecoveryFailsRetryably() {
+        val auth = FakeAuth(
+            expiresAt = null,
+            refreshedExpiresAt = null,
+            recoverError = IllegalStateException("network is down"),
+        )
+        assertNoSession { guard(auth).ensureValidSession() }
+        assertEquals(1, auth.recoverCalls)
+    }
+
+    @Test
+    fun recoveredButExpiredSessionFailsRetryably() {
+        val auth = FakeAuth(
+            expiresAt = null,
+            refreshedExpiresAt = null,
+            recoveredExpiresAt = now - 1.hours,
+        )
         assertNoSession { guard(auth).ensureValidSession() }
     }
 

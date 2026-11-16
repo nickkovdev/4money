@@ -229,6 +229,12 @@ class PaymentQuestionNotifier(
      * in a cold process without an activity (e.g. started by the notification listener)
      * it is empty and the notification uses the device language.
      */
+    /**
+     * Removes the question about the item, if it is shown.
+     */
+    fun cancel(itemId: String) =
+        NotificationManagerCompat.from(context).cancel(notificationIdOf(itemId))
+
     private fun getLocalizedContext(): Context {
         val locales = AppCompatDelegate.getApplicationLocales()
         if (locales.isEmpty) {

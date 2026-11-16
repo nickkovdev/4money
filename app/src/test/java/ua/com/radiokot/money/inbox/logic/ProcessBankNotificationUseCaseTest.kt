@@ -374,4 +374,43 @@ class ProcessBankNotificationUseCaseTest {
         assertEquals(Outcome.Ignored, outcome)
         assertTrue(inbox.items.value.isEmpty())
     }
+
+    private val toSavings = IncomingBankNotification(
+        packageName = "se.seb.latvia",
+        postTimeMillis = postTime,
+        title = "Jauns darījums",
+        text = "Jūs samaksājāt 1,24 EUR JOHN DOE par Krājkonts. Konta bilance:",
+    )
+    private val fromCard = toSavings.copy(
+        postTimeMillis = postTime + 2_000,
+        text = "JOHN DOE samaksāja 1,24 EUR par Krājkonts. Konta bilance:",
+    )
+
+    @Test
+    fun moneyMovedBetweenOwnAccountsIsDismissedAsAPair() = runBlocking {
+        val useCase = useCase(rules = emptyList())
+
+        val first = useCase(toSavings).getOrThrow()
+        val second = useCase(fromCard).getOrThrow()
+
+        assertEquals(Outcome.Pending(itemId = "id-0", reason = PendingReason.NoRule), first)
+        assertEquals(Outcome.MirroredPair(itemId = "id-1", counterpartItemId = "id-0"), second)
+        assertTrue(inbox.items.value.all { it.status == InboxItem.Status.Dismissed })
+        assertTrue(transfers.calls.isEmpty())
+    }
+
+    @Test
+    fun mirroredPairIsNotAutoRecordedByARule() = runBlocking {
+        val ownRule = salaryRule.copy(payeePattern = "john doe")
+        val useCase = useCase(
+            rules = listOf(ownRule),
+            categories = listOf(testCategory("cat-salary", isIncome = true)),
+        )
+
+        useCase(toSavings).getOrThrow()
+        val second = useCase(fromCard).getOrThrow()
+
+        assertTrue(second is Outcome.MirroredPair)
+        assertTrue(transfers.calls.isEmpty())
+    }
 }
